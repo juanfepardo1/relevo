@@ -608,6 +608,17 @@ summary .pl{border-radius:2px}
   .card,.close{border-radius:var(--r-card)!important}
   .close{margin-inline:0}
 }
+/* cookies */
+.cookie{position:fixed;right:16px;bottom:16px;z-index:40;width:min(420px,calc(100vw - 32px));background:var(--surface);color:var(--ink);border:1px solid var(--line-strong);border-radius:var(--r-card);box-shadow:var(--sh);padding:16px 18px 18px;font-size:15px;line-height:1.5}
+.cookie p{margin:0 0 14px;color:var(--muted)}
+.cookie p a{color:var(--ink)}
+.cookie-b{display:flex;gap:8px}
+.cookie-b button{flex:1;appearance:none;cursor:pointer;font:600 15px var(--body);min-height:44px;padding:0 14px;border-radius:var(--r-ctl);border:1px solid var(--line-strong);background:transparent;color:var(--ink);transition:background .2s,border-color .2s}
+.cookie-b button:hover{border-color:var(--ink)}
+.cookie-b #ck-yes{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.cookie-b #ck-yes:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+@media (max-width:760px){.cookie{right:12px;left:12px;width:auto;bottom:calc(12px + env(safe-area-inset-bottom))}}
+.linkish{appearance:none;background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 </style>
 
 <script defer src="/_vercel/insights/script.js"></script></head><body><svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -923,13 +934,18 @@ summary .pl{border-radius:2px}
   </section>
 </main>
 
+<div class="cookie" id="ck" role="region" aria-label="Preferencias de cookies" hidden>
+  <p>Usamos cookies de Meta para medir qué anuncios funcionan. Solo se activan si aceptas. <a href="/privacidad#cookies">Más información</a></p>
+  <div class="cookie-b"><button type="button" id="ck-no">Rechazar</button><button type="button" id="ck-yes">Aceptar</button></div>
+</div>
+
 <div class="mcta" id="mcta"><a class="btn btn-primary" href="#valorar" id="mcta-btn">Valorar mi empresa gratis<svg class="ico"><use href="#i-arrow"/></svg></a></div>
 
 <div class="wrap">
   <footer>
     <span class="brand"><span class="mark" aria-hidden="true"><i></i><i></i></span>Relevo</span>
     <p>Bogotá, Colombia</p>
-    <p><a href="/terminos">Términos de uso</a> · <a href="/privacidad">Política de tratamiento de datos</a></p>
+    <p><a href="/terminos">Términos de uso</a> · <a href="/privacidad">Política de tratamiento de datos</a> · <button type="button" class="linkish" id="ck-open">Cookies</button></p>
   </footer>
 </div>
 
@@ -989,13 +1005,43 @@ summary .pl{border-radius:2px}
   const consentText=id=>document.querySelector(`label[for="${id}"] span`).textContent.trim();
   let sellerId=null;
 
+  /* medición: píxel de Meta solo con consentimiento; embudo propio sin cookies en Supabase (tabla funnel) */
+  const PIXEL='978272748640225',CKEY='relevo_cookies';
+  const ckGet=()=>{try{return localStorage.getItem(CKEY);}catch(e){return null;}};
+  const ckSet=v=>{try{localStorage.setItem(CKEY,v);}catch(e){}};
+  let consent=ckGet(),fbLoaded=false;const queue=[];
+  function loadPixel(){
+    if(!fbLoaded){fbLoaded=true;
+      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+      fbq('set','autoConfig',false,PIXEL);fbq('init',PIXEL);fbq('track','PageView');}
+    else fbq('consent','grant');
+    while(queue.length)px.apply(null,queue.shift());
+  }
+  function px(kind,name,data,id){
+    if(consent==='yes'&&fbLoaded){id?fbq(kind,name,data||{},{eventID:id}):fbq(kind,name,data||{});}
+    else if(!consent)queue.push([kind,name,data,id]);
+  }
+  const ck=$('ck');
+  if(consent==='yes')loadPixel();else if(!consent)ck.hidden=false;
+  $('ck-yes').onclick=()=>{consent='yes';ckSet('yes');ck.hidden=true;loadPixel();};
+  $('ck-no').onclick=()=>{consent='no';ckSet('no');ck.hidden=true;queue.length=0;if(fbLoaded)fbq('consent','revoke');};
+  $('ck-open').onclick=()=>{ck.hidden=false;$('ck-yes').focus();};
+
+  const sid=uid(),stepsSent={};
+  function funnel(step){if(stepsSent[step])return;stepsSent[step]=true;
+    save('funnel',{session_id:sid,step,utm_campaign:meta.utm_campaign,utm_content:meta.utm_content});}
+  function formStart(){if(stepsSent.form_start)return;funnel('form_start');px('trackCustom','FormStart');}
+  ['change','input'].forEach(ev=>$('s1').addEventListener(ev,formStart));
+
   $('quick').addEventListener('submit',e=>{e.preventDefault();
+    formStart();
     const v=$('q-sector').value; if(v)$('s-sector').value=v;
     document.querySelectorAll('#valorar .rv').forEach(el=>el.classList.add('in')); smooth($('valorar'));
     setTimeout(()=>{const t=$('s1').hidden?$('s-name'):(v?$('v1'):$('s-sector'));t&&t.focus({preventScroll:true});},RM?0:700);
   });
   $('s1').addEventListener('submit',e=>{e.preventDefault();
     const ok=valid(e.target); if(!ok)return;
+    funnel('step1_done');px('trackCustom','FormStep2');
     $('s1').hidden=true; $('s2').hidden=false; $('s-bar2').classList.add('on');
     $('s-step-label').textContent='Paso 2 de 2 · Tus datos de contacto'; $('s-name').focus();
   });
@@ -1006,11 +1052,12 @@ summary .pl{border-radius:2px}
       const saved=await save('leads',{id:sellerId,kind:'seller',sector:$('s-sector').value,sales_range:rv('sales'),timing:$('s-when').value,
         name:$('s-name').value.trim(),company:$('s-company').value.trim(),city:$('s-city').value.trim(),phone:$('s-phone').value.trim(),email:$('s-email').value.trim(),
         contact_channel:rv('schan'),consent:true,consent_text:consentText('s-consent'),...meta});
-      busy(f,false); if(!saved){$('s2-net').hidden=false;return;}}
+      busy(f,false); if(!saved){$('s2-net').hidden=false;return;}
+      px('track','Lead',{content_name:'vendedor'},sellerId);}
     $('sell-steps').hidden=true; $('sell-done').hidden=false; $('sell-done').focus();
   });
   $('reserve').onclick=async e=>{const b=e.currentTarget;b.setAttribute('aria-busy','true');
-    if(sellerId)await save('events',{lead_id:sellerId,type:'reserve_report'});
+    if(sellerId){await save('events',{lead_id:sellerId,type:'reserve_report'});px('trackCustom','ReserveReport',{},sellerId+'-r');}
     b.hidden=true;$('reserve-note').hidden=false;};
   $('b1').addEventListener('submit',async e=>{e.preventDefault();const f=e.target;
     const ok=valid(f); $('b1-net').hidden=true; if(!ok)return;
@@ -1018,7 +1065,8 @@ summary .pl{border-radius:2px}
       const saved=await save('leads',{id:uid(),kind:'buyer',buyer_type:$('b-type').value,budget:rv('budget'),
         name:$('b-name').value.trim(),phone:$('b-phone').value.trim(),email:$('b-email').value.trim(),
         contact_channel:rv('bchan'),consent:true,consent_text:consentText('b-consent'),...meta});
-      busy(f,false); if(!saved){$('b1-net').hidden=false;return;}}
+      busy(f,false); if(!saved){$('b1-net').hidden=false;return;}
+      px('trackCustom','BuyerSignup');}
     $('buy-steps').hidden=true; $('buy-done').hidden=false; $('buy-done').focus();
   });
   $('close-cta').addEventListener('click',e=>{e.preventDefault();smooth($('valorar'));setTimeout(()=>{const f=$('s1').hidden?$('s-name'):$('s-sector');f&&f.focus({preventScroll:true});},RM?0:700);});
