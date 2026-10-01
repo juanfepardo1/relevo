@@ -561,10 +561,11 @@ summary{font-family:var(--body);font-weight:600;font-size:19px;letter-spacing:-.
 .close{margin-inline:calc(50% - 50vw);border-radius:0!important;padding-inline:max(24px,calc(50vw - 596px))}
 @media (max-width:760px){.close{margin-inline:-20px;padding-inline:20px}}
 .band{margin-inline:0}
+.tk-track li{font-family:var(--serif);font-style:normal;font-weight:600;font-stretch:92%;letter-spacing:-.015em}
 /* the drawing */
 .city{height:auto;max-width:1680px}
 .city-img{display:block;width:100%;height:auto;mix-blend-mode:multiply;user-select:none}
-@media (min-width:761px){.city .fc-val{left:auto;right:max(24px,calc(50% - 596px));top:auto;bottom:-5%;width:330px}.sectors-line{margin-top:56px}}
+@media (min-width:761px){.city .fc-val{left:auto;right:max(24px,calc(50% - 596px));top:auto;bottom:-5%;width:330px}.sectors{margin-top:56px}}
 @media (max-width:760px){.city-img{height:260px;object-fit:cover;object-position:46% 70%}.city .fc-val{margin-top:-34px!important}}
 :root[data-theme="dark"] .city-img{filter:invert(1) hue-rotate(180deg) brightness(.95);mix-blend-mode:screen}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .city-img{filter:invert(1) hue-rotate(180deg) brightness(.95);mix-blend-mode:screen}}
@@ -666,7 +667,10 @@ summary .pl{border-radius:2px}
   </section>
 
   <div class="wrap">
-    <p class="sectors-line">Valoramos empresas rentables de <b>alimentos</b>, <b>manufactura</b>, <b>distribución</b>, <b>farmacias</b>, <b>educación</b>, <b>logística</b>, <b>construcción</b>, <b>servicios</b>, <b>agroindustria</b> y <b>tecnología</b>, en todo el país.</p>
+    <div class="sectors">
+      <p>Valoramos empresas de</p>
+      <div class="tk"><ul class="tk-track"><li>Alimentos</li><li>Manufactura</li><li>Distribución</li><li>Farmacias</li><li>Educación</li><li>Logística</li><li>Construcción</li><li>Servicios</li><li>Agroindustria</li><li>Tecnología</li><li aria-hidden="true">Alimentos</li><li aria-hidden="true">Manufactura</li><li aria-hidden="true">Distribución</li><li aria-hidden="true">Farmacias</li><li aria-hidden="true">Educación</li><li aria-hidden="true">Logística</li><li aria-hidden="true">Construcción</li><li aria-hidden="true">Servicios</li><li aria-hidden="true">Agroindustria</li><li aria-hidden="true">Tecnología</li></ul></div>
+    </div>
   </div>
 
   <section class="wrap sec how" id="como">
