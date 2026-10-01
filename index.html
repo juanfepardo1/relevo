@@ -175,7 +175,10 @@ html.js .city.go .pst li:nth-child(1){transition-delay:1.9s} html.js .city.go .p
 /* navy band */
 .band{position:relative;margin:88px clamp(8px,1.6vw,24px) 0;border-radius:var(--r-band);background:var(--navy);color:var(--on-navy);overflow:hidden;isolation:isolate}
 .guil{position:absolute;width:640px;height:640px;right:-200px;top:-220px;fill:none;stroke:var(--on-navy);stroke-width:.45;opacity:.16;pointer-events:none}
-.band-grid{position:relative;z-index:1;display:grid;grid-template-columns:5fr 6fr;gap:72px;align-items:center;padding-block:96px}
+.band-grid{position:relative;z-index:1;display:grid;grid-template-columns:5fr 6fr;grid-template-areas:"head card" "gets card";column-gap:72px;row-gap:0;align-items:start;padding-block:96px}
+.band-head{grid-area:head;align-self:end}
+.band-grid>.gets{grid-area:gets;align-self:start}
+.band-grid>.card{grid-area:card;align-self:center}
 .band-grid>*{min-width:0}
 .band-lead{margin-top:18px;color:var(--on-navy-muted);font-size:19px;max-width:38ch}
 .gets{margin-top:36px;border-top:1px solid var(--navy-line)}
@@ -212,6 +215,11 @@ form.f{display:flex;flex-direction:column;gap:18px;margin-top:24px}
 .consent{display:flex;gap:12px;align-items:flex-start;font-size:14px;color:var(--muted);line-height:1.45}
 .consent input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--navy);flex:none}
 .err{color:var(--err);font-size:14px;font-weight:500}
+.req{font-size:14px;color:var(--muted);margin-bottom:-4px}
+.ferr{color:var(--err);font-size:13.5px;font-weight:500;margin-top:2px}
+.f [aria-invalid="true"]{border-color:var(--err)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--err) 18%,transparent)!important}
+.field.bad .chips label{border-color:color-mix(in srgb,var(--err) 60%,var(--line-strong))}
+.consent.bad{color:var(--err)}
 .actions{display:flex;gap:12px;align-items:center;justify-content:space-between}
 .actions .btn-primary{flex:1}
 .f>.btn-primary{width:100%}
@@ -411,6 +419,96 @@ html.js .in .checks li:nth-child(2) .ck{transition-delay:.45s} html.js .in .chec
   .fc-big{font-size:30px}
   .lr{padding:11px 16px} .fc-list header{padding:10px 16px 8px}
 }
+
+/* ===== MOBILE-FIRST LAYER (phones) ===== */
+.mcta{display:none}
+@media (max-width:760px){
+  body{font-size:17px}
+  .wrap{padding-inline:20px}
+  /* hero: tight, one action, one visual */
+  .hero-grid{padding-block:28px 20px;gap:18px}
+  .hero h1{font-size:clamp(38px,10.6vw,46px);line-height:1.02}
+  .hero .sub{font-size:17px;line-height:1.55}
+  .quick{margin-top:20px;border:0;box-shadow:none;background:none;padding:0;gap:10px}
+  .quick select{height:54px;border:1px solid var(--line-strong);background:var(--surface);border-radius:var(--r-ctl);padding:0 14px}
+  .quick .btn{min-height:54px;border-radius:var(--r-ctl);box-shadow:0 10px 22px -12px color-mix(in srgb,var(--accent) 90%,transparent)}
+  .assure{gap:6px 14px;margin-top:14px;font-size:14px}
+  .city{display:block;height:auto;margin-top:6px}
+  .city .skyline{position:relative;inset:auto;height:300px;margin:0;z-index:0}
+  .city .fc{order:0}
+  .city .fc-proc{display:none}
+  .city .fc-val,.city .fc-list{position:relative;left:auto;right:auto;top:auto;width:auto;margin:-86px 20px 0;z-index:2}
+  .fc{padding:16px 18px}
+  .fc-big{font-size:29px}
+  .sectors{margin-top:28px;padding-block:14px;flex-direction:column;align-items:flex-start;gap:4px}
+  .sectors>p{font-size:13px}
+  .tk-track li{font-size:20px;gap:16px;padding-right:16px}
+  /* sections */
+  .sec{padding-block:64px 8px}
+  .sec h2,.band h2{font-size:clamp(32px,8.6vw,38px)}
+  .sec-head{gap:12px;margin-bottom:24px}
+  .lead{font-size:17px}
+  /* process: swipeable cards instead of a long vertical list */
+  .rail{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -20px;padding:4px 20px 18px;scrollbar-width:none}
+  .rail::-webkit-scrollbar{display:none}
+  .track,.stop .dot{display:none}
+  .stop{flex:0 0 78%;scroll-snap-align:start;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-tile);overflow:hidden}
+  .stop>*{grid-column:auto}
+  .stop .plate{width:auto;height:150px;border:0;border-bottom:1px solid var(--line);border-radius:0;grid-row:auto}
+  .stop .plate .eng{width:118px} .stop .plate .eng.docs{width:150px}
+  .stop .when,.stop h3,.stop p:last-child{margin-inline:16px}
+  .stop .when{margin-top:12px;justify-self:auto;align-self:flex-start}
+  .stop h3{font-size:24px}
+  .stop p:last-child{margin-bottom:18px;font-size:15.5px}
+  .swipe-hint{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:13px;margin-top:2px}
+  /* navy band: full bleed, form right after the promise */
+  .band{margin:56px 0 0;border-radius:0}
+  .band-grid{grid-template-columns:1fr;grid-template-areas:"head" "card" "gets";padding-block:48px 36px;row-gap:24px}
+  .band-lead{font-size:16.5px;margin-top:12px}
+  .band .guil{width:420px;height:420px;right:-180px;top:-160px}
+  .card{padding:22px 18px;border-radius:14px}
+  .card h2,.card .h2{font-size:26px}
+  .step-meta{font-size:14px;align-items:flex-start}
+  form.f{gap:16px;margin-top:18px}
+  .chips{grid-template-columns:1fr 1fr}
+  .chips label{font-size:14px;padding:10px 12px;min-height:56px}
+  .chips3 label{justify-content:center;min-height:48px}
+  .two{grid-template-columns:1fr;gap:16px}
+  .gets{margin-top:0}
+  .gets li{padding-block:14px}
+  .gets b{font-size:16.5px} .gets span{font-size:15px}
+  /* proof: the ficha sits on the page, not boxed inside a box */
+  .bento{gap:14px}
+  .t-big{background:none;border:0;padding:0;border-radius:0}
+  .t-big .tile-txt{padding-inline:2px}
+  .ficha{margin-top:18px;padding:20px 18px;gap:18px}
+  .ficha-top{flex-direction:column;align-items:stretch}
+  .ficha-top .tag{align-self:flex-start}
+  .view{display:grid;grid-template-columns:1fr 1fr}
+  .view button{padding:9px 6px;font-size:13.5px}
+  .redact{font-size:23px}
+  .grid{grid-template-columns:1fr 1fr;gap:14px 16px}
+  .grid dd{font-size:15.5px}
+  .tile{padding:22px 20px}
+  .tile h3{font-size:24px}
+  .tile-txt p{font-size:15.5px}
+  .t-paper:not(.t-big){display:grid;grid-template-columns:1fr 96px;gap:12px;align-items:center}
+  .lens-wrap .eng{max-width:96px;margin:0}
+  .checks li{padding-block:12px;font-size:15px}
+  /* faq + close */
+  .faq{gap:20px}
+  summary{font-size:19px;line-height:1.3}
+  details{padding-block:18px}
+  .close{margin-top:56px;padding:44px 22px;border-radius:16px}
+  .close h2{font-size:clamp(32px,8.8vw,40px)}
+  .close .btn{width:100%}
+  footer{flex-direction:column;align-items:flex-start;gap:8px;padding-block:32px 110px;font-size:14px}
+  /* sticky action bar */
+  .mcta{display:block;position:fixed;left:0;right:0;bottom:0;z-index:30;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);transform:translateY(110%);transition:transform .45s var(--ease)}
+  .mcta.on{transform:none}
+  .mcta .btn{width:100%;min-height:52px}
+}
+@media (min-width:761px){.swipe-hint{display:none}}
 </style>
 
 <script defer src="/_vercel/insights/script.js"></script></head><body><svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -495,6 +593,7 @@ html.js .in .checks li:nth-child(2) .ck{transition-delay:.45s} html.js .in .chec
       <h2>Vendemos tu empresa <em>de principio a fin.</em></h2>
       <p class="lead">La valoración es el primer paso. Después nos encargamos de preparar, buscar comprador, negociar y cerrar, mientras tú sigues operando.</p>
     </div>
+    <p class="swipe-hint" aria-hidden="true">Desliza para ver los 4 pasos <svg class="ico"><use href="#i-arrow"/></svg></p>
     <div class="rail rv">
       <div class="track" aria-hidden="true"><i></i></div>
       <div class="stop"><div class="plate"><svg viewBox="0 0 160 150" class="eng" aria-hidden="true"><path class="s-ink o" pathLength="1" d="M79.9 29.9Q79.9 76.9 80 124.2M78 30.1Q80.4 29.8 81.8 29.9M55.8 124.2Q80.1 123.9 103.9 124M104 123.9Q107.2 128.7 110 134M110.2 134.2Q79.8 134.1 50.1 134M49.9 133.9Q52.8 128.9 56.1 124M20 48.1Q79.9 48.3 139.9 48.2M85 44L84.8 46L83.6 47.4L81.9 48.4L79.8 49.1L78 48.7L76.4 47.4L75.4 46.1L74.8 43.8L75.2 42L76.5 40.6L78 39.6L79.9 39.2L82.1 39.3L83.4 40.3L84.5 42.2L85.1 44.1M29.9 48Q20.9 69.8 12.1 91.9M34 47.9Q42.9 69.7 51.8 92M8 92.1Q32.2 91.9 55.9 91.8M56 92.2Q52.1 98.2 48 103.8M48.1 103.8Q32.1 103.7 16.1 104.1M16.2 103.9Q11.9 98 8 92M126 48.1Q116.8 70.2 107.8 92.2M130.2 48.1Q139.2 69.9 148.1 92.2M104 92.1Q127.9 91.9 152.2 91.9M152.1 92.1Q148 98.1 143.9 104.1M144.1 104.2Q128.2 103.8 112.1 104.1M112 103.8Q108 98.3 104.1 92.2"/><path class="s-ink h" d="M54.8 92L55.2 93.1M52.5 92L53.7 95.4M50.1 92L52.2 97.7M47.8 92L50.7 100M45.5 92L49.2 102.2M43.1 92L47.5 104M40.8 92L45.1 104M38.4 92L42.8 104M36.1 92L40.5 104M33.8 92L38.1 104M31.4 92L35.8 104M29.1 92L33.4 104M26.7 92L31.1 104M24.4 92L28.8 104M22.1 92L26.4 104M19.7 92L24.1 104M17.4 92L21.7 104M15 92L19.4 104M12.7 92L17.1 104M10.3 92L13.2 99.8M8 92L8 92M150.8 92L151.2 93.1M148.5 92L149.7 95.4M146.1 92L148.2 97.7M143.8 92L146.7 100M141.5 92L145.2 102.2M139.1 92L143.5 104M136.8 92L141.1 104M134.4 92L138.8 104M132.1 92L136.5 104M129.8 92L134.1 104M127.4 92L131.8 104M125.1 92L129.4 104M122.7 92L127.1 104M120.4 92L124.8 104M118.1 92L122.4 104M115.7 92L120.1 104M113.4 92L117.7 104M111 92L115.4 104M108.7 92L113.1 104M106.3 92L109.2 99.8M104 92L104 92M103 124L108.7 134M100.4 124L106.2 134M97.9 124L103.6 134M95.3 124L101.1 134M92.8 124L98.6 134M90.3 124L96 134M87.7 124L93.5 134M85.2 124L90.9 134M82.6 124L88.4 134M80.1 124L85.9 134M77.6 124L83.3 134M75 124L80.8 134M72.5 124L78.2 134M69.9 124L75.7 134M67.4 124L73.2 134M64.9 124L70.6 134M62.3 124L68.1 134M59.8 124L65.5 134M57.2 124L63 134M55.3 125.1L60.5 134M54 127.3L57.9 134M52.7 129.4L55.4 134M51.4 131.6L52.8 134M50.2 133.7L50.3 134"/><path class="f-acc" d="M136 82L135.6 84.7L134.2 87.2L132.1 88.9L129.5 89.8L126.6 89.8L123.8 88.8L121.7 87.1L120.3 84.9L120 82L120.6 79.1L121.9 76.7L123.9 75.1L126.5 74.3L129.4 74.1L132 75L134.1 76.7L135.4 79.2L136 82.1Z"/></svg></div><span class="dot" aria-hidden="true"></span><p class="when num">5 días hábiles</p><h3>Valoramos</h3><p>Revisamos tus estados financieros y te damos un rango de precio realista.</p></div>
@@ -507,15 +606,15 @@ html.js .in .checks li:nth-child(2) .ck{transition-delay:.45s} html.js .in .chec
   <section class="band" id="valorar">
     <svg class="guil" aria-hidden="true"><use href="#guil"/></svg>
     <div class="wrap band-grid">
-      <div class="rv">
+      <div class="band-head rv">
         <h2>El primer paso: saber <em>cuánto vale.</em></h2>
         <p class="band-lead">La mayoría de dueños no lo sabe con certeza. La valoración es gratis, sin compromiso, y con ella decides si vender, cuándo y a qué precio.</p>
-        <ul class="gets">
+      </div>
+      <ul class="gets rv">
           <li><svg class="li"><use href="#l-chart"/></svg><p><b>Un rango de precio realista</b><span>Basado en tus cifras, no en promesas.</span></p></li>
           <li><svg class="li"><use href="#l-eye"/></svg><p><b>Lo que mira un comprador</b><span>Qué suma y qué resta valor en tu sector.</span></p></li>
           <li><svg class="li"><use href="#l-shield"/></svg><p><b>Sin compromiso de vender</b><span>Nada se publica sin tu aprobación.</span></p></li>
         </ul>
-      </div>
 
       <div class="card rv" id="sell-card">
         <div id="sell-steps">
@@ -523,6 +622,7 @@ html.js .in .checks li:nth-child(2) .ck{transition-delay:.45s} html.js .in .chec
           <div class="step-meta"><span id="s-step-label">Paso 1 de 2 · Gratis y confidencial</span><span class="bar" aria-hidden="true"><span class="on"></span><span id="s-bar2"></span></span></div>
 
           <form id="s1" class="f" novalidate>
+            <p class="req">Todos los campos son obligatorios.</p>
             <div class="field">
               <label for="s-sector">Sector</label>
               <select id="s-sector" required>
@@ -551,13 +651,14 @@ html.js .in .checks li:nth-child(2) .ck{transition-delay:.45s} html.js .in .chec
           </form>
 
           <form id="s2" class="f" novalidate hidden>
+            <p class="req">Todos los campos son obligatorios.</p>
             <div class="two">
               <div class="field"><label for="s-name">Tu nombre</label><input type="text" id="s-name" required autocomplete="name"></div>
               <div class="field"><label for="s-company">Empresa</label><input type="text" id="s-company" required autocomplete="organization"></div>
             </div>
             <div class="field"><label for="s-city">Ciudad</label><input type="text" id="s-city" required autocomplete="address-level2"></div>
             <div class="two">
-              <div class="field"><label for="s-phone">WhatsApp</label><input type="tel" id="s-phone" required autocomplete="tel" inputmode="tel" placeholder="300 123 4567"></div>
+              <div class="field"><label for="s-phone">WhatsApp</label><input type="tel" id="s-phone" required autocomplete="tel" inputmode="tel" placeholder="300 123 4567" data-kind="phone"></div>
               <div class="field"><label for="s-email">Correo</label><input type="email" id="s-email" required autocomplete="email"></div>
             </div>
 <fieldset class="field">
@@ -696,20 +797,21 @@ html.js .in .checks li:nth-child(2) .ck{transition-delay:.45s} html.js .in .chec
   <section class="band" id="b-band">
     <svg class="guil" aria-hidden="true"><use href="#guil"/></svg>
     <div class="wrap band-grid">
-      <div class="rv">
+      <div class="band-head rv">
         <h2>Recibe las oportunidades <em>primero.</em></h2>
         <p class="band-lead">Te enviamos cada empresa que encaje con lo que buscas, antes de que salga a otros canales.</p>
-        <ul class="gets">
+      </div>
+      <ul class="gets rv">
           <li><svg class="li"><use href="#l-chart"/></svg><p><b>Cifras revisadas</b><span>Contra DIAN, facturación electrónica y extractos.</span></p></li>
           <li><svg class="li"><use href="#l-eye"/></svg><p><b>Ficha completa al firmar</b><span>Nombre y detalles tras la confidencialidad.</span></p></li>
           <li><svg class="li"><use href="#l-shield"/></svg><p><b>Verificación de fondos</b><span>Solo cuando quieras ver una empresa a fondo.</span></p></li>
         </ul>
-      </div>
       <div class="card rv">
         <div id="buy-steps">
           <h2>Únete a la lista de compradores</h2>
           <p class="step-meta">Un solo paso. Te avisamos por WhatsApp.</p>
           <form id="b1" class="f" novalidate>
+            <p class="req">Todos los campos son obligatorios.</p>
             <div class="field">
               <label for="b-type">Eres</label>
               <select id="b-type" required>
@@ -728,7 +830,7 @@ html.js .in .checks li:nth-child(2) .ck{transition-delay:.45s} html.js .in .chec
             </fieldset>
             <div class="two">
               <div class="field"><label for="b-name">Tu nombre</label><input type="text" id="b-name" required autocomplete="name"></div>
-              <div class="field"><label for="b-phone">WhatsApp</label><input type="tel" id="b-phone" required autocomplete="tel" inputmode="tel" placeholder="300 123 4567"></div>
+              <div class="field"><label for="b-phone">WhatsApp</label><input type="tel" id="b-phone" required autocomplete="tel" inputmode="tel" placeholder="300 123 4567" data-kind="phone"></div>
             </div>
             <div class="field"><label for="b-email">Correo</label><input type="email" id="b-email" required autocomplete="email"></div>
 <fieldset class="field">
@@ -756,6 +858,8 @@ html.js .in .checks li:nth-child(2) .ck{transition-delay:.45s} html.js .in .chec
   </section>
 </main>
 
+<div class="mcta" id="mcta"><a class="btn btn-primary" href="#valorar" id="mcta-btn">Valorar mi empresa gratis<svg class="ico"><use href="#i-arrow"/></svg></a></div>
+
 <div class="wrap">
   <footer>
     <span class="brand"><span class="mark" aria-hidden="true"><i></i><i></i></span>Relevo</span>
@@ -780,10 +884,31 @@ html.js .in .checks li:nth-child(2) .ck{transition-delay:.45s} html.js .in .chec
   tabs.sell.onclick=()=>show('sell'); tabs.buy.onclick=()=>show('buy');
 
   const smooth=el=>el.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'});
-  const valid=f=>[...f.querySelectorAll('input,select')].filter(i=>i.name!=='website').every(i=>{
-    if(i.type==='checkbox')return i.checked;
-    if(i.type==='radio')return true;
-    return i.value.trim()!==''&&i.checkValidity();
+  const MSG={text:'Este campo es obligatorio.',email:'Escribe un correo válido, por ejemplo nombre@empresa.com.',phone:'Escribe un número válido de 10 dígitos.',select:'Elige una opción.',radio:'Elige una opción.',consent:'Debes aceptar para poder enviar.'};
+  function setErr(holder,input,msg){let e=holder.querySelector(':scope > .ferr');
+    if(msg){if(!e){e=document.createElement('p');e.className='ferr';e.id=(input?input.id||input.name:'x')+'-e';holder.appendChild(e);}e.textContent=msg;}
+    else if(e)e.remove();
+    if(input){input.setAttribute('aria-invalid',msg?'true':'false');if(msg)input.setAttribute('aria-describedby',e.id);else input.removeAttribute('aria-describedby');}
+    holder.classList.toggle('bad',!!msg);}
+  function checkField(i){const holder=i.closest('.field');let m='';
+    const v=(i.value||'').trim();
+    if(i.type==='checkbox'){const lab=i.closest('.consent'),mm=i.checked?'':MSG.consent;lab.classList.toggle('bad',!!mm);let e=lab.nextElementSibling;
+      if(mm){if(!e||!e.classList.contains('ferr')){e=document.createElement('p');e.className='ferr';lab.after(e);}e.textContent=mm;}else if(e&&e.classList.contains('ferr'))e.remove();
+      i.setAttribute('aria-invalid',mm?'true':'false');return !mm;}
+    if(i.tagName==='SELECT')m=v?'':MSG.select;
+    else if(i.dataset.kind==='phone'){const d=v.replace(/\D/g,'');m=!v?MSG.text:(d.length>=10&&d.length<=13?'':MSG.phone);}
+    else if(i.type==='email')m=!v?MSG.text:(/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(v)?'':MSG.email);
+    else m=v.length>=2?'':MSG.text;
+    setErr(holder,i,m);return !m;}
+  function checkRadios(fs){const ok=!!fs.querySelector('input:checked');setErr(fs,null,ok?'':MSG.radio);return ok;}
+  function valid(f){let first=null,ok=true;
+    f.querySelectorAll('input:not([type=radio]):not([name=website]),select').forEach(i=>{if(!checkField(i)){ok=false;first=first||i;}});
+    f.querySelectorAll('fieldset.field').forEach(fs=>{if(!checkRadios(fs)){ok=false;first=first||fs.querySelector('input');}});
+    if(first){(first.type==='radio'?first.nextElementSibling:first).scrollIntoView({block:'center',behavior:RM?'auto':'smooth'});first.focus({preventScroll:true});}
+    return ok;}
+  document.querySelectorAll('form.f').forEach(f=>{
+    f.addEventListener('change',e=>{const t=e.target;if(t.type==='radio')checkRadios(t.closest('fieldset'));else if(t.getAttribute('aria-invalid')==='true'||t.type==='checkbox'&&t.closest('.consent').classList.contains('bad'))checkField(t);});
+    f.addEventListener('input',e=>{const t=e.target;if(t.getAttribute('aria-invalid')==='true')checkField(t);});
   });
   const radioChosen=(f,name)=>!!f.querySelector(`input[name="${name}"]:checked`);
   const rv=name=>{const i=document.querySelector(`input[name="${name}"]:checked`);return i?i.value:null;};
@@ -806,14 +931,13 @@ html.js .in .checks li:nth-child(2) .ck{transition-delay:.45s} html.js .in .chec
     setTimeout(()=>{const t=$('s1').hidden?$('s-name'):(v?$('v1'):$('s-sector'));t&&t.focus({preventScroll:true});},RM?0:700);
   });
   $('s1').addEventListener('submit',e=>{e.preventDefault();
-    const ok=valid(e.target)&&radioChosen(e.target,'sales');
-    $('s1-err').hidden=ok; if(!ok)return;
+    const ok=valid(e.target); if(!ok)return;
     $('s1').hidden=true; $('s2').hidden=false; $('s-bar2').classList.add('on');
     $('s-step-label').textContent='Paso 2 de 2 · Tus datos de contacto'; $('s-name').focus();
   });
   $('s-back').onclick=()=>{$('s2').hidden=true;$('s1').hidden=false;$('s-bar2').classList.remove('on');$('s-step-label').textContent='Paso 1 de 2 · Gratis y confidencial';};
   $('s2').addEventListener('submit',async e=>{e.preventDefault();const f=e.target;
-    const ok=valid(f); $('s2-err').hidden=ok; $('s2-net').hidden=true; if(!ok)return;
+    const ok=valid(f); $('s2-net').hidden=true; if(!ok)return;
     if(!bot(f)){busy(f,true);sellerId=uid();
       const saved=await save('leads',{id:sellerId,kind:'seller',sector:$('s-sector').value,sales_range:rv('sales'),timing:$('s-when').value,
         name:$('s-name').value.trim(),company:$('s-company').value.trim(),city:$('s-city').value.trim(),phone:$('s-phone').value.trim(),email:$('s-email').value.trim(),
@@ -825,7 +949,7 @@ html.js .in .checks li:nth-child(2) .ck{transition-delay:.45s} html.js .in .chec
     if(sellerId)await save('events',{lead_id:sellerId,type:'reserve_report'});
     b.hidden=true;$('reserve-note').hidden=false;};
   $('b1').addEventListener('submit',async e=>{e.preventDefault();const f=e.target;
-    const ok=valid(f)&&radioChosen(f,'budget'); $('b1-err').hidden=ok; $('b1-net').hidden=true; if(!ok)return;
+    const ok=valid(f); $('b1-net').hidden=true; if(!ok)return;
     if(!bot(f)){busy(f,true);
       const saved=await save('leads',{id:uid(),kind:'buyer',buyer_type:$('b-type').value,budget:rv('budget'),
         name:$('b-name').value.trim(),phone:$('b-phone').value.trim(),email:$('b-email').value.trim(),
@@ -865,6 +989,15 @@ html.js .in .checks li:nth-child(2) .ck{transition-delay:.45s} html.js .in .chec
   if(!RM){let tick=false;addEventListener('scroll',()=>{if(tick)return;tick=true;requestAnimationFrame(()=>{const y=Math.min(scrollY,700);
     document.querySelectorAll('main:not([hidden]) .skyline').forEach(s=>{s.querySelector('.L0').style.translate=`0 ${y*.12}px`;s.querySelector('.L1').style.translate=`0 ${y*.05}px`;});tick=false;});},{passive:true});}
 
+  /* mobile sticky CTA: visible once the hero action scrolls away, hidden while the form is on screen */
+  const mcta=$('mcta'),mbtn=$('mcta-btn');const vis=new Map();
+  function upd(){const buy=!views.buy.hidden;mbtn.firstChild.textContent=buy?'Recibir oportunidades':'Valorar mi empresa gratis';mbtn.setAttribute('href',buy?'#b-band':'#valorar');
+    const heroOn=buy?vis.get('buy-cta'):vis.get('quick'),formOn=buy?vis.get('b-band'):vis.get('valorar');
+    mcta.classList.toggle('on',heroOn===false&&!formOn);}
+  const mio=new IntersectionObserver(es=>{es.forEach(e=>vis.set(e.target.id,e.isIntersecting));upd();},{threshold:0});
+  ['quick','valorar','buy-cta','b-band'].forEach(id=>mio.observe($(id)));
+  mbtn.addEventListener('click',e=>{e.preventDefault();const buy=!views.buy.hidden;smooth($(buy?'b-band':'valorar'));setTimeout(()=>{const f=buy?$('b-type'):($('s1').hidden?$('s-name'):$('s-sector'));f&&f.focus({preventScroll:true});},RM?0:700);});
+  tabs.sell.addEventListener('click',()=>setTimeout(upd,50));tabs.buy.addEventListener('click',()=>setTimeout(upd,50));
   if(location.hash==='#comprar'||location.pathname.replace(/\/$/,'')==='/comprar')show('buy'); else start($('city-sell'));
 })();
 </script>
