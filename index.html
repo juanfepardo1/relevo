@@ -198,6 +198,7 @@ html.js .city.go .pst li:nth-child(1){transition-delay:1.9s} html.js .city.go .p
 form.f{display:flex;flex-direction:column;gap:18px;margin-top:24px}
 .field{display:flex;flex-direction:column;gap:8px;min-width:0;border:0;padding:0;margin:0}
 .field>label,.field>legend{font-weight:600;font-size:15px;padding:0}
+.field>label .opt{font-weight:400;font-size:13px;color:var(--muted)}
 .field>legend{margin-bottom:8px}
 .f input[type=text],.f input[type=email],.f input[type=tel],.f select{font:inherit;font-size:17px;color:var(--ink);background:var(--bg);border:1px solid var(--line-strong);border-radius:var(--r-ctl);padding:12px 14px;width:100%;min-height:52px;transition:border-color .15s,box-shadow .15s}
 .f input::placeholder{color:var(--muted);opacity:1}
@@ -752,7 +753,7 @@ summary .pl{border-radius:2px}
             <p class="req">Todos los campos son obligatorios.</p>
             <div class="two">
               <div class="field"><label for="s-name">Tu nombre</label><input type="text" id="s-name" required autocomplete="name"></div>
-              <div class="field"><label for="s-company">Empresa</label><input type="text" id="s-company" required autocomplete="organization"></div>
+              <div class="field"><label for="s-company">Empresa <span class="opt">(Opcional)</span></label><input type="text" id="s-company" data-optional autocomplete="organization"></div>
             </div>
             <div class="field"><label for="s-city">Ciudad</label><input type="text" id="s-city" required autocomplete="address-level2"></div>
             <div class="two">
@@ -974,6 +975,7 @@ summary .pl{border-radius:2px}
     holder.classList.toggle('bad',!!msg);}
   function checkField(i){const holder=i.closest('.field');let m='';
     const v=(i.value||'').trim();
+    if(i.dataset.optional!==undefined&&!v){setErr(holder,i,'');return true;}
     if(i.type==='checkbox'){const lab=i.closest('.consent'),mm=i.checked?'':MSG.consent;lab.classList.toggle('bad',!!mm);let e=lab.nextElementSibling;
       if(mm){if(!e||!e.classList.contains('ferr')){e=document.createElement('p');e.className='ferr';lab.after(e);}e.textContent=mm;}else if(e&&e.classList.contains('ferr'))e.remove();
       i.setAttribute('aria-invalid',mm?'true':'false');return !mm;}
