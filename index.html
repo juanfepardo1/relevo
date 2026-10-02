@@ -729,10 +729,12 @@ summary .pl{border-radius:2px}
             <fieldset class="field">
               <legend>Ventas del último año</legend>
               <div class="chips num">
-                <input type="radio" name="sales" id="v1" value="<1000"><label for="v1">Menos de $1.000 millones</label>
-                <input type="radio" name="sales" id="v2" value="1000-5000"><label for="v2">$1.000 a $5.000 millones</label>
-                <input type="radio" name="sales" id="v3" value="5000-20000"><label for="v3">$5.000 a $20.000 millones</label>
-                <input type="radio" name="sales" id="v4" value=">20000"><label for="v4">Más de $20.000 millones</label>
+                <input type="radio" name="sales" id="v1" value="lt1000"><label for="v1">Menos de $1.000 millones</label>
+                <input type="radio" name="sales" id="v2" value="1000_2000"><label for="v2">$1.000 a $2.000 millones</label>
+                <input type="radio" name="sales" id="v3" value="2000_5000"><label for="v3">$2.000 a $5.000 millones</label>
+                <input type="radio" name="sales" id="v4" value="5000_10000"><label for="v4">$5.000 a $10.000 millones</label>
+                <input type="radio" name="sales" id="v5" value="10000_20000"><label for="v5">$10.000 a $20.000 millones</label>
+                <input type="radio" name="sales" id="v6" value="gt20000"><label for="v6">Más de $20.000 millones</label>
               </div>
             </fieldset>
             <div class="field">

@@ -17,7 +17,7 @@ function waLink(phone) {
 
 function build(r) {
   const seller = r.kind === 'seller';
-  const qualified = seller && r.sales_range && r.sales_range !== '<1000';
+  const qualified = seller && r.sales_range && !['<1000', 'lt1000'].includes(r.sales_range);
   const hot = qualified && HOT.includes(r.timing);
   const tag = hot ? 'CALIENTE' : qualified ? 'CALIFICADO' : seller ? 'No califica' : 'Comprador';
 
