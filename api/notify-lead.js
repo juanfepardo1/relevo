@@ -1,8 +1,52 @@
 // Aviso por correo de cada lead nuevo, enviado desde el Gmail de Relevo.
 // Lo llama un Database Webhook de Supabase (INSERT en public.leads) con el header x-webhook-secret.
-// Variables en Vercel: GMAIL_APP_PASSWORD, WEBHOOK_SECRET. Opcional: GMAIL_USER.
+// Además reporta el lead a Meta por la API de conversiones (solo vendedores que lo autorizaron en el formulario).
+// Variables en Vercel: GMAIL_APP_PASSWORD, WEBHOOK_SECRET, META_CAPI_TOKEN.
+// Opcionales: GMAIL_USER, META_PIXEL_ID, META_API_VERSION, META_TEST_EVENT_CODE.
 // Los avisos siempre llegan a NOTIFY_TO (buzón de Relevo en Google Workspace).
 const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+const PIXEL_ID = process.env.META_PIXEL_ID || '978272748640225';
+const API_VERSION = process.env.META_API_VERSION || 'v25.0';
+
+const sha = (v) => crypto.createHash('sha256').update(v).digest('hex');
+
+function capiEvent(r) {
+  if (r.kind !== 'seller' || !/Meta/.test(r.consent_text || '')) return null;
+  const user_data = { country: [sha('co')] };
+  const email = String(r.email || '').trim().toLowerCase();
+  if (email) user_data.em = [sha(email)];
+  let ph = String(r.phone || '').replace(/\D/g, '');
+  if (ph.length === 10 && ph.startsWith('3')) ph = '57' + ph;
+  if (ph) user_data.ph = [sha(ph)];
+  if (r.user_agent) user_data.client_user_agent = r.user_agent;
+  const created = r.created_at ? Math.floor(new Date(r.created_at).getTime() / 1000) : Math.floor(Date.now() / 1000);
+  try {
+    const fbclid = new URL(r.landing_url).searchParams.get('fbclid');
+    if (fbclid) user_data.fbc = `fb.1.${created * 1000}.${fbclid}`;
+  } catch (e) {}
+  return {
+    event_name: 'Lead',
+    event_time: created,
+    event_id: r.id,
+    action_source: 'website',
+    event_source_url: r.landing_url || 'https://relevo-murex.vercel.app/vender',
+    user_data,
+    custom_data: { content_name: 'vendedor', utm_content: r.utm_content || undefined },
+  };
+}
+
+async function sendCapi(r) {
+  const ev = capiEvent(r);
+  if (!ev || !process.env.META_CAPI_TOKEN) return 'skipped';
+  const body = { data: [ev] };
+  if (process.env.META_TEST_EVENT_CODE) body.test_event_code = process.env.META_TEST_EVENT_CODE;
+  const resp = await fetch(`https://graph.facebook.com/${API_VERSION}/${PIXEL_ID}/events?access_token=${encodeURIComponent(process.env.META_CAPI_TOKEN)}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  if (!resp.ok) throw new Error(`capi ${resp.status} ${(await resp.text()).slice(0, 300)}`);
+  return 'sent';
+}
 const GMAIL_USER = process.env.GMAIL_USER || 'relevobrokers@gmail.com';
 const NOTIFY_TO = 'felipe@relevobrokers.com';
 
@@ -65,7 +109,7 @@ module.exports = async function handler(req, res) {
   if (body.type !== 'INSERT' || body.table !== 'leads' || !r) return res.status(200).json({ skipped: true });
 
   const { subject, html, text } = build(r);
-  try {
+  const sendMail = async () => {
     const transport = nodemailer.createTransport({
       host: 'smtp.gmail.com', port: 465, secure: true,
       auth: { user: GMAIL_USER, pass: (process.env.GMAIL_APP_PASSWORD || '').replace(/\s/g, '') },
@@ -75,11 +119,15 @@ module.exports = async function handler(req, res) {
       to: NOTIFY_TO,
       subject, html, text,
     });
-  } catch (e) {
-    console.error('gmail', e && e.message);
-    return res.status(502).json({ ok: false });
+  };
+  const [mail, capi] = await Promise.allSettled([sendMail(), sendCapi(r)]);
+  if (capi.status === 'rejected') console.error('capi', capi.reason && capi.reason.message);
+  if (mail.status === 'rejected') {
+    console.error('gmail', mail.reason && mail.reason.message);
+    return res.status(502).json({ ok: false, capi: capi.status === 'fulfilled' ? capi.value : 'error' });
   }
-  return res.status(200).json({ ok: true });
+  return res.status(200).json({ ok: true, capi: capi.status === 'fulfilled' ? capi.value : 'error' });
 };
 
 module.exports.build = build;
+module.exports.capiEvent = capiEvent;
