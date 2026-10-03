@@ -1,7 +1,7 @@
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Relevo · Vende tu empresa por lo que realmente vale</title>
-<meta name="description" content="Relevo vende empresas colombianas de principio a fin: valoración gratis, compradores verificados y negociación hasta el cierre, con total confidencialidad.">
-<meta property="og:title" content="Relevo · Vende tu empresa por lo que realmente vale"><meta property="og:description" content="Relevo vende empresas colombianas de principio a fin: valoración gratis, compradores verificados y negociación hasta el cierre, con total confidencialidad."><meta property="og:type" content="website"><meta property="og:locale" content="es_CO">
+<meta name="description" content="Relevo vende empresas colombianas de principio a fin: valoración gratis, búsqueda de compradores y negociación hasta el cierre, con total confidencialidad.">
+<meta property="og:title" content="Relevo · Vende tu empresa por lo que realmente vale"><meta property="og:description" content="Relevo vende empresas colombianas de principio a fin: valoración gratis, búsqueda de compradores y negociación hasta el cierre, con total confidencialidad."><meta property="og:type" content="website"><meta property="og:locale" content="es_CO">
 <meta name="theme-color" content="#fafaf8"><link rel="icon" href="/favicon.svg" type="image/svg+xml">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -62,10 +62,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px;heigh
 .mark i:nth-child(2){left:9px;top:14px;width:17px;background:var(--accent)}
 :root[data-theme="dark"] .mark i:nth-child(1){background:var(--on-navy)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mark i:nth-child(1){background:var(--on-navy)}}
-.switch{display:inline-flex;border:1px solid var(--line-strong);border-radius:var(--r-ctl);padding:3px;gap:2px;background:var(--surface)}
-.switch button{appearance:none;border:0;background:none;color:var(--muted);font:600 15px var(--body);padding:7px 16px;border-radius:5px;cursor:pointer;transition:background .25s,color .25s}
-.switch button:hover{color:var(--ink)}
-.switch button[aria-pressed="true"]{background:var(--navy);color:var(--on-navy)}
+.btn-sm{min-height:44px;padding:0 18px;font-size:15px}
 
 /* buttons */
 .btn{appearance:none;border:0;cursor:pointer;font:600 17px var(--body);letter-spacing:-.005em;border-radius:var(--r-ctl);min-height:54px;padding:0 24px;display:inline-flex;align-items:center;justify-content:center;gap:10px;white-space:nowrap;text-decoration:none;transition:background .2s,transform .15s,box-shadow .2s}
@@ -217,7 +214,7 @@ form.f{display:flex;flex-direction:column;gap:18px;margin-top:24px}
 .consent{display:flex;gap:12px;align-items:flex-start;font-size:14px;color:var(--muted);line-height:1.45}
 .consent input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--navy);flex:none}
 .err{color:var(--err);font-size:14px;font-weight:500}
-.req{font-size:14px;color:var(--muted);margin-bottom:-4px}
+.ast{color:var(--accent-deep);font-weight:600;margin-left:2px}
 .ferr{color:var(--err);font-size:13.5px;font-weight:500;margin-top:2px}
 .f [aria-invalid="true"]{border-color:var(--err)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--err) 18%,transparent)!important}
 .field.bad .chips label{border-color:color-mix(in srgb,var(--err) 60%,var(--line-strong))}
@@ -399,7 +396,7 @@ html.js .in .checks li:nth-child(2) .ck{transition-delay:.45s} html.js .in .chec
   .wrap{padding-inline:16px}
   nav{height:62px}
   .brand{font-size:23px}
-  .switch button{padding:7px 12px;font-size:14px}
+  .btn-sm{min-height:40px;padding:0 14px;font-size:14px}
   .hero h1{font-size:clamp(40px,11.5vw,50px)}
   .hero .sub{font-size:18px}
   .quick{flex-direction:column;padding:6px;gap:6px}
@@ -591,7 +588,7 @@ html.js .skyline .lit{opacity:1!important;transition:none}
 .card,.close,.band{border-radius:var(--r-card)}
 .band{border-radius:0}
 .quick .btn{border-radius:3px}
-.switch button,.view button{border-radius:2px}
+.view button{border-radius:2px}
 .ex,.tag,.when{border-radius:2px}
 summary .pl{border-radius:2px}
 @media (max-width:980px){
@@ -640,11 +637,8 @@ summary .pl{border-radius:2px}
 <header class="top">
   <div class="wrap">
     <nav aria-label="Principal">
-      <a class="brand" href="#vender" aria-label="Relevo, inicio"><span class="mark" aria-hidden="true"><i></i><i></i></span>Relevo</a>
-      <div class="switch" role="group" aria-label="Elige tu perfil">
-        <button type="button" id="t-sell" aria-pressed="true">Vender</button>
-        <button type="button" id="t-buy" aria-pressed="false">Comprar</button>
-      </div>
+      <a class="brand" href="/" id="brand" aria-label="Relevo, inicio"><span class="mark" aria-hidden="true"><i></i><i></i></span>Relevo</a>
+      <a class="btn btn-primary btn-sm" href="#valorar" id="top-cta">Valorar mi empresa</a>
     </nav>
   </div>
 </header>
@@ -694,8 +688,8 @@ summary .pl{border-radius:2px}
     <div class="rail rv">
       <div class="track" aria-hidden="true"><i></i></div>
       <div class="stop"><div class="plate"><svg viewBox="0 0 160 150" class="eng" aria-hidden="true"><path class="s-ink o" pathLength="1" d="M79.9 29.9Q79.9 76.9 80 124.2M78 30.1Q80.4 29.8 81.8 29.9M55.8 124.2Q80.1 123.9 103.9 124M104 123.9Q107.2 128.7 110 134M110.2 134.2Q79.8 134.1 50.1 134M49.9 133.9Q52.8 128.9 56.1 124M20 48.1Q79.9 48.3 139.9 48.2M85 44L84.8 46L83.6 47.4L81.9 48.4L79.8 49.1L78 48.7L76.4 47.4L75.4 46.1L74.8 43.8L75.2 42L76.5 40.6L78 39.6L79.9 39.2L82.1 39.3L83.4 40.3L84.5 42.2L85.1 44.1M29.9 48Q20.9 69.8 12.1 91.9M34 47.9Q42.9 69.7 51.8 92M8 92.1Q32.2 91.9 55.9 91.8M56 92.2Q52.1 98.2 48 103.8M48.1 103.8Q32.1 103.7 16.1 104.1M16.2 103.9Q11.9 98 8 92M126 48.1Q116.8 70.2 107.8 92.2M130.2 48.1Q139.2 69.9 148.1 92.2M104 92.1Q127.9 91.9 152.2 91.9M152.1 92.1Q148 98.1 143.9 104.1M144.1 104.2Q128.2 103.8 112.1 104.1M112 103.8Q108 98.3 104.1 92.2"/><path class="s-ink h" d="M54.8 92L55.2 93.1M52.5 92L53.7 95.4M50.1 92L52.2 97.7M47.8 92L50.7 100M45.5 92L49.2 102.2M43.1 92L47.5 104M40.8 92L45.1 104M38.4 92L42.8 104M36.1 92L40.5 104M33.8 92L38.1 104M31.4 92L35.8 104M29.1 92L33.4 104M26.7 92L31.1 104M24.4 92L28.8 104M22.1 92L26.4 104M19.7 92L24.1 104M17.4 92L21.7 104M15 92L19.4 104M12.7 92L17.1 104M10.3 92L13.2 99.8M8 92L8 92M150.8 92L151.2 93.1M148.5 92L149.7 95.4M146.1 92L148.2 97.7M143.8 92L146.7 100M141.5 92L145.2 102.2M139.1 92L143.5 104M136.8 92L141.1 104M134.4 92L138.8 104M132.1 92L136.5 104M129.8 92L134.1 104M127.4 92L131.8 104M125.1 92L129.4 104M122.7 92L127.1 104M120.4 92L124.8 104M118.1 92L122.4 104M115.7 92L120.1 104M113.4 92L117.7 104M111 92L115.4 104M108.7 92L113.1 104M106.3 92L109.2 99.8M104 92L104 92M103 124L108.7 134M100.4 124L106.2 134M97.9 124L103.6 134M95.3 124L101.1 134M92.8 124L98.6 134M90.3 124L96 134M87.7 124L93.5 134M85.2 124L90.9 134M82.6 124L88.4 134M80.1 124L85.9 134M77.6 124L83.3 134M75 124L80.8 134M72.5 124L78.2 134M69.9 124L75.7 134M67.4 124L73.2 134M64.9 124L70.6 134M62.3 124L68.1 134M59.8 124L65.5 134M57.2 124L63 134M55.3 125.1L60.5 134M54 127.3L57.9 134M52.7 129.4L55.4 134M51.4 131.6L52.8 134M50.2 133.7L50.3 134"/><path class="f-acc" d="M136 82L135.6 84.7L134.2 87.2L132.1 88.9L129.5 89.8L126.6 89.8L123.8 88.8L121.7 87.1L120.3 84.9L120 82L120.6 79.1L121.9 76.7L123.9 75.1L126.5 74.3L129.4 74.1L132 75L134.1 76.7L135.4 79.2L136 82.1Z"/></svg></div><span class="dot" aria-hidden="true"></span><p class="when num">5 días hábiles</p><h3>Valoramos</h3><p>Revisamos tus estados financieros y te damos un rango de precio realista.</p></div>
-      <div class="stop"><div class="plate"><svg viewBox="0 0 260 180" class="eng docs" role="img" aria-label="Grabado de tres documentos: DIAN, facturación y extractos"><path class="f-bg" d="M20 40L104 28L116 142L32 152Z"/><path class="s-ink o" pathLength="1" d="M19.9 39.8Q61.9 34.4 104 27.8M104.2 28.1Q109.8 85 116.1 141.9M116.1 141.9Q73.7 147 32.2 152.2M32.1 151.9Q26 95.9 20.2 40.1M32.5 68.8Q62.8 62.6 92.9 57.2M33.9 80Q63.6 73.9 93.8 68.5M35.2 91Q64.7 85.7 95 79.8M36.3 102.2Q66.5 97 96.2 91.3M37.5 113.4Q67.2 108.4 97.7 102.8M38.9 124.7Q68.8 119 98.8 114.1"/><path class="s-ink h" d="M103 28L104.7 34.4M100.9 28L106 47.1M98.8 28L107.3 59.8M96.8 28L108.7 72.5M94.7 28L110 85.3M94.9 36.5L111.4 98M96.2 49.3L112.7 110.7M97.6 62L114 123.5M98.9 74.7L115.4 136.2M100.3 87.4L114.9 142M101.6 100.2L112.8 142M102.9 112.9L110.7 142M104.3 125.6L108.7 142M105.6 138.4L106.6 142"/><path class="f-bg" d="M96 30L180 34L176 148L92 144Z"/><path class="s-ink o" pathLength="1" d="M95.8 29.9Q138.2 31.9 180.1 33.9M179.9 33.9Q178.2 91 176.1 147.8M176 148.2Q134.4 146 91.8 143.9M92 144Q94.1 86.8 96.2 29.9M104.9 58.9Q135.2 61.1 165.1 63.3M104.7 70.5Q134.7 72.6 164.7 74.6M104.3 82.1Q134.6 84 164.4 86M103.8 93.1Q133.9 95.5 163.8 97.2M103.6 104.8Q133.9 106.6 163.6 108.9M103.4 115.9Q133.1 118.4 163.2 119.8"/><path class="s-ink h" d="M179 34L179.9 37.4M176.9 34L179.6 44.2M174.8 34L179.4 51.1M172.8 34L179.2 57.9M170.7 34L178.9 64.7M169.8 38.6L178.7 71.6M169.6 45.4L178.4 78.4M169.4 52.2L178.2 85.2M169.1 59.1L178 92.1M168.9 65.9L177.7 98.9M168.6 72.7L177.5 105.7M168.4 79.6L177.2 112.6M168.2 86.4L177 119.4M167.9 93.2L176.8 126.2M167.7 100.1L176.5 133.1M167.4 106.9L176.3 139.9M167.2 113.7L176 146.7M167 120.6L174.3 148M166.7 127.4L172.2 148M166.5 134.2L170.2 148M166.2 141.1L168.1 148M166 147.9L166 148"/><path class="f-bg" d="M164 40L244 56L224 166L146 150Z"/><path class="s-ink o" pathLength="1" d="M164.1 40Q204 48.1 244 55.8M244 55.8Q234 111 224 166M224.1 165.9Q184.7 158.3 146.1 149.8M145.9 149.8Q155 94.7 163.9 40M170 68Q198 76.4 225.4 84.3M168.4 79Q195.8 87.3 223.4 95M166.3 90.4Q194.1 98 221.8 106.4M164.4 101.1Q192.3 109 219.6 117.1M162.9 112.1Q190 120.1 217.5 128.1M161.2 123Q188.1 131.5 215.4 139"/><path class="s-ink h" d="M243 56L243.6 58.3M240.9 56L242.7 62.9M238.8 56L241.9 67.5M236.8 56L241.1 72.1M234.7 56L240.2 76.7M233.4 59.1L239.4 81.3M232.6 63.7L238.6 85.9M231.8 68.3L237.7 90.5M230.9 72.9L236.9 95.1M230.1 77.5L236 99.7M229.3 82.1L235.2 104.3M228.4 86.7L234.4 108.9M227.6 91.3L233.5 113.5M226.7 95.9L232.7 118.1M225.9 100.5L231.9 122.8M225.1 105.1L231 127.4M224.2 109.7L230.2 132M223.4 114.3L229.4 136.6M222.6 118.9L228.5 141.2M221.7 123.5L227.7 145.8M220.9 128.1L226.8 150.4M220 132.7L226 155M219.2 137.3L225.2 159.6M218.4 142L224.3 164.2M217.5 146.6L222.7 166M216.7 151.2L220.7 166M215.9 155.8L218.6 166M215 160.4L216.5 166M214.2 165L214.5 166"/><path class="f-acc" d="M234 150L233.8 153.7L232.4 157.2L230.5 160.6L227.9 163.2L225 165.6L221.7 167.2L218 167.7L214.2 167.9L210.2 167.1L207 165.7L204 163.5L201.5 160.4L199.4 157.3L198.2 153.6L198 150.1L198.4 146.3L199.7 142.7L201.3 139.6L204 136.5L207.2 134.5L210.4 133L214.2 132.2L218 132.2L221.4 133L224.8 134.6L227.9 136.5L230.4 139.5L232.6 142.6L233.7 146.3L233.8 150.2Z"/><path class="s-acc o" pathLength="1" d="M234 150L233.7 153.6L232.5 157.2L230.8 160.5L228.2 163.2L225 165.7L221.8 167.1L217.8 167.8L214 167.8L210.5 167.1L207.1 165.7L204.1 163.3L201.5 160.7L199.4 157.1L198.6 153.9L197.8 150.1L198.5 146.4L199.5 142.9L201.5 139.4L204 136.4L206.8 134.3L210.6 133L214.3 132.2L217.8 132.2L221.6 133L225.2 134.3L228.2 136.5L230.5 139.4L232.5 142.7L233.6 146.2L234.1 150"/><path class="s-acc" d="M227.2 150L227 152.7L225.9 155.6L223.7 158.1L221.5 159.7L219 160.9L216.1 161.2L213.2 161L210.2 159.9L208 158.1L206.4 155.5L205.3 153L204.8 150.2L205 147L206.4 144.6L208.1 142.2L210.6 140.4L213 139L216.1 138.7L218.8 139.1L221.7 140.1L223.9 142L225.8 144.3L226.9 147.2L227.1 149.9"/></svg></div><span class="dot" aria-hidden="true"></span><p class="when num">2 a 3 semanas</p><h3>Preparamos</h3><p>Armamos la ficha sin nombre y ordenamos los documentos que un comprador va a pedir.</p></div>
-      <div class="stop"><div class="plate"><svg viewBox="0 0 160 150" class="eng" aria-hidden="true"><path class="f-bg" d="M18 34L142 34L142 116L18 116Z"/><path class="s-ink o" pathLength="1" d="M17.9 33.9Q80.1 33.8 141.9 34.2M142.1 33.8Q142 75.1 141.8 115.8M141.8 116Q79.7 116 17.9 116M18.1 115.8Q18.2 75.1 18.1 34M18.1 34Q48.6 57.6 79.8 81.9M79.9 81.8Q111.3 57.7 141.9 33.9M17.9 115.8Q40.8 93.9 63.8 72M142.1 115.8Q118.7 94.2 95.8 72"/><path class="s-ink h" d="M94.7 72.8L98.2 74.1M92.1 74.4L102.5 78.2M89.5 76L106.8 82.3M87 77.6L111.1 86.4M84.4 79.3L115.4 90.6M62.2 73.7L73.2 77.7M81.8 80.9L119.7 94.7M60.2 75.6L124 98.8M58.3 77.4L128.3 102.9M56.4 79.3L132.6 107M54.4 81.1L136.9 111.2M52.5 83L141.3 115.3M50.6 84.8L136.2 116M48.6 86.7L129.2 116M46.7 88.5L122.2 116M44.8 90.4L115.1 116M42.8 92.2L108.1 116M40.9 94.1L101.1 116M39 95.9L94.1 116M37 97.8L87.1 116M35.1 99.6L80.1 116M33.2 101.5L73 116M31.2 103.3L66 116M29.3 105.2L59 116M27.4 107L52 116M25.4 108.9L45 116M23.5 110.7L38 116M21.6 112.6L30.9 116M19.6 114.4L23.9 116"/><path class="f-acc" d="M95 82L94.7 85.2L93.7 88.1L92 90.6L90 93.1L87.5 95L84.8 96.3L81.7 97L78.6 96.9L75.5 96.1L72.4 95L70 93.2L67.9 90.9L66.4 88.1L65.3 85L65 82L65.4 79L66.2 75.9L67.9 73.3L70 71L72.7 68.9L75.5 67.6L78.5 66.9L81.7 66.9L84.5 67.9L87.4 69.2L90.1 70.7L92 73.1L93.6 75.8L94.7 79L94.8 82Z"/><path class="s-acc o" pathLength="1" d="M95 82L94.7 85L93.7 87.9L92.1 90.8L90.1 93.2L87.4 94.9L84.7 96.1L81.5 96.9L78.3 96.7L75.2 96.4L72.4 94.9L70.1 93.2L67.8 91L66.1 88.3L65.1 85L65.2 82.2L65.5 78.7L66.1 75.7L67.9 73.3L69.9 71L72.6 69.2L75.5 67.8L78.3 67.2L81.5 67.2L84.8 67.8L87.6 69.1L90.1 71L92.1 73.1L93.7 76L94.6 79L95 82.2"/><path class="s-acc" d="M89.3 82L88.8 84.4L88.2 86.7L86.5 88.6L84.8 89.9L82.2 90.9L79.8 91.4L77.4 91L75.4 90L73.3 88.6L71.8 86.8L71.1 84.5L70.7 82L70.8 79.5L72 77.3L73.6 75.5L75.4 73.8L77.6 73.1L79.8 72.5L82.4 73.1L84.8 73.8L86.5 75.5L88.2 77.5L88.9 79.5L89.4 82.1"/></svg></div><span class="dot" aria-hidden="true"></span><p class="when num">2 a 4 meses</p><h3>Buscamos comprador</h3><p>Mostramos la ficha solo a compradores verificados y filtramos a quienes tienen fondos reales.</p></div>
+      <div class="stop"><div class="plate"><svg viewBox="0 0 260 180" class="eng docs" role="img" aria-label="Grabado de tres documentos: DIAN, facturación y extractos"><path class="f-bg" d="M20 40L104 28L116 142L32 152Z"/><path class="s-ink o" pathLength="1" d="M19.9 39.8Q61.9 34.4 104 27.8M104.2 28.1Q109.8 85 116.1 141.9M116.1 141.9Q73.7 147 32.2 152.2M32.1 151.9Q26 95.9 20.2 40.1M32.5 68.8Q62.8 62.6 92.9 57.2M33.9 80Q63.6 73.9 93.8 68.5M35.2 91Q64.7 85.7 95 79.8M36.3 102.2Q66.5 97 96.2 91.3M37.5 113.4Q67.2 108.4 97.7 102.8M38.9 124.7Q68.8 119 98.8 114.1"/><path class="s-ink h" d="M103 28L104.7 34.4M100.9 28L106 47.1M98.8 28L107.3 59.8M96.8 28L108.7 72.5M94.7 28L110 85.3M94.9 36.5L111.4 98M96.2 49.3L112.7 110.7M97.6 62L114 123.5M98.9 74.7L115.4 136.2M100.3 87.4L114.9 142M101.6 100.2L112.8 142M102.9 112.9L110.7 142M104.3 125.6L108.7 142M105.6 138.4L106.6 142"/><path class="f-bg" d="M96 30L180 34L176 148L92 144Z"/><path class="s-ink o" pathLength="1" d="M95.8 29.9Q138.2 31.9 180.1 33.9M179.9 33.9Q178.2 91 176.1 147.8M176 148.2Q134.4 146 91.8 143.9M92 144Q94.1 86.8 96.2 29.9M104.9 58.9Q135.2 61.1 165.1 63.3M104.7 70.5Q134.7 72.6 164.7 74.6M104.3 82.1Q134.6 84 164.4 86M103.8 93.1Q133.9 95.5 163.8 97.2M103.6 104.8Q133.9 106.6 163.6 108.9M103.4 115.9Q133.1 118.4 163.2 119.8"/><path class="s-ink h" d="M179 34L179.9 37.4M176.9 34L179.6 44.2M174.8 34L179.4 51.1M172.8 34L179.2 57.9M170.7 34L178.9 64.7M169.8 38.6L178.7 71.6M169.6 45.4L178.4 78.4M169.4 52.2L178.2 85.2M169.1 59.1L178 92.1M168.9 65.9L177.7 98.9M168.6 72.7L177.5 105.7M168.4 79.6L177.2 112.6M168.2 86.4L177 119.4M167.9 93.2L176.8 126.2M167.7 100.1L176.5 133.1M167.4 106.9L176.3 139.9M167.2 113.7L176 146.7M167 120.6L174.3 148M166.7 127.4L172.2 148M166.5 134.2L170.2 148M166.2 141.1L168.1 148M166 147.9L166 148"/><path class="f-bg" d="M164 40L244 56L224 166L146 150Z"/><path class="s-ink o" pathLength="1" d="M164.1 40Q204 48.1 244 55.8M244 55.8Q234 111 224 166M224.1 165.9Q184.7 158.3 146.1 149.8M145.9 149.8Q155 94.7 163.9 40M170 68Q198 76.4 225.4 84.3M168.4 79Q195.8 87.3 223.4 95M166.3 90.4Q194.1 98 221.8 106.4M164.4 101.1Q192.3 109 219.6 117.1M162.9 112.1Q190 120.1 217.5 128.1M161.2 123Q188.1 131.5 215.4 139"/><path class="s-ink h" d="M243 56L243.6 58.3M240.9 56L242.7 62.9M238.8 56L241.9 67.5M236.8 56L241.1 72.1M234.7 56L240.2 76.7M233.4 59.1L239.4 81.3M232.6 63.7L238.6 85.9M231.8 68.3L237.7 90.5M230.9 72.9L236.9 95.1M230.1 77.5L236 99.7M229.3 82.1L235.2 104.3M228.4 86.7L234.4 108.9M227.6 91.3L233.5 113.5M226.7 95.9L232.7 118.1M225.9 100.5L231.9 122.8M225.1 105.1L231 127.4M224.2 109.7L230.2 132M223.4 114.3L229.4 136.6M222.6 118.9L228.5 141.2M221.7 123.5L227.7 145.8M220.9 128.1L226.8 150.4M220 132.7L226 155M219.2 137.3L225.2 159.6M218.4 142L224.3 164.2M217.5 146.6L222.7 166M216.7 151.2L220.7 166M215.9 155.8L218.6 166M215 160.4L216.5 166M214.2 165L214.5 166"/><path class="f-acc" d="M234 150L233.8 153.7L232.4 157.2L230.5 160.6L227.9 163.2L225 165.6L221.7 167.2L218 167.7L214.2 167.9L210.2 167.1L207 165.7L204 163.5L201.5 160.4L199.4 157.3L198.2 153.6L198 150.1L198.4 146.3L199.7 142.7L201.3 139.6L204 136.5L207.2 134.5L210.4 133L214.2 132.2L218 132.2L221.4 133L224.8 134.6L227.9 136.5L230.4 139.5L232.6 142.6L233.7 146.3L233.8 150.2Z"/><path class="s-acc o" pathLength="1" d="M234 150L233.7 153.6L232.5 157.2L230.8 160.5L228.2 163.2L225 165.7L221.8 167.1L217.8 167.8L214 167.8L210.5 167.1L207.1 165.7L204.1 163.3L201.5 160.7L199.4 157.1L198.6 153.9L197.8 150.1L198.5 146.4L199.5 142.9L201.5 139.4L204 136.4L206.8 134.3L210.6 133L214.3 132.2L217.8 132.2L221.6 133L225.2 134.3L228.2 136.5L230.5 139.4L232.5 142.7L233.6 146.2L234.1 150"/><path class="s-acc" d="M227.2 150L227 152.7L225.9 155.6L223.7 158.1L221.5 159.7L219 160.9L216.1 161.2L213.2 161L210.2 159.9L208 158.1L206.4 155.5L205.3 153L204.8 150.2L205 147L206.4 144.6L208.1 142.2L210.6 140.4L213 139L216.1 138.7L218.8 139.1L221.7 140.1L223.9 142L225.8 144.3L226.9 147.2L227.1 149.9"/></svg></div><span class="dot" aria-hidden="true"></span><p class="when num">2 a 3 semanas</p><h3>Preparamos</h3><p>Armamos el documento confidencial sin nombre y ordenamos los documentos que un comprador va a pedir.</p></div>
+      <div class="stop"><div class="plate"><svg viewBox="0 0 160 150" class="eng" aria-hidden="true"><path class="f-bg" d="M18 34L142 34L142 116L18 116Z"/><path class="s-ink o" pathLength="1" d="M17.9 33.9Q80.1 33.8 141.9 34.2M142.1 33.8Q142 75.1 141.8 115.8M141.8 116Q79.7 116 17.9 116M18.1 115.8Q18.2 75.1 18.1 34M18.1 34Q48.6 57.6 79.8 81.9M79.9 81.8Q111.3 57.7 141.9 33.9M17.9 115.8Q40.8 93.9 63.8 72M142.1 115.8Q118.7 94.2 95.8 72"/><path class="s-ink h" d="M94.7 72.8L98.2 74.1M92.1 74.4L102.5 78.2M89.5 76L106.8 82.3M87 77.6L111.1 86.4M84.4 79.3L115.4 90.6M62.2 73.7L73.2 77.7M81.8 80.9L119.7 94.7M60.2 75.6L124 98.8M58.3 77.4L128.3 102.9M56.4 79.3L132.6 107M54.4 81.1L136.9 111.2M52.5 83L141.3 115.3M50.6 84.8L136.2 116M48.6 86.7L129.2 116M46.7 88.5L122.2 116M44.8 90.4L115.1 116M42.8 92.2L108.1 116M40.9 94.1L101.1 116M39 95.9L94.1 116M37 97.8L87.1 116M35.1 99.6L80.1 116M33.2 101.5L73 116M31.2 103.3L66 116M29.3 105.2L59 116M27.4 107L52 116M25.4 108.9L45 116M23.5 110.7L38 116M21.6 112.6L30.9 116M19.6 114.4L23.9 116"/><path class="f-acc" d="M95 82L94.7 85.2L93.7 88.1L92 90.6L90 93.1L87.5 95L84.8 96.3L81.7 97L78.6 96.9L75.5 96.1L72.4 95L70 93.2L67.9 90.9L66.4 88.1L65.3 85L65 82L65.4 79L66.2 75.9L67.9 73.3L70 71L72.7 68.9L75.5 67.6L78.5 66.9L81.7 66.9L84.5 67.9L87.4 69.2L90.1 70.7L92 73.1L93.6 75.8L94.7 79L94.8 82Z"/><path class="s-acc o" pathLength="1" d="M95 82L94.7 85L93.7 87.9L92.1 90.8L90.1 93.2L87.4 94.9L84.7 96.1L81.5 96.9L78.3 96.7L75.2 96.4L72.4 94.9L70.1 93.2L67.8 91L66.1 88.3L65.1 85L65.2 82.2L65.5 78.7L66.1 75.7L67.9 73.3L69.9 71L72.6 69.2L75.5 67.8L78.3 67.2L81.5 67.2L84.8 67.8L87.6 69.1L90.1 71L92.1 73.1L93.7 76L94.6 79L95 82.2"/><path class="s-acc" d="M89.3 82L88.8 84.4L88.2 86.7L86.5 88.6L84.8 89.9L82.2 90.9L79.8 91.4L77.4 91L75.4 90L73.3 88.6L71.8 86.8L71.1 84.5L70.7 82L70.8 79.5L72 77.3L73.6 75.5L75.4 73.8L77.6 73.1L79.8 72.5L82.4 73.1L84.8 73.8L86.5 75.5L88.2 77.5L88.9 79.5L89.4 82.1"/></svg></div><span class="dot" aria-hidden="true"></span><p class="when num">2 a 4 meses</p><h3>Buscamos comprador</h3><p>Buscamos compradores, filtramos a quienes tienen fondos reales y les presentamos tu empresa.</p></div>
       <div class="stop"><div class="plate"><svg viewBox="0 0 170 150" class="eng" aria-hidden="true"><path class="f-bg" d="M34 14L118 20L112 136L28 130Z"/><path class="s-ink o" pathLength="1" d="M34.1 13.9Q75.7 16.7 117.9 19.9M118.2 19.8Q115 78.4 112.1 135.9M112.2 136Q69.7 133.4 28.1 129.8M28.2 129.9Q31 72.1 34.2 13.9M43.8 34.1Q73.8 36.2 103.9 38M44.2 46.2Q74.4 48.2 104.1 50.2M43.9 58Q74.2 59.8 104.2 62.2M43.9 70.2Q74.2 72.1 103.9 73.9M44.1 82.2Q74.2 83.7 104.1 85.8M44.1 107.9Q48.1 103 51.9 97.8M52.1 97.8Q54.4 104.6 58 112.2M57.8 112.1Q62.2 105.6 66 99.9M66.1 100.2Q69.5 105.4 74.1 109.8M74.1 109.9Q78.6 107.2 84 103.9M42.2 115.8Q68.8 118 96.1 120M95.8 119.9Q123.1 80.2 150 39.8M150.1 40Q154 43 157.8 45.8M158 46Q131.1 85.9 103.8 126.2M104.1 126Q100.2 122.8 95.9 119.9M95.8 120Q94 125 92 130M92 130Q97.9 127.9 104 126.2"/><path class="s-ink h" d="M117 20L117.8 24.5M115 20L117.3 33.4M112.9 20L116.8 42.3M111.7 24.9L116.4 51.2M111.3 33.8L115.9 60.1M110.8 42.7L115.5 69M110.4 51.6L115 77.9M109.9 60.5L114.5 86.8M109.4 69.4L114.1 95.7M109 78.3L113.6 104.6M108.5 87.2L113.2 113.5M108.1 96.1L112.7 122.4M107.6 105L112.2 131.3M107.1 113.9L111 136M106.7 122.8L109 136M106.2 131.7L107 136M149.4 40.8L156.7 45M148.3 42.5L157 47.5M147.2 44.2L155.9 49.2M146.1 45.8L154.7 50.8M145 47.5L153.6 52.5M143.8 49.1L152.5 54.1M142.7 50.8L151.4 55.8M141.6 52.5L150.3 57.5M140.5 54.1L149.1 59.1M139.3 55.8L148 60.8M138.2 57.4L146.9 62.5M137.1 59.1L145.8 64.1M136 60.8L144.6 65.8M134.9 62.4L143.5 67.4M133.7 64.1L142.4 69.1M132.6 65.8L141.3 70.8M131.5 67.4L140.2 72.4M130.4 69.1L139 74.1M129.2 70.7L137.9 75.7M128.1 72.4L136.8 77.4M127 74.1L135.7 79.1M125.9 75.7L134.6 80.7M124.8 77.4L133.4 82.4M123.6 79.1L132.3 84.1M122.5 80.7L131.2 85.7M121.4 82.4L130.1 87.4M120.3 84L128.9 89M119.2 85.7L127.8 90.7M118 87.4L126.7 92.4M116.9 89L125.6 94M115.8 90.7L124.5 95.7M114.7 92.3L123.3 97.4M113.5 94L122.2 99M112.4 95.7L121.1 100.7M111.3 97.3L120 102.3M110.2 99L118.9 104M109.1 100.7L117.7 105.7M107.9 102.3L116.6 107.3M106.8 104L115.5 109M105.7 105.6L114.4 110.6M104.6 107.3L113.2 112.3M103.4 109L112.1 114M102.3 110.6L111 115.6M101.2 112.3L109.9 117.3M100.1 113.9L108.8 119M99 115.6L107.6 120.6M97.8 117.3L106.5 122.3M96.7 118.9L105.4 123.9M100.8 123.6L104.3 125.6"/><path class="f-acc" d="M120 124L119.8 126.7L118.8 128.9L117.6 131L116 132.7L114 134.5L111.7 135.3L109.3 135.9L106.5 135.9L104.3 135.3L102 134.3L99.8 133.1L98.4 130.9L97 129L96.1 126.5L96 123.9L96.4 121.4L96.9 118.9L98.2 117.1L100 115.1L101.9 113.8L104.4 112.7L106.8 112L109.1 112.1L111.5 112.6L114.1 113.5L115.9 115.1L117.5 117L118.9 119.2L119.7 121.4L120.1 123.9Z"/><path class="s-acc o" pathLength="1" d="M120 124L119.7 126.7L118.8 128.8L117.8 131.3L116.1 132.7L114.2 134.2L111.7 135.4L109.2 135.8L106.7 136.1L104.3 135.5L102.2 134.6L99.8 132.9L98.4 131.2L97 128.8L96.4 126.4L95.9 123.9L96.3 121.6L97.2 119.1L98.2 116.9L99.9 115.1L102 113.6L104.4 112.7L106.6 112.1L109.2 112.2L111.8 112.6L113.9 113.7L116 115.1L117.8 117L119.1 119.1L119.6 121.4L119.8 123.9"/><path class="s-acc" d="M115.4 124L115.1 125.9L114.3 127.9L113.4 129.2L111.6 130.4L110 131.1L108.2 131.2L106.2 131L104.2 130.3L102.7 129.2L101.8 127.7L101 125.9L100.4 124.1L101 122.1L101.8 120.4L102.9 119L104.3 117.8L105.9 116.7L108 116.7L109.8 116.8L111.8 117.7L113.4 118.7L114.5 120.3L115.2 121.9L115.6 123.9"/></svg></div><span class="dot" aria-hidden="true"></span><p class="when num">1 a 3 meses</p><h3>Negociamos y cerramos</h3><p>Te representamos en precio y condiciones, y el pago se hace a través de una fiduciaria.</p></div>
     </div>
   </section>
@@ -710,7 +704,7 @@ summary .pl{border-radius:2px}
       <ul class="gets rv">
           <li><p><b>Un rango de precio realista</b><span>Basado en tus cifras, no en promesas.</span></p></li>
           <li><p><b>Lo que mira un comprador</b><span>Qué suma y qué resta valor en tu sector.</span></p></li>
-          <li><p><b>Sin compromiso de vender</b><span>Nada se publica sin tu aprobación.</span></p></li>
+          <li><p><b>Sin compromiso de vender</b><span>Nada se comparte sin tu aprobación.</span></p></li>
         </ul>
 
       <div class="card rv" id="sell-card">
@@ -719,16 +713,15 @@ summary .pl{border-radius:2px}
           <div class="step-meta"><span id="s-step-label">Paso 1 de 2 · Gratis y confidencial</span><span class="bar" aria-hidden="true"><span class="on"></span><span id="s-bar2"></span></span></div>
 
           <form id="s1" class="f" novalidate>
-            <p class="req">Todos los campos son obligatorios.</p>
             <div class="field">
-              <label for="s-sector">Sector</label>
+              <label for="s-sector">Sector <span class="ast" aria-hidden="true">*</span></label>
               <select id="s-sector" required>
                 <option value="">Elige el sector</option>
                 <option>Alimentos y bebidas</option><option>Manufactura</option><option>Distribución y comercio</option><option>Salud y farmacias</option><option>Educación</option><option>Logística y transporte</option><option>Construcción</option><option>Servicios a empresas</option><option>Otro</option>
               </select>
             </div>
             <fieldset class="field">
-              <legend>Ventas del último año</legend>
+              <legend>Ventas del último año <span class="ast" aria-hidden="true">*</span></legend>
               <div class="chips num">
                 <input type="radio" name="sales" id="v1" value="lt1000"><label for="v1">Menos de $1.000 millones</label>
                 <input type="radio" name="sales" id="v2" value="1000_2000"><label for="v2">$1.000 a $2.000 millones</label>
@@ -739,7 +732,7 @@ summary .pl{border-radius:2px}
               </div>
             </fieldset>
             <div class="field">
-              <label for="s-when">¿Cuándo pensarías vender?</label>
+              <label for="s-when">¿Cuándo pensarías vender? <span class="ast" aria-hidden="true">*</span></label>
               <select id="s-when" required>
                 <option value="">Elige una opción</option>
                 <option>Solo quiero saber cuánto vale</option><option>En los próximos 6 meses</option><option>Entre 6 y 24 meses</option>
@@ -750,15 +743,14 @@ summary .pl{border-radius:2px}
           </form>
 
           <form id="s2" class="f" novalidate hidden>
-            <p class="req">Todos los campos son obligatorios.</p>
             <div class="two">
-              <div class="field"><label for="s-name">Tu nombre</label><input type="text" id="s-name" required autocomplete="name"></div>
+              <div class="field"><label for="s-name">Tu nombre <span class="ast" aria-hidden="true">*</span></label><input type="text" id="s-name" required autocomplete="name"></div>
               <div class="field"><label for="s-company">Empresa <span class="opt">(Opcional)</span></label><input type="text" id="s-company" data-optional autocomplete="organization"></div>
             </div>
-            <div class="field"><label for="s-city">Ciudad</label><input type="text" id="s-city" required autocomplete="address-level2"></div>
+            <div class="field"><label for="s-city">Ciudad <span class="ast" aria-hidden="true">*</span></label><input type="text" id="s-city" required autocomplete="address-level2"></div>
             <div class="two">
-              <div class="field"><label for="s-phone">WhatsApp</label><input type="tel" id="s-phone" required autocomplete="tel" inputmode="tel" placeholder="300 123 4567" data-kind="phone"></div>
-              <div class="field"><label for="s-email">Correo</label><input type="email" id="s-email" required autocomplete="email"></div>
+              <div class="field"><label for="s-phone">WhatsApp <span class="ast" aria-hidden="true">*</span></label><input type="tel" id="s-phone" required autocomplete="tel" inputmode="tel" placeholder="300 123 4567" data-kind="phone"></div>
+              <div class="field"><label for="s-email">Correo <span class="ast" aria-hidden="true">*</span></label><input type="email" id="s-email" required autocomplete="email"></div>
             </div>
 <fieldset class="field">
               <legend>¿Por dónde prefieres que te contactemos?</legend>
@@ -769,7 +761,7 @@ summary .pl{border-radius:2px}
             </fieldset>
             <div class="hp" aria-hidden="true"><label>No llenar <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
             <label class="consent" for="s-consent"><input type="checkbox" id="s-consent" required><span>Autorizo el tratamiento de mis datos según la Ley 1581 de 2012 y la <a href="/privacidad" target="_blank">Política de Tratamiento de Datos</a> para preparar mi valoración, contactarme por el canal que elegí y compartir con Meta, de forma cifrada, la confirmación de mi solicitud para medir los anuncios.</span></label>
-            <p class="err" id="s2-err" role="alert" hidden>Revisa los campos: todos son necesarios y el correo debe ser válido.</p>
+            <p class="err" id="s2-err" role="alert" hidden>Revisa los campos marcados con * y que el correo sea válido.</p>
             <p class="err" id="s2-net" role="alert" hidden>No pudimos enviar tus datos. Revisa tu conexión e intenta de nuevo.</p>
             <div class="actions">
               <button class="btn btn-ghost" type="button" id="s-back">Volver</button>
@@ -781,7 +773,7 @@ summary .pl{border-radius:2px}
         <div class="done" id="sell-done" hidden tabindex="-1">
           <p class="ok"><svg class="ico"><use href="#i-check"/></svg>Recibimos tu solicitud</p>
           <p class="h2">Te escribiremos por WhatsApp en menos de 48 horas.</p>
-          <p class="fine">Te pediremos los documentos para preparar tu rango de valor. Nada se publica sin tu aprobación.</p>
+          <p class="fine">Te pediremos los documentos para preparar tu rango de valor. Nada se comparte sin tu aprobación.</p>
           <div class="offer">
             <p><b>Informe de valoración completo.</b> Comparables del sector, utilidad ajustada y qué mejorar antes de vender.</p>
             <button class="btn btn-outline" type="button" id="reserve">Reservar el informe</button>
@@ -795,22 +787,22 @@ summary .pl{border-radius:2px}
   <section class="wrap sec tint">
     <div class="proof">
       <div>
-        <h2>Así ve tu empresa un comprador.</h2>
-        <p class="lead">Una ficha sin nombre. Los datos que la identifican solo se revelan a compradores que tú apruebas.</p>
+        <h2>Así presentamos tu empresa a un comprador.</h2>
+        <p class="lead">Preparamos un documento confidencial sin nombre y lo enviamos solo a compradores que buscamos y filtramos nosotros. Los datos que identifican tu empresa se revelan cuando tú lo apruebas.</p>
         <ul class="rules">
-          <li><p><b>Sin nombre en público</b><span>Nombre, ciudad exacta y clientes nunca aparecen en la ficha.</span></p></li>
-          <li><p><b>Compradores verificados</b><span>Cada comprador confirma su identidad, demuestra sus fondos y firma confidencialidad antes de ver detalles.</span></p></li>
+          <li><p><b>Sin nombre hasta que tú lo apruebes</b><span>Nombre, ciudad exacta y clientes no aparecen en el documento.</span></p></li>
+          <li><p><b>Compradores que buscamos y filtramos</b><span>Cada comprador confirma su identidad, demuestra sus fondos y firma confidencialidad antes de ver detalles.</span></p></li>
           <li><p><b>Cifras que se pueden comprobar</b><span>El precio se basa en declaraciones a la DIAN, facturación electrónica y extractos.</span></p></li>
         </ul>
       </div>
       <div>
-        <p class="ficha-hint">Cambia la vista para ver lo que ve un comprador aprobado.</p>
-        <article class="ficha" id="ficha" data-view="visitor" aria-label="Ficha de ejemplo">
+        <p class="ficha-hint">Cambia la vista para ver lo que recibe un comprador después de firmar confidencialidad.</p>
+        <article class="ficha" id="ficha" data-view="visitor" aria-label="Documento confidencial de ejemplo">
           <div class="ficha-top">
             <span class="tag">Ejemplo</span>
-            <div class="view" role="group" aria-label="Ver la ficha como">
-              <button type="button" id="f-visitor" aria-pressed="true">Visitante</button>
-              <button type="button" id="f-verified" aria-pressed="false">Comprador verificado</button>
+            <div class="view" role="group" aria-label="Ver el documento">
+              <button type="button" id="f-visitor" aria-pressed="true">Antes de firmar</button>
+              <button type="button" id="f-verified" aria-pressed="false">Después de firmar</button>
             </div>
           </div>
           <div class="name">
@@ -837,9 +829,9 @@ summary .pl{border-radius:2px}
     <div class="faq">
       <h2 class="rv">Lo que nos preguntan antes de empezar.</h2>
       <div class="rv">
-        <details><summary>¿Qué hace Relevo después de la valoración?<span class="pl" aria-hidden="true"><svg class="ico"><use href="#i-plus"/></svg></span></summary><p>Si decides vender, preparamos la ficha confidencial y los documentos, buscamos y filtramos compradores, te representamos en la negociación y cerramos la venta con pago a través de una fiduciaria.</p></details>
+        <details><summary>¿Qué hace Relevo después de la valoración?<span class="pl" aria-hidden="true"><svg class="ico"><use href="#i-plus"/></svg></span></summary><p>Si decides vender, preparamos el documento confidencial, buscamos y filtramos compradores, te representamos en la negociación y cerramos la venta con pago a través de una fiduciaria.</p></details>
         <details><summary>¿Tengo que vender después de valorar?<span class="pl" aria-hidden="true"><svg class="ico"><use href="#i-plus"/></svg></span></summary><p>No. La valoración es gratis y no te compromete a nada. Puedes usarla para planear la venta con tiempo.</p></details>
-        <details><summary>¿Mis empleados o clientes se van a enterar?<span class="pl" aria-hidden="true"><svg class="ico"><use href="#i-plus"/></svg></span></summary><p>No. La ficha no muestra nombre, ciudad exacta ni clientes. Esos datos solo se comparten con compradores que tú apruebas y que firman un acuerdo de confidencialidad.</p></details>
+        <details><summary>¿Mis empleados o clientes se van a enterar?<span class="pl" aria-hidden="true"><svg class="ico"><use href="#i-plus"/></svg></span></summary><p>No. El documento que reciben los compradores no muestra nombre, ciudad exacta ni clientes. Esos datos solo se comparten con compradores que tú apruebas y que firman un acuerdo de confidencialidad.</p></details>
         <details><summary>¿Cuánto cuesta?<span class="pl" aria-hidden="true"><svg class="ico"><use href="#i-plus"/></svg></span></summary><p>La valoración inicial es gratuita. No cobramos nada por adelantado: solo una comisión sobre el precio de venta, y únicamente si la venta se cierra.</p></details>
         <details><summary>¿Qué tamaño de empresa atienden?<span class="pl" aria-hidden="true"><svg class="ico"><use href="#i-plus"/></svg></span></summary><p>Empresas rentables con ventas anuales desde $1.000 millones de pesos, en cualquier sector y región de Colombia.</p></details>
       </div>
@@ -862,11 +854,11 @@ summary .pl{border-radius:2px}
 <main id="buy" hidden>
   <section class="hero">
     <div class="wrap hero-grid">
-      <h1>Compra una empresa rentable que ya funciona.</h1>
+      <h1>Cuéntanos qué empresa quieres comprar.</h1>
       <div>
-        <p class="sub">Empresas colombianas en venta, con cifras verificadas, que no encontrarás en clasificados.</p>
-        <p style="margin-top:26px"><a class="btn btn-primary" href="#b-band" id="buy-cta">Recibir oportunidades<svg class="ico"><use href="#i-arrow"/></svg></a></p>
-        <p class="assure">Cifras verificadas · Fuera de clasificados · Avisos por WhatsApp</p>
+        <p class="sub">Relevo representa a dueños que venden empresas rentables en Colombia. Si una encaja con lo que buscas, te contactamos directamente.</p>
+        <p style="margin-top:26px"><a class="btn btn-primary" href="#b-band" id="buy-cta">Registrar mi perfil<svg class="ico"><use href="#i-arrow"/></svg></a></p>
+        <p class="assure">Cifras revisadas · Contacto directo · Confidencialidad antes de los detalles</p>
       </div>
     </div>
     <div class="city" id="city-buy">
@@ -878,29 +870,28 @@ summary .pl{border-radius:2px}
     <svg class="guil" aria-hidden="true"><use href="#guil"/></svg>
     <div class="wrap band-grid">
       <div class="band-head rv">
-        <h2>Recibe las oportunidades primero.</h2>
-        <p class="band-lead">Te enviamos cada empresa que encaje con lo que buscas, antes de que salga a otros canales.</p>
+        <h2>Te contactamos cuando una empresa encaje.</h2>
+        <p class="band-lead">No publicamos empresas. Cuando un dueño que representamos busca un comprador como tú, te presentamos la empresa directamente.</p>
       </div>
       <ul class="gets rv">
           <li><p><b>Cifras revisadas</b><span>Contra DIAN, facturación electrónica y extractos.</span></p></li>
-          <li><p><b>Ficha completa al firmar</b><span>Nombre y detalles tras la confidencialidad.</span></p></li>
-          <li><p><b>Verificación de fondos</b><span>Solo cuando quieras ver una empresa a fondo.</span></p></li>
+          <li><p><b>Documento completo al firmar</b><span>Nombre y detalles después de la confidencialidad.</span></p></li>
+          <li><p><b>Verificación de fondos</b><span>Solo cuando quieras avanzar con una empresa.</span></p></li>
         </ul>
       <div class="card rv">
         <div id="buy-steps">
-          <h2>Únete a la lista de compradores</h2>
-          <p class="step-meta">Un solo paso. Te avisamos por WhatsApp.</p>
+          <h2>Registra tu perfil de comprador</h2>
+          <p class="step-meta">Un solo paso y confidencial.</p>
           <form id="b1" class="f" novalidate>
-            <p class="req">Todos los campos son obligatorios.</p>
             <div class="field">
-              <label for="b-type">Eres</label>
+              <label for="b-type">Eres <span class="ast" aria-hidden="true">*</span></label>
               <select id="b-type" required>
                 <option value="">Elige una opción</option>
                 <option>Persona que quiere tener su propia empresa</option><option>Empresa que quiere crecer comprando</option><option>Family office o fondo</option><option>Colombiano en el exterior</option>
               </select>
             </div>
             <fieldset class="field">
-              <legend>Presupuesto de compra</legend>
+              <legend>Presupuesto de compra <span class="ast" aria-hidden="true">*</span></legend>
               <div class="chips num">
                 <input type="radio" name="budget" id="p1" value="<500"><label for="p1">Menos de $500 millones</label>
                 <input type="radio" name="budget" id="p2" value="500-2000"><label for="p2">$500 a $2.000 millones</label>
@@ -909,10 +900,10 @@ summary .pl{border-radius:2px}
               </div>
             </fieldset>
             <div class="two">
-              <div class="field"><label for="b-name">Tu nombre</label><input type="text" id="b-name" required autocomplete="name"></div>
-              <div class="field"><label for="b-phone">WhatsApp</label><input type="tel" id="b-phone" required autocomplete="tel" inputmode="tel" placeholder="300 123 4567" data-kind="phone"></div>
+              <div class="field"><label for="b-name">Tu nombre <span class="ast" aria-hidden="true">*</span></label><input type="text" id="b-name" required autocomplete="name"></div>
+              <div class="field"><label for="b-phone">WhatsApp <span class="ast" aria-hidden="true">*</span></label><input type="tel" id="b-phone" required autocomplete="tel" inputmode="tel" placeholder="300 123 4567" data-kind="phone"></div>
             </div>
-            <div class="field"><label for="b-email">Correo</label><input type="email" id="b-email" required autocomplete="email"></div>
+            <div class="field"><label for="b-email">Correo <span class="ast" aria-hidden="true">*</span></label><input type="email" id="b-email" required autocomplete="email"></div>
 <fieldset class="field">
               <legend>¿Por dónde prefieres que te contactemos?</legend>
               <div class="chips">
@@ -921,15 +912,15 @@ summary .pl{border-radius:2px}
               </div>
             </fieldset>
             <div class="hp" aria-hidden="true"><label>No llenar <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-            <label class="consent" for="b-consent"><input type="checkbox" id="b-consent" required><span>Autorizo el tratamiento de mis datos según la Ley 1581 de 2012 y la <a href="/privacidad" target="_blank">Política de Tratamiento de Datos</a> para enviarme oportunidades por el canal que elegí.</span></label>
-            <p class="err" id="b1-err" role="alert" hidden>Revisa los campos: todos son necesarios y el correo debe ser válido.</p>
+            <label class="consent" for="b-consent"><input type="checkbox" id="b-consent" required><span>Autorizo el tratamiento de mis datos según la Ley 1581 de 2012 y la <a href="/privacidad" target="_blank">Política de Tratamiento de Datos</a> para contactarme por el canal que elegí cuando haya una empresa que encaje con mi perfil.</span></label>
+            <p class="err" id="b1-err" role="alert" hidden>Revisa los campos marcados con * y que el correo sea válido.</p>
             <p class="err" id="b1-net" role="alert" hidden>No pudimos enviar tus datos. Revisa tu conexión e intenta de nuevo.</p>
-            <button class="btn btn-primary" type="submit">Recibir oportunidades<svg class="ico"><use href="#i-arrow"/></svg></button>
+            <button class="btn btn-primary" type="submit">Registrar mi perfil<svg class="ico"><use href="#i-arrow"/></svg></button>
           </form>
         </div>
         <div class="done" id="buy-done" hidden tabindex="-1">
-          <p class="ok"><svg class="ico"><use href="#i-check"/></svg>Ya estás en la lista</p>
-          <p class="h2">Te enviaremos las primeras empresas que encajen con tu perfil.</p>
+          <p class="ok"><svg class="ico"><use href="#i-check"/></svg>Registramos tu perfil</p>
+          <p class="h2">Te contactaremos cuando una empresa encaje con lo que buscas.</p>
           <p class="fine">Antes de ver nombres y cifras completas te pediremos verificar fondos y firmar confidencialidad.</p>
         </div>
       </div>
@@ -948,6 +939,7 @@ summary .pl{border-radius:2px}
   <footer>
     <span class="brand"><span class="mark" aria-hidden="true"><i></i><i></i></span>Relevo</span>
     <p>Bogotá, Colombia</p>
+    <p><a href="/comprar" id="f-switch">¿Buscas comprar una empresa?</a></p>
     <p><a href="/terminos">Términos de uso</a> · <a href="/privacidad">Política de tratamiento de datos</a> · <button type="button" class="linkish" id="ck-open">Cookies</button></p>
   </footer>
 </div>
@@ -957,14 +949,21 @@ summary .pl{border-radius:2px}
   document.documentElement.classList.add('js');
   const $=id=>document.getElementById(id);
   const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const views={sell:$('sell'),buy:$('buy')}, tabs={sell:$('t-sell'),buy:$('t-buy')};
+  const views={sell:$('sell'),buy:$('buy')}, topCta=$('top-cta'), fSwitch=$('f-switch');
   let buyReady=false;
   function show(k){
-    for(const v in views){views[v].hidden=v!==k;tabs[v].setAttribute('aria-pressed',String(v===k));}
+    for(const v in views)views[v].hidden=v!==k;
+    const buy=k==='buy';
+    topCta.textContent=buy?'Vender mi empresa':'Valorar mi empresa';
+    fSwitch.textContent=buy?'¿Quieres vender tu empresa?':'¿Buscas comprar una empresa?';
+    fSwitch.setAttribute('href',buy?'/':'/comprar');
+    try{history.replaceState(null,'',(buy?'/comprar':'/')+location.search);}catch(e){}
     scrollTo({top:0,behavior:'auto'});
-    requestAnimationFrame(()=>{observeAll();start(k==='buy'?$('city-buy'):$('city-sell'));});
+    requestAnimationFrame(()=>{observeAll();start(buy?$('city-buy'):$('city-sell'));});
+    setTimeout(upd,50);
   }
-  tabs.sell.onclick=()=>show('sell'); tabs.buy.onclick=()=>show('buy');
+  fSwitch.addEventListener('click',e=>{e.preventDefault();show(views.buy.hidden?'buy':'sell');});
+  $('brand').addEventListener('click',e=>{e.preventDefault();if(!views.buy.hidden)show('sell');else scrollTo({top:0,behavior:RM?'auto':'smooth'});});
 
   const smooth=el=>el.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'});
   const MSG={text:'Este campo es obligatorio.',email:'Escribe un correo válido, por ejemplo nombre@empresa.com.',phone:'Escribe un número válido de 10 dígitos.',select:'Elige una opción.',radio:'Elige una opción.',consent:'Debes aceptar para poder enviar.'};
@@ -1100,13 +1099,13 @@ summary .pl{border-radius:2px}
 
   /* mobile sticky CTA: visible once the hero action scrolls away, hidden while the form is on screen */
   const mcta=$('mcta'),mbtn=$('mcta-btn');const vis=new Map();
-  function upd(){const buy=!views.buy.hidden;mbtn.firstChild.textContent=buy?'Recibir oportunidades':'Valorar mi empresa gratis';mbtn.setAttribute('href',buy?'#b-band':'#valorar');
+  function upd(){const buy=!views.buy.hidden;mbtn.firstChild.textContent=buy?'Registrar mi perfil':'Valorar mi empresa gratis';mbtn.setAttribute('href',buy?'#b-band':'#valorar');
     const heroOn=buy?vis.get('buy-cta'):vis.get('quick'),formOn=buy?vis.get('b-band'):vis.get('valorar');
     mcta.classList.toggle('on',heroOn===false&&!formOn);}
   const mio=new IntersectionObserver(es=>{es.forEach(e=>vis.set(e.target.id,e.isIntersecting));upd();},{threshold:0});
   ['quick','valorar','buy-cta','b-band'].forEach(id=>mio.observe($(id)));
   mbtn.addEventListener('click',e=>{e.preventDefault();const buy=!views.buy.hidden;smooth($(buy?'b-band':'valorar'));setTimeout(()=>{const f=buy?$('b-type'):($('s1').hidden?$('s-name'):$('s-sector'));f&&f.focus({preventScroll:true});},RM?0:700);});
-  tabs.sell.addEventListener('click',()=>setTimeout(upd,50));tabs.buy.addEventListener('click',()=>setTimeout(upd,50));
+  topCta.addEventListener('click',e=>{e.preventDefault();const was=!views.buy.hidden;if(was)show('sell');setTimeout(()=>{smooth($('valorar'));setTimeout(()=>{const f=$('s1').hidden?$('s-name'):$('s-sector');f&&f.focus({preventScroll:true});},RM?0:700);},was?80:0);});
   if(location.hash==='#comprar'||location.pathname.replace(/\/$/,'')==='/comprar')show('buy'); else start($('city-sell'));
 })();
 </script>
