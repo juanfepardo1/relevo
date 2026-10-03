@@ -52,6 +52,16 @@ const NOTIFY_TO = 'felipe@relevobrokers.com';
 
 const HOT = ['En los próximos 6 meses', 'Entre 6 y 24 meses'];
 
+// Identificadores de anuncio que Meta pone en utm_content, y los nombres que usamos al crear los enlaces.
+const ADS = {
+  '52522834119232': 'A (Valoración)', a_valoracion: 'A (Valoración)',
+  '52522996494632': 'B (Reserva)', b_reserva: 'B (Reserva)',
+  '52522996494832': 'C (Relevo)', c_relevo: 'C (Relevo)',
+  '52522996495032': 'D (Oferta)', d_oferta: 'D (Oferta)',
+};
+const SOURCES = { ig: 'Instagram', fb: 'Facebook', meta: 'Meta' };
+const adName = (v) => (v ? ADS[v] || `Otro (${v})` : 'Sin anuncio (llegó directo)');
+
 const esc = (v) =>
   String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -79,7 +89,7 @@ function build(r) {
     : [['Nombre', r.name], ['Tipo de comprador', r.buyer_type], ['Presupuesto', r.budget]]
   ).concat([
     ['WhatsApp', r.phone], ['Correo', r.email], ['Prefiere contacto por', r.contact_channel],
-    ['Anuncio (utm_content)', r.utm_content], ['Campaña', r.utm_campaign], ['Fuente', r.utm_source],
+    ['Anuncio', adName(r.utm_content)], ['Red', SOURCES[r.utm_source] || r.utm_source],
   ]);
 
   const wa = waLink(r.phone);
