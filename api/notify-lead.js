@@ -1,8 +1,10 @@
 // Aviso por correo de cada lead nuevo, enviado desde el Gmail de Relevo.
 // Lo llama un Database Webhook de Supabase (INSERT en public.leads) con el header x-webhook-secret.
-// Variables en Vercel: GMAIL_APP_PASSWORD, WEBHOOK_SECRET. Opcionales: GMAIL_USER, NOTIFY_TO.
+// Variables en Vercel: GMAIL_APP_PASSWORD, WEBHOOK_SECRET. Opcional: GMAIL_USER.
+// Los avisos siempre llegan a NOTIFY_TO (buzón de Relevo en Google Workspace).
 const nodemailer = require('nodemailer');
 const GMAIL_USER = process.env.GMAIL_USER || 'relevobrokers@gmail.com';
+const NOTIFY_TO = 'felipe@relevobrokers.com';
 
 const HOT = ['En los próximos 6 meses', 'Entre 6 y 24 meses'];
 
@@ -70,7 +72,7 @@ module.exports = async function handler(req, res) {
     });
     await transport.sendMail({
       from: `Relevo Leads <${GMAIL_USER}>`,
-      to: process.env.NOTIFY_TO || GMAIL_USER,
+      to: NOTIFY_TO,
       subject, html, text,
     });
   } catch (e) {
