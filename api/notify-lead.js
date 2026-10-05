@@ -83,7 +83,7 @@ function build(r) {
 
   const rows = (seller
     ? [
-        ['Nombre', r.name], ['Empresa', r.company], ['Ciudad', r.city], ['Sector', r.sector],
+        ['Nombre', r.name], ['Rol', r.role], ['Empresa', r.company], ['Ciudad', r.city], ['Sector', r.sector],
         ['Ventas último año (COP millones)', r.sales_range], ['Cuándo quiere vender', r.timing],
       ]
     : [['Nombre', r.name], ['Tipo de comprador', r.buyer_type], ['Presupuesto', r.budget]]

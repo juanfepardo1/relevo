@@ -745,9 +745,15 @@ summary .pl{border-radius:2px}
           <form id="s2" class="f" novalidate hidden>
             <div class="two">
               <div class="field"><label for="s-name">Tu nombre <span class="ast" aria-hidden="true">*</span></label><input type="text" id="s-name" required autocomplete="name"></div>
-              <div class="field"><label for="s-company">Empresa <span class="opt">(Opcional)</span></label><input type="text" id="s-company" data-optional autocomplete="organization"></div>
+              <div class="field"><label for="s-role">Soy <span class="ast" aria-hidden="true">*</span></label><select id="s-role" required>
+                <option value="">Elige una opción</option>
+                <option>Dueño o socio</option><option>Gerente o representante legal</option><option>Familiar del dueño</option><option>Asesor del dueño (contador, revisor fiscal, abogado)</option><option>Otro</option>
+              </select></div>
             </div>
-            <div class="field"><label for="s-city">Ciudad <span class="ast" aria-hidden="true">*</span></label><input type="text" id="s-city" required autocomplete="address-level2"></div>
+            <div class="two">
+              <div class="field"><label for="s-company">Empresa <span class="opt">(Opcional)</span></label><input type="text" id="s-company" data-optional autocomplete="organization"></div>
+              <div class="field"><label for="s-city">Ciudad <span class="ast" aria-hidden="true">*</span></label><input type="text" id="s-city" required autocomplete="address-level2"></div>
+            </div>
             <div class="two">
               <div class="field"><label for="s-phone">WhatsApp <span class="ast" aria-hidden="true">*</span></label><input type="tel" id="s-phone" required autocomplete="tel" inputmode="tel" placeholder="300 123 4567" data-kind="phone"></div>
               <div class="field"><label for="s-email">Correo <span class="ast" aria-hidden="true">*</span></label><input type="email" id="s-email" required autocomplete="email"></div>
@@ -1001,7 +1007,11 @@ summary .pl{border-radius:2px}
   const uid=()=>(crypto.randomUUID?crypto.randomUUID():'10000000-1000-4000-8000-100000000000'.replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16)));
   async function save(table,row){
     if(!LIVE)return true;
-    try{const r=await fetch(CFG.url+'/rest/v1/'+table,{method:'POST',headers:{apikey:CFG.key,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(row)});return r.ok;}catch(e){return false;}
+    const post=b=>fetch(CFG.url+'/rest/v1/'+table,{method:'POST',headers:{apikey:CFG.key,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(b)});
+    try{let r=await post(row);
+      /* red de seguridad: si la base aún no tiene la columna role, guarda el lead sin ella */
+      if(!r.ok&&'role' in row){const{role,...rest}=row;r=await post(rest);}
+      return r.ok;}catch(e){return false;}
   }
   const bot=f=>{const h=f.querySelector('input[name="website"]');return h&&h.value!=='';};
   const busy=(f,on)=>{const b=f.querySelector('button[type="submit"]');if(b)b.setAttribute('aria-busy',String(on));};
@@ -1053,7 +1063,7 @@ summary .pl{border-radius:2px}
     const ok=valid(f); $('s2-net').hidden=true; if(!ok)return;
     if(!bot(f)){busy(f,true);sellerId=uid();
       const saved=await save('leads',{id:sellerId,kind:'seller',sector:$('s-sector').value,sales_range:rv('sales'),timing:$('s-when').value,
-        name:$('s-name').value.trim(),company:$('s-company').value.trim(),city:$('s-city').value.trim(),phone:$('s-phone').value.trim(),email:$('s-email').value.trim(),
+        name:$('s-name').value.trim(),role:$('s-role').value,company:$('s-company').value.trim(),city:$('s-city').value.trim(),phone:$('s-phone').value.trim(),email:$('s-email').value.trim(),
         contact_channel:rv('schan'),consent:true,consent_text:consentText('s-consent'),...meta});
       busy(f,false); if(!saved){$('s2-net').hidden=false;return;}
       px('track','Lead',{content_name:'vendedor'},sellerId);}
