@@ -86,7 +86,7 @@ function build(r) {
         ['Nombre', r.name], ['Rol', r.role], ['Empresa', r.company], ['Ciudad', r.city], ['Sector', r.sector],
         ['Ventas último año (COP millones)', r.sales_range], ['Cuándo quiere vender', r.timing],
       ]
-    : [['Nombre', r.name], ['Tipo de comprador', r.buyer_type], ['Presupuesto', r.budget]]
+    : [['Nombre', r.name], ['Rol', r.role], ['Tipo de comprador', r.buyer_type], ['Presupuesto', r.budget]]
   ).concat([
     ['WhatsApp', r.phone], ['Correo', r.email], ['Prefiere contacto por', r.contact_channel],
     ['Anuncio', adName(r.utm_content)], ['Red', SOURCES[r.utm_source] || r.utm_source],

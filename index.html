@@ -907,9 +907,15 @@ summary .pl{border-radius:2px}
             </fieldset>
             <div class="two">
               <div class="field"><label for="b-name">Tu nombre <span class="ast" aria-hidden="true">*</span></label><input type="text" id="b-name" required autocomplete="name"></div>
-              <div class="field"><label for="b-phone">WhatsApp <span class="ast" aria-hidden="true">*</span></label><input type="tel" id="b-phone" required autocomplete="tel" inputmode="tel" placeholder="300 123 4567" data-kind="phone"></div>
+              <div class="field"><label for="b-role">Tu rol <span class="ast" aria-hidden="true">*</span></label><select id="b-role" required>
+                <option value="">Elige una opción</option>
+                <option>Compro a título personal</option><option>Dueño o socio de la empresa</option><option>Gerente o directivo</option><option>Socio o director del fondo</option><option>Analista o asociado del fondo</option><option>Asesor de un comprador</option><option>Otro</option>
+              </select></div>
             </div>
-            <div class="field"><label for="b-email">Correo <span class="ast" aria-hidden="true">*</span></label><input type="email" id="b-email" required autocomplete="email"></div>
+            <div class="two">
+              <div class="field"><label for="b-phone">WhatsApp <span class="ast" aria-hidden="true">*</span></label><input type="tel" id="b-phone" required autocomplete="tel" inputmode="tel" placeholder="300 123 4567" data-kind="phone"></div>
+              <div class="field"><label for="b-email">Correo <span class="ast" aria-hidden="true">*</span></label><input type="email" id="b-email" required autocomplete="email"></div>
+            </div>
 <fieldset class="field">
               <legend>¿Por dónde prefieres que te contactemos?</legend>
               <div class="chips">
@@ -1076,7 +1082,7 @@ summary .pl{border-radius:2px}
     const ok=valid(f); $('b1-net').hidden=true; if(!ok)return;
     if(!bot(f)){busy(f,true);
       const saved=await save('leads',{id:uid(),kind:'buyer',buyer_type:$('b-type').value,budget:rv('budget'),
-        name:$('b-name').value.trim(),phone:$('b-phone').value.trim(),email:$('b-email').value.trim(),
+        name:$('b-name').value.trim(),role:$('b-role').value,phone:$('b-phone').value.trim(),email:$('b-email').value.trim(),
         contact_channel:rv('bchan'),consent:true,consent_text:consentText('b-consent'),...meta});
       busy(f,false); if(!saved){$('b1-net').hidden=false;return;}
       px('trackCustom','BuyerSignup');}
