@@ -896,6 +896,7 @@ summary .pl{border-radius:2px}
                 <option>Persona que quiere tener su propia empresa</option><option>Empresa que quiere crecer comprando</option><option>Family office o fondo</option><option>Colombiano en el exterior</option>
               </select>
             </div>
+            <div class="field"><label for="b-company">Empresa o fondo <span class="opt">(Opcional)</span></label><input type="text" id="b-company" data-optional autocomplete="organization"></div>
             <fieldset class="field">
               <legend>Presupuesto de compra <span class="ast" aria-hidden="true">*</span></legend>
               <div class="chips num">
@@ -1082,7 +1083,7 @@ summary .pl{border-radius:2px}
     const ok=valid(f); $('b1-net').hidden=true; if(!ok)return;
     if(!bot(f)){busy(f,true);
       const saved=await save('leads',{id:uid(),kind:'buyer',buyer_type:$('b-type').value,budget:rv('budget'),
-        name:$('b-name').value.trim(),role:$('b-role').value,phone:$('b-phone').value.trim(),email:$('b-email').value.trim(),
+        name:$('b-name').value.trim(),role:$('b-role').value,company:$('b-company').value.trim(),phone:$('b-phone').value.trim(),email:$('b-email').value.trim(),
         contact_channel:rv('bchan'),consent:true,consent_text:consentText('b-consent'),...meta});
       busy(f,false); if(!saved){$('b1-net').hidden=false;return;}
       px('trackCustom','BuyerSignup');}
