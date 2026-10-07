@@ -71,6 +71,31 @@ function waLink(phone) {
   return d.length >= 11 ? `https://wa.me/${d}` : null;
 }
 
+// Vendedores con ventas menores a $1.000 millones: no van al CRM. En vez del aviso interno,
+// reciben un correo de Felipe desde la dirección secundaria (Google Workspace).
+// Variables en Vercel: SECONDARY_SMTP_PASS (contraseña de aplicación). Opcional: SECONDARY_SMTP_USER.
+const SECONDARY_USER = process.env.SECONDARY_SMTP_USER || 'felipe@hablaconrelevo.com';
+const SMALL = ['<1000', 'lt1000'];
+const isSmallSeller = (r) => r.kind === 'seller' && SMALL.includes(r.sales_range);
+
+function buildDecline(r) {
+  const first = String(r.name || '').trim().split(/\s+/)[0];
+  const hello = first ? `¡Hola, ${first}!` : '¡Hola!';
+  const paras = [
+    `${hello} Te escribe Felipe Pardo, fundador de Relevo. Gracias por tu interés en valorar tu empresa con nosotros.`,
+    'Seré transparente: hoy nuestro método está diseñado para empresas con ventas mayores a $1.000 millones al año, y no quiero darte un número que no sea preciso para tu caso.',
+    'Lo que sí puedo hacer es mantenerte en nuestra lista. Cuando tu empresa crezca o cuando lancemos algo pensado para su tamaño, serás de los primeros en saberlo.',
+    '¡Te deseamos muchos éxitos!',
+  ];
+  const sign = ['Felipe Pardo', 'Fundador, Relevo', 'relevobrokers.com'];
+  const html =
+    `<div style="font:15px/1.6 Arial,sans-serif;color:#131f33;max-width:560px">` +
+    paras.map((t) => `<p style="margin:0 0 14px">${esc(t)}</p>`).join('') +
+    `<p style="margin:22px 0 0;color:#4b5567">${sign.map(esc).join('<br>')}</p></div>`;
+  const text = paras.join('\n\n') + '\n\n' + sign.join('\n');
+  return { subject: 'Sobre tu solicitud de valoración en Relevo', html, text };
+}
+
 function build(r) {
   const seller = r.kind === 'seller';
   const qualified = seller && r.sales_range && !['<1000', 'lt1000'].includes(r.sales_range);
@@ -119,17 +144,27 @@ module.exports = async function handler(req, res) {
   if (body.type !== 'INSERT' || body.table !== 'leads' || !r) return res.status(200).json({ skipped: true });
 
   const { subject, html, text } = build(r);
-  const sendMail = async () => {
+  const notify = async (subj = subject) => {
     const transport = nodemailer.createTransport({
       host: 'smtp.gmail.com', port: 465, secure: true,
       auth: { user: GMAIL_USER, pass: (process.env.GMAIL_APP_PASSWORD || '').replace(/\s/g, '') },
     });
-    await transport.sendMail({
-      from: `Relevo Leads <${GMAIL_USER}>`,
-      to: NOTIFY_TO,
-      subject, html, text,
-    });
+    await transport.sendMail({ from: `Relevo Leads <${GMAIL_USER}>`, to: NOTIFY_TO, subject: subj, html, text });
   };
+  const decline = async () => {
+    const pass = (process.env.SECONDARY_SMTP_PASS || '').replace(/\s/g, '');
+    if (!pass) throw new Error('SECONDARY_SMTP_PASS no configurada');
+    if (!r.email) throw new Error('lead sin correo');
+    const transport = nodemailer.createTransport({
+      host: 'smtp.gmail.com', port: 465, secure: true, auth: { user: SECONDARY_USER, pass },
+    });
+    const m = buildDecline(r);
+    await transport.sendMail({ from: `Felipe Pardo <${SECONDARY_USER}>`, to: r.email, replyTo: SECONDARY_USER, ...m });
+  };
+  // Vendedor pequeño: correo al lead y nada a Felipe. Si ese correo falla, Felipe recibe el aviso para escribirle a mano.
+  const sendMail = isSmallSeller(r)
+    ? () => decline().catch((e) => { console.error('decline', e && e.message); return notify(subject.replace('[No califica]', '[No califica · correo NO enviado]')); })
+    : () => notify();
   const [mail, capi] = await Promise.allSettled([sendMail(), sendCapi(r)]);
   if (capi.status === 'rejected') console.error('capi', capi.reason && capi.reason.message);
   if (mail.status === 'rejected') {
@@ -141,3 +176,5 @@ module.exports = async function handler(req, res) {
 
 module.exports.build = build;
 module.exports.capiEvent = capiEvent;
+module.exports.buildDecline = buildDecline;
+module.exports.isSmallSeller = isSmallSeller;
