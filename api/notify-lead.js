@@ -78,13 +78,11 @@ const SECONDARY_USER = process.env.SECONDARY_SMTP_USER || 'felipe@hablaconrelevo
 const SMALL = ['<1000', 'lt1000'];
 const isSmallSeller = (r) => r.kind === 'seller' && SMALL.includes(r.sales_range);
 
-function buildDecline(r) {
-  const first = String(r.name || '').trim().split(/\s+/)[0];
-  const hello = first ? `¡Hola, ${first}!` : '¡Hola!';
+function buildDecline() {
   const paras = [
-    `${hello} Te escribe Felipe Pardo, fundador de Relevo. Gracias por tu interés en valorar tu empresa con nosotros.`,
+    '¡Hola! Te escribe Felipe Pardo, fundador de Relevo. Gracias por tu interés en valorar tu empresa con nosotros.',
     'Seré transparente: hoy nuestro método está diseñado para empresas con ventas mayores a $1.000 millones al año, y no quiero darte un número que no sea preciso para tu caso.',
-    'Lo que sí puedo hacer es mantenerte en nuestra lista. Cuando tu empresa crezca o cuando lancemos algo pensado para su tamaño, serás de los primeros en saberlo.',
+    'De todas formas, te tendremos en cuenta.',
     '¡Te deseamos muchos éxitos!',
   ];
   const sign = ['Felipe Pardo', 'Fundador, Relevo', 'relevobrokers.com'];
@@ -158,7 +156,7 @@ module.exports = async function handler(req, res) {
     const transport = nodemailer.createTransport({
       host: 'smtp.gmail.com', port: 465, secure: true, auth: { user: SECONDARY_USER, pass },
     });
-    const m = buildDecline(r);
+    const m = buildDecline();
     await transport.sendMail({ from: `Felipe Pardo <${SECONDARY_USER}>`, to: r.email, replyTo: SECONDARY_USER, ...m });
   };
   // Vendedor pequeño: correo al lead y nada a Felipe. Si ese correo falla, Felipe recibe el aviso para escribirle a mano.
