@@ -778,9 +778,9 @@ summary .pl{border-radius:2px}
 
         <div class="done" id="sell-done" hidden tabindex="-1">
           <p class="ok"><svg class="ico"><use href="#i-check"/></svg>Recibimos tu solicitud</p>
-          <p class="h2">Te escribiremos por WhatsApp en menos de 48 horas.</p>
-          <p class="fine">Te pediremos los documentos para preparar tu rango de valor. Nada se comparte sin tu aprobación.</p>
-          <div class="offer">
+          <p class="h2" id="done-h">Te escribiremos por WhatsApp en menos de 48 horas.</p>
+          <p class="fine" id="done-fine">Te pediremos los documentos para preparar tu rango de valor. Nada se comparte sin tu aprobación.</p>
+          <div class="offer" id="done-offer">
             <p><b>Informe de valoración completo.</b> Comparables del sector, utilidad ajustada y qué mejorar antes de vender.</p>
             <button class="btn btn-outline" type="button" id="reserve">Reservar el informe</button>
             <p class="fine" id="reserve-note" hidden>Listo. Te confirmaremos fecha y forma de pago por WhatsApp. No se ha hecho ningún cobro.</p>
@@ -1073,7 +1073,12 @@ summary .pl{border-radius:2px}
         name:$('s-name').value.trim(),role:$('s-role').value,company:$('s-company').value.trim(),city:$('s-city').value.trim(),phone:$('s-phone').value.trim(),email:$('s-email').value.trim(),
         contact_channel:rv('schan'),consent:true,consent_text:consentText('s-consent'),...meta});
       busy(f,false); if(!saved){$('s2-net').hidden=false;return;}
-      px('track','Lead',{content_name:'vendedor'},sellerId);}
+      /* ventas < $1.000 millones: no es Lead para Meta (no optimizar hacia ellos) y la pantalla final no promete contacto */
+      if(rv('sales')==='lt1000'){px('trackCustom','LeadNoCalifica',{content_name:'vendedor'},sellerId);
+        $('done-h').textContent='Te enviamos un correo con los detalles.';
+        $('done-fine').textContent='Revisa tu bandeja de entrada y, si no lo ves, la carpeta de spam.';
+        $('done-offer').hidden=true;}
+      else px('track','Lead',{content_name:'vendedor'},sellerId);}
     $('sell-steps').hidden=true; $('sell-done').hidden=false; $('sell-done').focus();
   });
   $('reserve').onclick=async e=>{const b=e.currentTarget;b.setAttribute('aria-busy','true');

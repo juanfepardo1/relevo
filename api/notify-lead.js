@@ -13,6 +13,7 @@ const sha = (v) => crypto.createHash('sha256').update(v).digest('hex');
 
 function capiEvent(r) {
   if (r.kind !== 'seller' || !/Meta/.test(r.consent_text || '')) return null;
+  if (isSmallSeller(r)) return null; // ventas < $1.000 millones: no se reporta como Lead a Meta
   const user_data = { country: [sha('co')] };
   const email = String(r.email || '').trim().toLowerCase();
   if (email) user_data.em = [sha(email)];
