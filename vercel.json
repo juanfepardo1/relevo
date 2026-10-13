@@ -2,10 +2,6 @@
   "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/comprar",
-      "destination": "/"
-    },
-    {
       "source": "/vender",
       "destination": "/"
     }
@@ -31,6 +27,13 @@
           "value": "camera=(), microphone=(), geolocation=()"
         }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/comprar",
+      "destination": "/compradores",
+      "permanent": true
     }
   ]
 }

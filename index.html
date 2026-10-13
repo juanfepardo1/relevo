@@ -850,83 +850,7 @@ summary .pl{border-radius:2px}
   </div>
 </main>
 
-<!-- ============ BUYERS ============ -->
-<main id="buy" hidden>
-  <section class="hero">
-    <div class="wrap hero-grid">
-      <h1>Cuéntanos qué empresa quieres comprar.</h1>
-      <div>
-        <p class="sub">Relevo representa a dueños que venden empresas rentables en Colombia. Si una encaja con lo que buscas, te contactamos directamente.</p>
-        <p style="margin-top:26px"><a class="btn btn-primary" href="#b-band" id="buy-cta">Registrar mi perfil<svg class="ico"><use href="#i-arrow"/></svg></a></p>
-        <p class="assure">Cifras revisadas · Contacto directo · Confidencialidad antes de los detalles</p>
-      </div>
-    </div>
-    <div class="city" id="city-buy">
-      <img class="city-img" src="/city.webp" srcset="/city-900.webp 900w, /city.webp 1774w" sizes="100vw" width="1774" height="710" alt="Ilustración de una ciudad con edificios de oficinas frente a un río" loading="lazy">
-    </div>
-  </section>
 
-  <section class="band" id="b-band">
-    <svg class="guil" aria-hidden="true"><use href="#guil"/></svg>
-    <div class="wrap band-grid">
-      <div class="band-head rv">
-        <h2>Te contactamos cuando una empresa encaje.</h2>
-        <p class="band-lead">No publicamos empresas. Cuando un dueño que representamos busca un comprador como tú, te presentamos la empresa directamente.</p>
-      </div>
-      <ul class="gets rv">
-          <li><p><b>Cifras revisadas</b><span>Contra DIAN, facturación electrónica y extractos.</span></p></li>
-          <li><p><b>Documento completo al firmar</b><span>Nombre y detalles después de la confidencialidad.</span></p></li>
-          <li><p><b>Verificación de fondos</b><span>Solo cuando quieras avanzar con una empresa.</span></p></li>
-        </ul>
-      <div class="card rv">
-        <div id="buy-steps">
-          <h2>Registra tu perfil de comprador</h2>
-          <p class="step-meta">Un solo paso y confidencial.</p>
-          <form id="b1" class="f" novalidate>
-            <div class="field">
-              <label for="b-type">Eres <span class="ast" aria-hidden="true">*</span></label>
-              <select id="b-type" required>
-                <option value="">Elige una opción</option>
-                <option>Persona que quiere tener su propia empresa</option><option>Empresa que quiere crecer comprando</option><option>Family office o fondo</option><option>Colombiano en el exterior</option>
-              </select>
-            </div>
-            <div class="field"><label for="b-company">Empresa o fondo <span class="ast" aria-hidden="true">*</span></label><input type="text" id="b-company" required autocomplete="organization"></div>
-            <fieldset class="field">
-              <legend>Presupuesto de compra <span class="ast" aria-hidden="true">*</span></legend>
-              <div class="chips num">
-                <input type="radio" name="budget" id="p1" value="<500"><label for="p1">Menos de $500 millones</label>
-                <input type="radio" name="budget" id="p2" value="500-2000"><label for="p2">$500 a $2.000 millones</label>
-                <input type="radio" name="budget" id="p3" value="2000-8000"><label for="p3">$2.000 a $8.000 millones</label>
-                <input type="radio" name="budget" id="p4" value=">8000"><label for="p4">Más de $8.000 millones</label>
-              </div>
-            </fieldset>
-            <div class="two">
-              <div class="field"><label for="b-name">Tu nombre <span class="ast" aria-hidden="true">*</span></label><input type="text" id="b-name" required autocomplete="name"></div>
-              <div class="field"><label for="b-role">Tu rol <span class="ast" aria-hidden="true">*</span></label><select id="b-role" required>
-                <option value="">Elige una opción</option>
-                <option>Compro a título personal</option><option>Dueño o socio de la empresa</option><option>Gerente o directivo</option><option>Socio o director del fondo</option><option>Analista o asociado del fondo</option><option>Asesor de un comprador</option><option>Otro</option>
-              </select></div>
-            </div>
-            <div class="two">
-              <div class="field"><label for="b-phone">WhatsApp <span class="ast" aria-hidden="true">*</span></label><input type="tel" id="b-phone" required autocomplete="tel" inputmode="tel" placeholder="300 123 4567" data-kind="phone"></div>
-              <div class="field"><label for="b-email">Correo <span class="ast" aria-hidden="true">*</span></label><input type="email" id="b-email" required autocomplete="email"></div>
-            </div>
-<div class="hp" aria-hidden="true"><label>No llenar <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-            <label class="consent" for="b-consent"><input type="checkbox" id="b-consent" required><span>Autorizo el tratamiento de mis datos según la Ley 1581 de 2012 y la <a href="/privacidad" target="_blank">Política de Tratamiento de Datos</a> para contactarme por WhatsApp o correo cuando haya una empresa que encaje con mi perfil.</span></label>
-            <p class="err" id="b1-err" role="alert" hidden>Revisa los campos marcados con * y que el correo sea válido.</p>
-            <p class="err" id="b1-net" role="alert" hidden>No pudimos enviar tus datos. Revisa tu conexión e intenta de nuevo.</p>
-            <button class="btn btn-primary" type="submit">Registrar mi perfil<svg class="ico"><use href="#i-arrow"/></svg></button>
-          </form>
-        </div>
-        <div class="done" id="buy-done" hidden tabindex="-1">
-          <p class="ok"><svg class="ico"><use href="#i-check"/></svg>Registramos tu perfil</p>
-          <p class="h2">Te contactaremos cuando una empresa encaje con lo que buscas.</p>
-          <p class="fine">Antes de ver nombres y cifras completas te pediremos verificar fondos y firmar confidencialidad.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-</main>
 
 <div class="cookie" id="ck" role="region" aria-label="Preferencias de cookies" hidden>
   <p>Usamos cookies de Meta para medir qué anuncios funcionan. Solo se activan si aceptas. <a href="/privacidad#cookies">Más información</a></p>
@@ -939,7 +863,7 @@ summary .pl{border-radius:2px}
   <footer>
     <span class="brand"><span class="mark" aria-hidden="true"><i></i><i></i></span>Relevo</span>
     <p>Bogotá, Colombia</p>
-    <p><a href="/comprar" id="f-switch">¿Buscas comprar una empresa?</a></p>
+    <p><a href="/compradores">¿Buscas comprar una empresa?</a></p>
     <p><a href="/terminos">Términos de uso</a> · <a href="/privacidad">Política de tratamiento de datos</a> · <button type="button" class="linkish" id="ck-open">Cookies</button></p>
   </footer>
 </div>
@@ -949,21 +873,8 @@ summary .pl{border-radius:2px}
   document.documentElement.classList.add('js');
   const $=id=>document.getElementById(id);
   const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const views={sell:$('sell'),buy:$('buy')}, topCta=$('top-cta'), fSwitch=$('f-switch');
-  let buyReady=false;
-  function show(k){
-    for(const v in views)views[v].hidden=v!==k;
-    const buy=k==='buy';
-    topCta.textContent=buy?'Vender mi empresa':'Valorar mi empresa';
-    fSwitch.textContent=buy?'¿Quieres vender tu empresa?':'¿Buscas comprar una empresa?';
-    fSwitch.setAttribute('href',buy?'/':'/comprar');
-    try{history.replaceState(null,'',(buy?'/comprar':'/')+location.search);}catch(e){}
-    scrollTo({top:0,behavior:'auto'});
-    requestAnimationFrame(()=>{observeAll();start(buy?$('city-buy'):$('city-sell'));});
-    setTimeout(upd,50);
-  }
-  fSwitch.addEventListener('click',e=>{e.preventDefault();show(views.buy.hidden?'buy':'sell');});
-  $('brand').addEventListener('click',e=>{e.preventDefault();if(!views.buy.hidden)show('sell');else scrollTo({top:0,behavior:RM?'auto':'smooth'});});
+  const topCta=$('top-cta');
+  $('brand').addEventListener('click',e=>{e.preventDefault();scrollTo({top:0,behavior:RM?'auto':'smooth'});});
 
   const smooth=el=>el.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'});
   const MSG={text:'Este campo es obligatorio.',email:'Escribe un correo válido, por ejemplo nombre@empresa.com.',phone:'Escribe un número válido de 10 dígitos.',select:'Elige una opción.',radio:'Elige una opción.',consent:'Debes aceptar para poder enviar.'};
@@ -1073,18 +984,7 @@ summary .pl{border-radius:2px}
   $('reserve').onclick=async e=>{const b=e.currentTarget;b.setAttribute('aria-busy','true');
     if(sellerId){await save('events',{lead_id:sellerId,type:'reserve_report'});px('trackCustom','ReserveReport',{},sellerId+'-r');}
     b.hidden=true;$('reserve-note').hidden=false;};
-  $('b1').addEventListener('submit',async e=>{e.preventDefault();const f=e.target;
-    const ok=valid(f); $('b1-net').hidden=true; if(!ok)return;
-    if(!bot(f)){busy(f,true);
-      const saved=await save('leads',{id:uid(),kind:'buyer',buyer_type:$('b-type').value,budget:rv('budget'),
-        name:$('b-name').value.trim(),role:$('b-role').value,company:$('b-company').value.trim(),phone:$('b-phone').value.trim(),email:$('b-email').value.trim(),
-        consent:true,consent_text:consentText('b-consent'),...meta});
-      busy(f,false); if(!saved){$('b1-net').hidden=false;return;}
-      px('trackCustom','BuyerSignup');}
-    $('buy-steps').hidden=true; $('buy-done').hidden=false; $('buy-done').focus();
-  });
   $('close-cta').addEventListener('click',e=>{e.preventDefault();smooth($('valorar'));setTimeout(()=>{const f=$('s1').hidden?$('s-name'):$('s-sector');f&&f.focus({preventScroll:true});},RM?0:700);});
-  $('buy-cta').addEventListener('click',e=>{e.preventDefault();smooth($('b-band'));setTimeout(()=>$('b-type').focus({preventScroll:true}),RM?0:700);});
 
   const ficha=$('ficha');
   function fview(v){ficha.dataset.view=v;$('f-visitor').setAttribute('aria-pressed',String(v==='visitor'));$('f-verified').setAttribute('aria-pressed',String(v==='verified'));
@@ -1110,14 +1010,13 @@ summary .pl{border-radius:2px}
 
   /* mobile sticky CTA: visible once the hero action scrolls away, hidden while the form is on screen */
   const mcta=$('mcta'),mbtn=$('mcta-btn');const vis=new Map();
-  function upd(){const buy=!views.buy.hidden;mbtn.firstChild.textContent=buy?'Registrar mi perfil':'Valorar mi empresa gratis';mbtn.setAttribute('href',buy?'#b-band':'#valorar');
-    const heroOn=buy?vis.get('buy-cta'):vis.get('quick'),formOn=buy?vis.get('b-band'):vis.get('valorar');
+  function upd(){const heroOn=vis.get('quick'),formOn=vis.get('valorar');
     mcta.classList.toggle('on',heroOn===false&&!formOn);}
   const mio=new IntersectionObserver(es=>{es.forEach(e=>vis.set(e.target.id,e.isIntersecting));upd();},{threshold:0});
-  ['quick','valorar','buy-cta','b-band'].forEach(id=>mio.observe($(id)));
-  mbtn.addEventListener('click',e=>{e.preventDefault();const buy=!views.buy.hidden;smooth($(buy?'b-band':'valorar'));setTimeout(()=>{const f=buy?$('b-type'):($('s1').hidden?$('s-name'):$('s-sector'));f&&f.focus({preventScroll:true});},RM?0:700);});
-  topCta.addEventListener('click',e=>{e.preventDefault();const was=!views.buy.hidden;if(was)show('sell');setTimeout(()=>{smooth($('valorar'));setTimeout(()=>{const f=$('s1').hidden?$('s-name'):$('s-sector');f&&f.focus({preventScroll:true});},RM?0:700);},was?80:0);});
-  if(location.hash==='#comprar'||location.pathname.replace(/\/$/,'')==='/comprar')show('buy'); else start($('city-sell'));
+  ['quick','valorar'].forEach(id=>mio.observe($(id)));
+  mbtn.addEventListener('click',e=>{e.preventDefault();smooth($('valorar'));setTimeout(()=>{const f=$('s1').hidden?$('s-name'):$('s-sector');f&&f.focus({preventScroll:true});},RM?0:700);});
+  topCta.addEventListener('click',e=>{e.preventDefault();smooth($('valorar'));setTimeout(()=>{const f=$('s1').hidden?$('s-name'):$('s-sector');f&&f.focus({preventScroll:true});},RM?0:700);});
+  if(location.hash==='#comprar'){location.replace('/compradores'+location.search);} else start($('city-sell'));
 })();
 </script>
 </body></html>
