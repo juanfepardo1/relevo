@@ -61,6 +61,12 @@ const ADS = {
   '52522996495032': 'D (Oferta)', d_oferta: 'D (Oferta)',
 };
 const SOURCES = { ig: 'Instagram', fb: 'Facebook', meta: 'Meta' };
+// Presupuesto del comprador: valores de la landing y del formulario /compradores (COP millones).
+const BUDGET = {
+  '<500': 'Menos de $500M', lt500: 'Menos de $500M', '500-2000': '$500M a $2.000M', '2000-8000': '$2.000M a $8.000M',
+  '>8000': 'Más de $8.000M', '8000-20000': '$8.000M a $20.000M', gt20000: 'Más de $20.000M',
+};
+const budgetLabel = (v) => BUDGET[v] || v;
 const adName = (v) => (v ? ADS[v] || `Otro (${v})` : 'Sin anuncio (llegó directo)');
 
 const esc = (v) =>
@@ -103,14 +109,14 @@ function build(r) {
 
   const subject = seller
     ? `[${tag}] Vendedor: ${r.sector || 'sin sector'}, ventas ${r.sales_range || '?'}, ${r.city || 'sin ciudad'}`
-    : `[Comprador] ${r.buyer_type || 'sin tipo'}, presupuesto ${r.budget || '?'}`;
+    : `[Comprador] ${r.buyer_type || 'sin tipo'}, presupuesto ${budgetLabel(r.budget) || '?'}`;
 
   const rows = (seller
     ? [
         ['Nombre', r.name], ['Rol', r.role], ['Empresa', r.company], ['Ciudad', r.city], ['Sector', r.sector],
         ['Ventas último año (COP millones)', r.sales_range], ['Cuándo quiere vender', r.timing],
       ]
-    : [['Nombre', r.name], ['Rol', r.role], ['Empresa o fondo', r.company], ['Tipo de comprador', r.buyer_type], ['Presupuesto', r.budget]]
+    : [['Nombre', r.name], ['Rol', r.role], ['Empresa o fondo', r.company], ['Tipo de comprador', r.buyer_type], ['Presupuesto', budgetLabel(r.budget)], ['Búsqueda', r.notes]]
   ).concat([
     ['WhatsApp', r.phone], ['Correo', r.email],
     ['Anuncio', adName(r.utm_content)], ['Red', SOURCES[r.utm_source] || r.utm_source],

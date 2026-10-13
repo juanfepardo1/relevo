@@ -1,0 +1,301 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Relevo · Registra la empresa que quieres comprar</title>
+<meta name="description" content="Dinos qué empresa quieres comprar en Colombia. Te enviamos solo oportunidades que encajan con tu búsqueda, con total confidencialidad.">
+<meta property="og:title" content="Relevo · Registra la empresa que quieres comprar"><meta property="og:description" content="Dinos qué empresa quieres comprar en Colombia. Te enviamos solo oportunidades que encajan con tu búsqueda."><meta property="og:type" content="website"><meta property="og:locale" content="es_CO">
+<meta name="theme-color" content="#fafaf8"><link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@72,600&text=Relevo&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#fafaf8;--surface:#fff;--ink:#131f33;--muted:#4b5567;--line:#e7e4de;--line-strong:#cfc9bf;
+  --navy:#26497c;--navy-2:#1e3d6b;--on-navy:#f6f3ec;--on-navy-muted:#c6d2e4;--navy-line:#41659b;
+  --accent:#f08a4b;--accent-hover:#f49a62;--accent-ink:#131f33;--accent-deep:#df6f30;
+  --ok:#1b335a;--err:#b3261e;
+  --sh:0 1px 2px rgba(19,31,51,.05),0 18px 40px -20px rgba(19,31,51,.28);
+  --serif:"Archivo","Helvetica Neue",Arial,sans-serif;--body:"Hanken Grotesk","Helvetica Neue",Arial,sans-serif;
+  --r-ctl:4px;--r-card:6px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1726;--surface:#15233a;--ink:#ece6da;--muted:#a9b4c6;--line:#23324b;--line-strong:#34486a;
+  --navy:#172d52;--navy-2:#10213f;--on-navy:#f4efe6;--on-navy-muted:#b8c3d6;--navy-line:#2f4a76;
+  --accent:#f28a50;--accent-hover:#f59c68;--accent-deep:#f6a072;--ok:#c7d2e3;--err:#ff8a80;
+  --sh:0 1px 2px rgba(0,0,0,.3),0 22px 48px -20px rgba(0,0,0,.7);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1726;--surface:#15233a;--ink:#ece6da;--muted:#a9b4c6;--line:#23324b;--line-strong:#34486a;
+  --navy:#172d52;--navy-2:#10213f;--on-navy:#f4efe6;--on-navy-muted:#b8c3d6;--navy-line:#2f4a76;
+  --accent:#f28a50;--accent-hover:#f59c68;--accent-deep:#f6a072;--ok:#c7d2e3;--err:#ff8a80;color-scheme:dark}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:clip}
+a{color:inherit;text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+h1,h2{font-family:var(--serif);margin:0;text-wrap:balance;font-weight:700;font-stretch:92%;letter-spacing:-.025em;line-height:1.02}
+p{margin:0}ul,ol{margin:0;padding:0;list-style:none}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:24px}
+.ico{width:1em;height:1em;flex:none;fill:currentColor}
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+nav{display:flex;align-items:center;justify-content:space-between;gap:16px;height:70px}
+.brand{display:flex;align-items:center;gap:10px;font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:28px;letter-spacing:-.02em;text-decoration:none;line-height:1}
+.mark{position:relative;width:26px;height:26px;flex:none}.mark i{position:absolute;height:7px;border-radius:1.5px}
+.mark i:nth-child(1){left:0;top:5px;width:17px;background:var(--navy)}.mark i:nth-child(2){left:9px;top:14px;width:17px;background:var(--accent)}
+:root[data-theme="dark"] .mark i:nth-child(1){background:var(--on-navy)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mark i:nth-child(1){background:var(--on-navy)}}
+.nav-k{color:var(--muted);font-size:15px;font-weight:500}
+
+.band{background:var(--navy);color:var(--on-navy);padding-block:72px 96px}
+.grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:72px;align-items:start}
+.lead h1{font-size:clamp(40px,5vw,68px);letter-spacing:-.03em;line-height:.98}
+.lead .sub{margin-top:20px;color:var(--on-navy-muted);font-size:19px;max-width:36ch}
+.how{margin-top:40px;border-top:1px solid var(--navy-line);counter-reset:s}
+.how li{display:grid;grid-template-columns:36px 1fr;gap:14px;padding-block:18px;border-bottom:1px solid var(--navy-line);counter-increment:s}
+.how li::before{content:counter(s);width:28px;height:28px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:14px;margin-top:2px}
+.how b{display:block;font-weight:600;font-size:18px}.how span{color:var(--on-navy-muted);font-size:16px}
+.lead .fine{margin-top:22px;color:var(--on-navy-muted);font-size:14px}
+
+.card{background:var(--surface);color:var(--ink);border-radius:var(--r-card);box-shadow:var(--sh);padding:34px}
+.card h2,.card .h2{font-family:var(--serif);font-size:28px;font-weight:600;letter-spacing:-.015em;line-height:1.1}
+.step-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;color:var(--muted);font-size:15px}
+.bar{display:flex;gap:6px}.bar span{width:32px;height:3px;border-radius:2px;background:var(--line);transition:background .4s}.bar span.on{background:var(--accent)}
+form.f{display:flex;flex-direction:column;gap:26px;margin-top:26px}
+.field{display:flex;flex-direction:column;gap:8px;min-width:0;border:0;padding:0;margin:0}
+.field>label,.field>legend{font-weight:600;font-size:15px;padding:0}
+.field>legend{margin-bottom:8px}.field .hint{font-weight:400;font-size:13px;color:var(--muted);margin-left:6px}
+.f input[type=text],.f input[type=email],.f input[type=tel]{font:inherit;font-size:17px;color:var(--ink);background:var(--bg);border:1px solid var(--line-strong);border-radius:var(--r-ctl);padding:12px 14px;width:100%;min-height:52px;transition:border-color .15s,box-shadow .15s}
+.f input::placeholder{color:var(--muted);opacity:1}
+.f input:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 40%,transparent)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chips.tight{grid-template-columns:repeat(3,1fr)}
+.chips input{position:absolute;opacity:0;pointer-events:none}
+.chips label{display:flex;align-items:center;min-height:48px;padding:9px 13px;border:1px solid var(--line-strong);border-radius:var(--r-ctl);background:var(--bg);font-size:15px;font-weight:500;cursor:pointer;line-height:1.25;transition:border-color .15s,background .15s}
+.chips label:hover{border-color:var(--muted)}
+.chips input:checked+label{border-color:var(--ink);background:var(--surface);font-weight:600;box-shadow:inset 0 0 0 1px var(--ink),inset 4px 0 0 var(--accent)}
+.chips input:focus-visible+label{outline:2px solid var(--accent);outline-offset:2px}
+.more{appearance:none;border:0;background:none;color:var(--muted);font:600 14px var(--body);cursor:pointer;padding:6px 0;align-self:flex-start;text-decoration:underline;text-underline-offset:3px}
+.more:hover{color:var(--ink)}
+.consent{display:flex;gap:12px;align-items:flex-start;font-size:14px;color:var(--muted);line-height:1.45}
+.consent input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--navy);flex:none}
+.consent.bad{color:var(--err)}
+.ferr{color:var(--err);font-size:13.5px;font-weight:500}
+.f [aria-invalid="true"]{border-color:var(--err)!important}
+.field.bad .chips label{border-color:color-mix(in srgb,var(--err) 60%,var(--line-strong))}
+.err{color:var(--err);font-size:14px;font-weight:500}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.btn{appearance:none;border:0;cursor:pointer;font:600 17px var(--body);border-radius:var(--r-ctl);min-height:54px;padding:0 24px;display:inline-flex;align-items:center;justify-content:center;gap:10px;white-space:nowrap;text-decoration:none;transition:background .2s,transform .15s}
+.btn .ico{width:17px;height:17px}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}.btn-primary:hover{background:var(--accent-hover)}
+.btn:active{transform:translateY(1px)}.btn[aria-busy="true"]{opacity:.7;pointer-events:none}
+.btn-ghost{background:none;color:var(--muted);font:600 15px var(--body);min-height:44px;padding:0 6px}.btn-ghost:hover{color:var(--ink)}
+.actions{display:flex;gap:12px;align-items:center;justify-content:space-between}.actions .btn-primary{flex:1}
+.f>.btn-primary{width:100%}
+#steps,#done{scroll-margin-top:90px}
+.done{display:flex;flex-direction:column;gap:16px}.done:focus{outline:none}
+.done .ok{display:flex;gap:10px;align-items:center;color:var(--ok);font-weight:600}
+.done .ok .ico{width:20px;height:20px;color:var(--accent-deep)}
+.done .fine{font-size:15px;color:var(--muted)}
+.done ul{display:flex;flex-direction:column;gap:8px;font-size:15px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+.done ul b{color:var(--ink);font-weight:600}
+footer{padding-block:28px;color:var(--muted);font-size:14px;display:flex;gap:18px;flex-wrap:wrap}
+@media (max-width:900px){
+  .band{padding-block:40px 56px}.grid{grid-template-columns:1fr;gap:36px}
+  .how{margin-top:28px}.card{padding:24px 18px}
+}
+@media (max-width:560px){
+  .wrap{padding-inline:16px}.two{grid-template-columns:1fr}
+  .chips.tight{grid-template-columns:1fr 1fr}.chips label{font-size:14px}
+  .nav-k{display:none}
+}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M13.3 5.3a1 1 0 0 1 1.4 0l6 6a1 1 0 0 1 0 1.4l-6 6a1 1 0 1 1-1.4-1.4l4.3-4.3H4a1 1 0 1 1 0-2h13.6l-4.3-4.3a1 1 0 0 1 0-1.4Z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20.7 6.3a1 1 0 0 1 0 1.4l-10 10a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.4l4.3 4.3 9.3-9.3a1 1 0 0 1 1.4 0Z"/></symbol>
+</svg>
+<header class="top"><nav class="wrap"><a class="brand" href="/"><span class="mark" aria-hidden="true"><i></i><i></i></span>Relevo</a><span class="nav-k">Compradores</span></nav></header>
+<main class="band">
+  <div class="wrap grid">
+    <section class="lead">
+      <h1>Dinos qué empresa quieres comprar.</h1>
+      <p class="sub">Registra tu búsqueda una vez. Cuando una empresa encaje, te la mostramos primero a ti.</p>
+      <ol class="how">
+        <li><p><b>Registras lo que buscas</b><span>Sector, región, monto y plazo. Toma dos minutos.</span></p></li>
+        <li><p><b>Te enviamos solo lo que encaja</b><span>Fichas anónimas de empresas que cumplen tu búsqueda. Nada de listados masivos.</span></p></li>
+        <li><p><b>Avanzas cuando quieras</b><span>Nombre y cifras completas después de firmar confidencialidad y verificar fondos.</span></p></li>
+      </ol>
+      <p class="fine">Registrarte no tiene costo ni te compromete a nada. Tu búsqueda queda activa seis meses y te pediremos confirmarla.</p>
+    </section>
+
+    <div class="card">
+      <div id="steps">
+        <h2 id="st-title">¿Qué empresa buscas?</h2>
+        <div class="step-meta"><span id="st-count">Paso 1 de 2</span><span class="bar" aria-hidden="true"><span class="on"></span><span id="bar2"></span></span></div>
+
+        <form id="f1" class="f" novalidate>
+          <fieldset class="field" data-req="radio" data-name="tipo">
+            <legend>¿Quién compra?</legend>
+            <div class="chips">
+              <input type="radio" name="tipo" id="t1" value="empresa" data-label="Empresa que quiere crecer comprando"><label for="t1">Una empresa que quiere crecer comprando</label>
+              <input type="radio" name="tipo" id="t2" value="fondo" data-label="Family office, fondo o holding"><label for="t2">Un family office, fondo o holding</label>
+              <input type="radio" name="tipo" id="t3" value="persona" data-label="Persona que quiere su propia empresa"><label for="t3">Una persona que quiere su propia empresa</label>
+              <input type="radio" name="tipo" id="t4" value="exterior" data-label="Colombiano en el exterior"><label for="t4">Un colombiano en el exterior</label>
+            </div>
+          </fieldset>
+
+          <fieldset class="field" data-req="check" data-name="cat">
+            <legend>Sectores que te interesan<span class="hint">Elige uno o varios</span></legend>
+            <div class="chips" id="cats"></div>
+          </fieldset>
+
+          <fieldset class="field" data-req="check" data-name="reg">
+            <legend>¿Dónde debe operar?<span class="hint">Elige uno o varios</span></legend>
+            <div class="chips tight" id="regs"></div>
+            <div class="chips tight" id="regs-more" hidden></div>
+            <button type="button" class="more" id="more">Ver todos los departamentos</button>
+          </fieldset>
+
+          <fieldset class="field" data-req="radio" data-name="ticket">
+            <legend>¿Cuánto puedes invertir en la compra?</legend>
+            <div class="chips">
+              <input type="radio" name="ticket" id="k1" value="lt500"><label for="k1">Menos de $500 millones</label>
+              <input type="radio" name="ticket" id="k2" value="500-2000"><label for="k2">$500 a $2.000 millones</label>
+              <input type="radio" name="ticket" id="k3" value="2000-8000"><label for="k3">$2.000 a $8.000 millones</label>
+              <input type="radio" name="ticket" id="k4" value="8000-20000"><label for="k4">$8.000 a $20.000 millones</label>
+              <input type="radio" name="ticket" id="k5" value="gt20000"><label for="k5">Más de $20.000 millones</label>
+            </div>
+          </fieldset>
+
+          <fieldset class="field" data-req="check" data-name="fuente">
+            <legend>¿De dónde sale el dinero?<span class="hint">Elige uno o varios</span></legend>
+            <div class="chips">
+              <input type="checkbox" name="fuente" id="d1" value="propio"><label for="d1">Recursos propios</label>
+              <input type="checkbox" name="fuente" id="d2" value="fondo_comprometido"><label for="d2">Fondo con capital comprometido</label>
+              <input type="checkbox" name="fuente" id="d3" value="deuda_bancaria"><label for="d3">Crédito bancario</label>
+              <input type="checkbox" name="fuente" id="d4" value="necesita_financiacion"><label for="d4">Necesito ayuda para financiarla</label>
+            </div>
+          </fieldset>
+
+          <fieldset class="field" data-req="radio" data-name="plazo">
+            <legend>¿Cuándo quieres comprar?</legend>
+            <div class="chips">
+              <input type="radio" name="plazo" id="z1" value="6"><label for="z1">En los próximos 6 meses</label>
+              <input type="radio" name="plazo" id="z2" value="12"><label for="z2">Entre 6 y 12 meses</label>
+              <input type="radio" name="plazo" id="z3" value="24"><label for="z3">En más de un año</label>
+              <input type="radio" name="plazo" id="z4" value="explorando"><label for="z4">Solo estoy explorando</label>
+            </div>
+          </fieldset>
+
+          <p class="err" id="f1-err" role="alert" hidden>Responde las preguntas marcadas para continuar.</p>
+          <button class="btn btn-primary" type="submit">Continuar<svg class="ico"><use href="#i-arrow"/></svg></button>
+        </form>
+
+        <form id="f2" class="f" novalidate hidden>
+          <div class="two">
+            <div class="field"><label for="c-name">Tu nombre</label><input type="text" id="c-name" required autocomplete="name" maxlength="120"></div>
+            <div class="field"><label for="c-company">Empresa o fondo <span class="hint">Opcional</span></label><input type="text" id="c-company" autocomplete="organization" maxlength="160" data-optional></div>
+          </div>
+          <div class="field"><label for="c-role">Tu cargo <span class="hint">Opcional</span></label><input type="text" id="c-role" autocomplete="organization-title" maxlength="120" data-optional></div>
+          <div class="two">
+            <div class="field"><label for="c-phone">WhatsApp</label><input type="tel" id="c-phone" required autocomplete="tel" inputmode="tel" placeholder="300 123 4567"></div>
+            <div class="field"><label for="c-email">Correo</label><input type="email" id="c-email" required autocomplete="email" maxlength="160"></div>
+          </div>
+          <div class="hp" aria-hidden="true"><label>No llenar <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+          <label class="consent" for="c-consent"><input type="checkbox" id="c-consent" required><span>Autorizo el tratamiento de mis datos según la Ley 1581 de 2012 y la <a href="/privacidad" target="_blank">Política de Tratamiento de Datos</a> para contactarme por WhatsApp o correo cuando haya una empresa que encaje con mi búsqueda.</span></label>
+          <p class="err" id="f2-err" role="alert" hidden>Revisa los campos marcados.</p>
+          <p class="err" id="f2-net" role="alert" hidden>No pudimos guardar tu búsqueda. Revisa tu conexión e intenta de nuevo.</p>
+          <div class="actions">
+            <button class="btn btn-ghost" type="button" id="back">Atrás</button>
+            <button class="btn btn-primary" type="submit">Registrar mi búsqueda<svg class="ico"><use href="#i-arrow"/></svg></button>
+          </div>
+        </form>
+      </div>
+
+      <div class="done" id="done" hidden tabindex="-1">
+        <p class="ok"><svg class="ico"><use href="#i-check"/></svg>Registramos tu búsqueda</p>
+        <p class="h2">Te escribiremos cuando una empresa encaje con lo que buscas.</p>
+        <p class="fine">Un miembro del equipo puede contactarte para afinar los detalles: múltiplo que estarías dispuesto a pagar, estructuras que aceptas y lo que nunca comprarías.</p>
+        <ul>
+          <li><span><b>Fichas anónimas primero.</b> Nombre y cifras después de firmar confidencialidad.</span></li>
+          <li><span><b>Sin costo por registrarte.</b> Tu búsqueda vence en seis meses si no la confirmas.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</main>
+<footer class="wrap"><span>© Relevo</span><a href="/terminos">Términos</a><a href="/privacidad">Privacidad</a><a href="/">Vender mi empresa</a></footer>
+
+<script>
+(()=>{
+  const CFG={url:'https://zxjqixxpyxdyrqaweorn.supabase.co',key:'sb_publishable_zEwtzlpxk2cogjK0KCIMdg_xbPhTNPE'};
+  // Espejo de la tabla public.categorias
+  const CATS=[['alimentos_bebidas','Alimentos y bebidas'],['agro','Agro y agroindustria'],['quimicos_farma','Químicos, plásticos y farmacéutica'],['manufactura','Manufactura industrial'],['construccion','Construcción e inmobiliario'],['comercio_mayorista','Distribución y comercio mayorista'],['comercio_minorista','Comercio minorista y retail'],['transporte_logistica','Transporte y logística'],['turismo_restaurantes','Hoteles, restaurantes y turismo'],['tecnologia','Tecnología y software'],['medios_telecom','Medios y telecomunicaciones'],['salud','Salud'],['educacion','Educación'],['servicios_empresariales','Servicios a empresas'],['energia_mineria','Energía, minería y medio ambiente'],['otros_servicios','Otros servicios']];
+  // Códigos DANE. Los primeros se muestran siempre.
+  const TOP=[['11','Bogotá D.C.'],['05','Antioquia'],['76','Valle del Cauca'],['08','Atlántico'],['68','Santander'],['25','Cundinamarca'],['13','Bolívar'],['66','Risaralda']];
+  const REST=[['15','Boyacá'],['17','Caldas'],['18','Caquetá'],['19','Cauca'],['20','Cesar'],['23','Córdoba'],['27','Chocó'],['41','Huila'],['44','La Guajira'],['47','Magdalena'],['50','Meta'],['52','Nariño'],['54','Norte de Santander'],['63','Quindío'],['70','Sucre'],['73','Tolima'],['81','Arauca'],['85','Casanare'],['86','Putumayo'],['88','San Andrés y Providencia'],['91','Amazonas'],['94','Guainía'],['95','Guaviare'],['97','Vaupés'],['99','Vichada']];
+  const $=s=>document.querySelector(s);
+  const chip=(name,type,v,l,id)=>`<input type="${type}" name="${name}" id="${id}" value="${v}"><label for="${id}">${l}</label>`;
+  $('#cats').innerHTML=CATS.map(([v,l],i)=>chip('cat','checkbox',v,l,'cat'+i)).join('');
+  $('#regs').innerHTML=chip('reg','checkbox','todo','Todo el país','reg-all')+TOP.map(([v,l])=>chip('reg','checkbox',v,l,'reg'+v)).join('');
+  $('#regs-more').innerHTML=REST.map(([v,l])=>chip('reg','checkbox',v,l,'reg'+v)).join('');
+  $('#more').addEventListener('click',e=>{$('#regs-more').hidden=false;e.target.hidden=true;});
+  // "Todo el país" excluye departamentos y viceversa
+  document.addEventListener('change',e=>{const t=e.target;if(t.name!=='reg'||!t.checked)return;
+    if(t.value==='todo')document.querySelectorAll('input[name=reg]').forEach(i=>{if(i!==t)i.checked=false;});
+    else $('#reg-all').checked=false;});
+
+  const vals=n=>[...document.querySelectorAll(`input[name="${n}"]:checked`)].map(i=>i.value);
+  function markFs(fs,ok){fs.classList.toggle('bad',!ok);let e=fs.querySelector('.ferr');
+    if(!ok&&!e){e=document.createElement('p');e.className='ferr';e.textContent='Elige al menos una opción.';fs.appendChild(e);}
+    if(ok&&e)e.remove();return ok;}
+  function checkStep1(){let ok=true,first=null;
+    document.querySelectorAll('#f1 fieldset[data-req]').forEach(fs=>{const good=vals(fs.dataset.name).length>0;if(!markFs(fs,good)){ok=false;first=first||fs;}});
+    if(first)first.scrollIntoView({behavior:'smooth',block:'center'});return ok;}
+  $('#f1').addEventListener('change',e=>{const fs=e.target.closest('fieldset.bad');if(fs)markFs(fs,vals(fs.dataset.name).length>0);});
+
+  const go=n=>{$('#f1').hidden=n!==1;$('#f2').hidden=n!==2;$('#st-count').textContent=`Paso ${n} de 2`;
+    $('#st-title').textContent=n===1?'¿Qué empresa buscas?':'¿A quién le escribimos?';$('#bar2').classList.toggle('on',n===2);
+    $('#steps').scrollIntoView({behavior:'smooth',block:'start'});};
+  $('#f1').addEventListener('submit',e=>{e.preventDefault();const ok=checkStep1();$('#f1-err').hidden=ok;if(ok)go(2);});
+  $('#back').addEventListener('click',()=>go(1));
+
+  const MSG={req:'Este campo es obligatorio.',email:'Escribe un correo válido, por ejemplo nombre@empresa.com.',phone:'Escribe un número válido.',consent:'Debes aceptar para poder enviar.'};
+  function setErr(input,m){input.setAttribute('aria-invalid',m?'true':'false');let e=input.parentElement.querySelector('.ferr');
+    if(m&&!e){e=document.createElement('p');e.className='ferr';input.parentElement.appendChild(e);}if(e){if(m)e.textContent=m;else e.remove();}return !m;}
+  function checkInput(i){const v=i.value.trim();
+    if(i.dataset.optional!==undefined)return true;
+    if(!v)return setErr(i,MSG.req);
+    if(i.type==='email'&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v))return setErr(i,MSG.email);
+    if(i.type==='tel'){const d=v.replace(/\D/g,'');if(d.length<7||d.length>15)return setErr(i,MSG.phone);}
+    return setErr(i,'');}
+  $('#f2').addEventListener('input',e=>{if(e.target.getAttribute('aria-invalid')==='true')checkInput(e.target);});
+
+  const utm=new URLSearchParams(location.search);
+  $('#f2').addEventListener('submit',async e=>{e.preventDefault();
+    let ok=true,first=null;['#c-name','#c-phone','#c-email'].forEach(s=>{const i=$(s);if(!checkInput(i)){ok=false;first=first||i;}});
+    const cons=$('#c-consent'),lab=cons.closest('.consent');lab.classList.toggle('bad',!cons.checked);if(!cons.checked){ok=false;first=first||cons;}
+    $('#f2-err').hidden=ok;$('#f2-net').hidden=true;if(!ok){first.focus();return;}
+    const tipo=document.querySelector('input[name=tipo]:checked');
+    const regs=vals('reg').filter(v=>v!=='todo');
+    const p={
+      nombre:$('#c-name').value.trim(),empresa:$('#c-company').value.trim(),cargo:$('#c-role').value.trim(),
+      telefono:$('#c-phone').value.trim(),email:$('#c-email').value.trim(),
+      tipo:tipo.value,tipo_label:tipo.dataset.label,ticket:vals('ticket')[0],plazo:vals('plazo')[0],
+      categorias:vals('cat'),regiones:regs,fuente_dinero:vals('fuente'),
+      consent:true,consent_text:lab.querySelector('span').textContent.trim(),
+      website:document.querySelector('input[name=website]').value,
+      utm_source:utm.get('utm_source'),utm_medium:utm.get('utm_medium'),utm_campaign:utm.get('utm_campaign'),utm_content:utm.get('utm_content'),utm_term:utm.get('utm_term'),
+      referrer:document.referrer||null,landing_url:location.href,user_agent:navigator.userAgent
+    };
+    const btn=e.submitter||$('#f2 .btn-primary');btn.setAttribute('aria-busy','true');
+    try{
+      const r=await fetch(CFG.url+'/rest/v1/rpc/registrar_comprador',{method:'POST',headers:{apikey:CFG.key,'Content-Type':'application/json'},body:JSON.stringify({p})});
+      if(!r.ok){const t=await r.text();
+        if(/demasiados_intentos/.test(t)){$('#f2-net').textContent='Ya recibimos tus registros. Intenta de nuevo en una hora.';}
+        else if(/email_invalido/.test(t)){setErr($('#c-email'),MSG.email);$('#c-email').focus();btn.removeAttribute('aria-busy');return;}
+        else if(/telefono_invalido/.test(t)){setErr($('#c-phone'),MSG.phone);$('#c-phone').focus();btn.removeAttribute('aria-busy');return;}
+        throw new Error(t);}
+      $('#steps').hidden=true;const d=$('#done');d.hidden=false;d.focus();d.scrollIntoView({behavior:'smooth',block:'center'});
+    }catch(err){console.error(err);$('#f2-net').hidden=false;}
+    finally{btn.removeAttribute('aria-busy');}
+  });
+})();
+</script>
+</body></html>
