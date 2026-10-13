@@ -759,15 +759,8 @@ summary .pl{border-radius:2px}
               <div class="field"><label for="s-phone">WhatsApp <span class="ast" aria-hidden="true">*</span></label><input type="tel" id="s-phone" required autocomplete="tel" inputmode="tel" placeholder="300 123 4567" data-kind="phone"></div>
               <div class="field"><label for="s-email">Correo <span class="ast" aria-hidden="true">*</span></label><input type="email" id="s-email" required autocomplete="email"></div>
             </div>
-<fieldset class="field">
-              <legend>¿Por dónde prefieres que te contactemos?</legend>
-              <div class="chips">
-                <input type="radio" name="schan" id="sc1" value="whatsapp"><label for="sc1">WhatsApp</label>
-                <input type="radio" name="schan" id="sc2" value="correo" checked><label for="sc2">Correo</label>
-              </div>
-            </fieldset>
-            <div class="hp" aria-hidden="true"><label>No llenar <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-            <label class="consent" for="s-consent"><input type="checkbox" id="s-consent" required><span>Autorizo el tratamiento de mis datos según la Ley 1581 de 2012 y la <a href="/privacidad" target="_blank">Política de Tratamiento de Datos</a> para preparar mi valoración, contactarme por el canal que elegí y compartir con Meta, de forma cifrada, la confirmación de mi solicitud para medir los anuncios.</span></label>
+<div class="hp" aria-hidden="true"><label>No llenar <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+            <label class="consent" for="s-consent"><input type="checkbox" id="s-consent" required><span>Autorizo el tratamiento de mis datos según la Ley 1581 de 2012 y la <a href="/privacidad" target="_blank">Política de Tratamiento de Datos</a> para preparar mi valoración, contactarme por WhatsApp o correo y compartir con Meta, de forma cifrada, la confirmación de mi solicitud para medir los anuncios.</span></label>
             <p class="err" id="s2-err" role="alert" hidden>Revisa los campos marcados con * y que el correo sea válido.</p>
             <p class="err" id="s2-net" role="alert" hidden>No pudimos enviar tus datos. Revisa tu conexión e intenta de nuevo.</p>
             <div class="actions">
@@ -918,15 +911,8 @@ summary .pl{border-radius:2px}
               <div class="field"><label for="b-phone">WhatsApp <span class="ast" aria-hidden="true">*</span></label><input type="tel" id="b-phone" required autocomplete="tel" inputmode="tel" placeholder="300 123 4567" data-kind="phone"></div>
               <div class="field"><label for="b-email">Correo <span class="ast" aria-hidden="true">*</span></label><input type="email" id="b-email" required autocomplete="email"></div>
             </div>
-<fieldset class="field">
-              <legend>¿Por dónde prefieres que te contactemos?</legend>
-              <div class="chips">
-                <input type="radio" name="bchan" id="bc1" value="whatsapp"><label for="bc1">WhatsApp</label>
-                <input type="radio" name="bchan" id="bc2" value="correo" checked><label for="bc2">Correo</label>
-              </div>
-            </fieldset>
-            <div class="hp" aria-hidden="true"><label>No llenar <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-            <label class="consent" for="b-consent"><input type="checkbox" id="b-consent" required><span>Autorizo el tratamiento de mis datos según la Ley 1581 de 2012 y la <a href="/privacidad" target="_blank">Política de Tratamiento de Datos</a> para contactarme por el canal que elegí cuando haya una empresa que encaje con mi perfil.</span></label>
+<div class="hp" aria-hidden="true"><label>No llenar <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+            <label class="consent" for="b-consent"><input type="checkbox" id="b-consent" required><span>Autorizo el tratamiento de mis datos según la Ley 1581 de 2012 y la <a href="/privacidad" target="_blank">Política de Tratamiento de Datos</a> para contactarme por WhatsApp o correo cuando haya una empresa que encaje con mi perfil.</span></label>
             <p class="err" id="b1-err" role="alert" hidden>Revisa los campos marcados con * y que el correo sea válido.</p>
             <p class="err" id="b1-net" role="alert" hidden>No pudimos enviar tus datos. Revisa tu conexión e intenta de nuevo.</p>
             <button class="btn btn-primary" type="submit">Registrar mi perfil<svg class="ico"><use href="#i-arrow"/></svg></button>
@@ -1074,7 +1060,7 @@ summary .pl{border-radius:2px}
     if(!bot(f)){busy(f,true);sellerId=uid();
       const saved=await save('leads',{id:sellerId,kind:'seller',sector:$('s-sector').value,sales_range:rv('sales'),timing:$('s-when').value,
         name:$('s-name').value.trim(),role:$('s-role').value,company:$('s-company').value.trim(),city:$('s-city').value.trim(),phone:$('s-phone').value.trim(),email:$('s-email').value.trim(),
-        contact_channel:rv('schan'),consent:true,consent_text:consentText('s-consent'),...meta});
+        consent:true,consent_text:consentText('s-consent'),...meta});
       busy(f,false); if(!saved){$('s2-net').hidden=false;return;}
       /* ventas < $1.000 millones: no es Lead para Meta (no optimizar hacia ellos) y la pantalla final no promete contacto */
       if(rv('sales')==='lt1000'){px('trackCustom','LeadNoCalifica',{content_name:'vendedor'},sellerId);
@@ -1092,7 +1078,7 @@ summary .pl{border-radius:2px}
     if(!bot(f)){busy(f,true);
       const saved=await save('leads',{id:uid(),kind:'buyer',buyer_type:$('b-type').value,budget:rv('budget'),
         name:$('b-name').value.trim(),role:$('b-role').value,company:$('b-company').value.trim(),phone:$('b-phone').value.trim(),email:$('b-email').value.trim(),
-        contact_channel:rv('bchan'),consent:true,consent_text:consentText('b-consent'),...meta});
+        consent:true,consent_text:consentText('b-consent'),...meta});
       busy(f,false); if(!saved){$('b1-net').hidden=false;return;}
       px('trackCustom','BuyerSignup');}
     $('buy-steps').hidden=true; $('buy-done').hidden=false; $('buy-done').focus();

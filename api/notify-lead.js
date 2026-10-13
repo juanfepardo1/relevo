@@ -112,7 +112,7 @@ function build(r) {
       ]
     : [['Nombre', r.name], ['Rol', r.role], ['Empresa o fondo', r.company], ['Tipo de comprador', r.buyer_type], ['Presupuesto', r.budget]]
   ).concat([
-    ['WhatsApp', r.phone], ['Correo', r.email], ['Prefiere contacto por', r.contact_channel],
+    ['WhatsApp', r.phone], ['Correo', r.email],
     ['Anuncio', adName(r.utm_content)], ['Red', SOURCES[r.utm_source] || r.utm_source],
   ]);
 
