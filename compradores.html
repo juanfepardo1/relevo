@@ -503,9 +503,9 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
           <div class="page" data-step="4" hidden>
             <div class="two">
               <div class="fld"><label for="c-name">Tu nombre</label><input type="text" id="c-name" autocomplete="name" maxlength="120" required></div>
-              <div class="fld"><label for="c-company">Empresa o fondo <small>Opcional</small></label><input type="text" id="c-company" autocomplete="organization" maxlength="160" data-optional></div>
+              <div class="fld"><label for="c-company">Empresa o fondo</label><input type="text" id="c-company" autocomplete="organization" maxlength="160" required></div>
             </div>
-            <div class="fld"><label for="c-role">Tu cargo <small>Opcional</small></label><input type="text" id="c-role" autocomplete="organization-title" maxlength="120" data-optional></div>
+            <div class="fld"><label for="c-role">Tu cargo</label><input type="text" id="c-role" autocomplete="organization-title" maxlength="120" required></div>
             <div class="two">
               <div class="fld"><label for="c-phone">WhatsApp</label><input type="tel" id="c-phone" autocomplete="tel" inputmode="tel" placeholder="300 123 4567" required></div>
               <div class="fld"><label for="c-email">Correo</label><input type="email" id="c-email" autocomplete="email" maxlength="160" placeholder="nombre@empresa.com" required></div>
@@ -601,7 +601,7 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
   const utm=new URLSearchParams(location.search);
   $('#obf').addEventListener('submit',async e=>{e.preventDefault();
     if(step<4){if(checkStep()){step++;render();const f=$('.page:not([hidden]) input');f&&f.focus({preventScroll:true});}return;}
-    let ok=true,first=null;['#c-name','#c-phone','#c-email'].forEach(s=>{const i=$(s);if(!checkInput(i)){ok=false;first=first||i;}});
+    let ok=true,first=null;['#c-name','#c-company','#c-role','#c-phone','#c-email'].forEach(s=>{const i=$(s);if(!checkInput(i)){ok=false;first=first||i;}});
     const cons=$('#c-consent'),lab=cons.closest('.consent');lab.classList.toggle('bad',!cons.checked);if(!cons.checked){ok=false;first=first||cons;}
     const err=$('#ob-err');if(!ok){err.textContent=cons.checked?'Revisa los campos marcados.':'Para registrarte debes autorizar el tratamiento de datos.';err.hidden=false;first.focus();return;}
     const tipo=$('input[name=tipo]:checked');
