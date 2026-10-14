@@ -34,6 +34,16 @@
       "source": "/comprar",
       "destination": "/compradores",
       "permanent": true
+    },
+    {
+      "source": "/app/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/app",
+      "destination": "/",
+      "permanent": false
     }
   ]
 }
