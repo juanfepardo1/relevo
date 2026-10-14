@@ -13,6 +13,7 @@ import VendedorFicha from './pages/VendedorFicha';
 import Compradores from './pages/Compradores';
 import CompradorFicha from './pages/CompradorFicha';
 import Stats from './pages/Stats';
+import Bandeja from './pages/Bandeja';
 import './styles.css';
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
           <Route path="compradores" element={<Compradores />} />
           <Route path="compradores/:id" element={<CompradorFicha />} />
           <Route path="stats" element={<Stats />} />
+          <Route path="bandeja" element={<Bandeja />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

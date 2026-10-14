@@ -8,6 +8,7 @@ import { fecha, hoy } from '../lib/format';
 import { Skeleton, ErrorBox, Modal, Dias, useToast } from '../components/ui';
 
 const VENTAS_ORD = VENTAS.map((v) => v[0]);
+export const BUCKETS: [string, string][] = [['A', '5.000 a 20.000M'], ['B', '1.000 a 5.000M'], ['C', 'menos de 1.000M'], ['D', 'más de 20.000M']];
 
 export default function Vendedores() {
   const nav = useNavigate();
@@ -19,6 +20,7 @@ export default function Vendedores() {
   const [etapa, setEtapa] = useState('activos');
   const [resp, setResp] = useState('');
   const [sector, setSector] = useState('');
+  const [bucket, setBucket] = useState('');
   const [orden, setOrden] = useState<{ k: string; asc: boolean }>({ k: 'fecha_ingreso', asc: false });
   const [nuevo, setNuevo] = useState(false);
   const toast = useToast();
@@ -28,13 +30,13 @@ export default function Vendedores() {
     let r = (q.data || []).filter((v: Row) =>
       (etapa === 'todos' || (etapa === 'activos' ? !['cerrado', 'perdido'].includes(v.etapa) : v.etapa === etapa)) &&
       (!resp || (resp === 'sin' ? !v.responsable : v.responsable === resp)) &&
-      (!sector || v.sector === sector) &&
+      (!sector || v.sector === sector) && (!bucket || v.bucket === bucket) &&
       (!s || [v.nombre, v.empresa, v.ciudad, v.correo, v.celular].some((x) => String(x || '').toLowerCase().includes(s))));
     const k = orden.k;
     const val = (v: Row) => (k === 'ventas_rango' ? VENTAS_ORD.indexOf(v[k]) : k === 'etapa' ? v.etapa_orden : v[k]);
     r = [...r].sort((a, b) => { const x = val(a), y = val(b); if (x == null) return 1; if (y == null) return -1; return (x > y ? 1 : x < y ? -1 : 0) * (orden.asc ? 1 : -1); });
     return r;
-  }, [q.data, buscar, etapa, resp, sector, orden]);
+  }, [q.data, buscar, etapa, resp, sector, bucket, orden]);
 
   const th = (k: string, t: string, cls = '') => (
     <th className={cls} onClick={() => setOrden((o) => ({ k, asc: o.k === k ? !o.asc : true }))} aria-sort={orden.k === k ? (orden.asc ? 'ascending' : 'descending') : 'none'}>
@@ -72,18 +74,22 @@ export default function Vendedores() {
         <select className="sel" value={sector} onChange={(e) => setSector(e.target.value)} aria-label="Sector">
           <option value="">Todos los sectores</option>{SECTORES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
         </select>
+        <select className="sel" value={bucket} onChange={(e) => setBucket(e.target.value)} aria-label="Bucket">
+          <option value="">Todos los buckets</option>{BUCKETS.map(([k, l]) => <option key={k} value={k}>{k} · {l}</option>)}
+        </select>
       </div>
 
       {q.error ? <ErrorBox msg={q.error} retry={q.reload} /> : q.loading ? <div className="panel"><Skeleton rows={8} /></div> : vista === 'tabla' ? (
         <div className="tablewrap">
           <table className="t">
-            <thead><tr>{th('nombre', 'Contacto')}{th('etapa', 'Etapa')}{th('dias_en_etapa', 'Días', 'r')}{th('ventas_rango', 'Ventas')}{th('sector', 'Sector')}{th('ciudad', 'Ciudad')}{th('responsable', 'Responsable')}{th('fecha_proxima_accion', 'Próxima acción')}{th('docs_pendientes', 'Docs', 'r')}{th('fecha_ingreso', 'Ingreso')}</tr></thead>
+            <thead><tr>{th('nombre', 'Contacto')}{th('etapa', 'Etapa')}{th('dias_en_etapa', 'Días', 'r')}{th('bucket', 'Bucket')}{th('ventas_rango', 'Ventas')}{th('sector', 'Sector')}{th('ciudad', 'Ciudad')}{th('responsable', 'Responsable')}{th('fecha_proxima_accion', 'Próxima acción')}{th('docs_pendientes', 'Docs', 'r')}{th('fecha_ingreso', 'Ingreso')}</tr></thead>
             <tbody>
-              {!rows.length ? <tr><td colSpan={10}><p className="empty-state">Ningún vendedor coincide con los filtros.</p></td></tr> : rows.map((v: Row) => (
+              {!rows.length ? <tr><td colSpan={11}><p className="empty-state">Ningún vendedor coincide con los filtros.</p></td></tr> : rows.map((v: Row) => (
                 <tr key={v.id} onClick={() => nav(`/vendedores/${v.id}`)}>
                   <td><span className="primary-cell">{v.empresa || v.nombre}</span><span className="sub">{v.empresa ? v.nombre : ''}</span></td>
                   <td><span className="b">{v.etapa_nombre}</span></td>
                   <td className="r"><Dias d={v.dias_en_etapa} sla={v.sla_dias} /></td>
+                  <td>{v.bucket ? <span className={'b ' + (v.bucket === 'A' ? 'or' : v.bucket === 'D' ? 'bl' : '')}>{v.bucket}</span> : <span className="muted">·</span>}</td>
                   <td>{label(VENTAS, v.ventas_rango)}</td>
                   <td>{label(SECTORES, v.sector)}</td>
                   <td>{v.ciudad}</td>
