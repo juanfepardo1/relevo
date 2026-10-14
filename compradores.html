@@ -573,6 +573,11 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
     $('#ob-back').disabled=step===1;
     $('#ob-next').firstChild.textContent=step===4?'Registrar búsqueda':'Continuar';
     $('#ob-err').hidden=true;$('.ob-body').scrollTop=0;
+    /* quien compra a título personal no tiene empresa ni cargo: ahí son opcionales */
+    const personal=(document.querySelector('input[name="tipo"]:checked')||{}).value==='persona';
+    ['#c-company','#c-role'].forEach(sel=>{const i=$(sel),l=i.labels[0];let sm=l.querySelector('small');i.required=!personal;
+      if(personal){i.dataset.optional='';if(!sm){sm=document.createElement('small');sm.textContent='Opcional';l.appendChild(sm);}setErr(i,'');}
+      else{delete i.dataset.optional;if(sm)sm.remove();}});
   }
   function markFs(fs,ok){fs.classList.toggle('bad',!ok);let e=fs.querySelector('.ferr');
     if(!ok&&!e){e=document.createElement('p');e.className='ferr';e.textContent='Elige al menos una opción.';fs.appendChild(e);}if(ok&&e)e.remove();return ok;}
