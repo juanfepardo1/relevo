@@ -970,7 +970,7 @@ summary .pl{border-radius:2px}
     const ok=valid(f); $('s2-net').hidden=true; if(!ok)return;
     if(!bot(f)){busy(f,true);sellerId=uid();
       const saved=await save('leads',{id:sellerId,kind:'seller',sector:$('s-sector').value,sales_range:rv('sales'),timing:$('s-when').value,
-        name:$('s-name').value.trim(),role:$('s-role').value,company:$('s-company').value.trim(),city:$('s-city').value.trim(),phone:$('s-phone').value.trim(),email:$('s-email').value.trim(),
+        name:$('s-name').value.trim(),role:$('s-role').value,company:$('s-company').value.trim(),city:$('s-city').value.trim(),phone:$('s-phone').value.trim(),email:$('s-email').value.trim(),contact_channel:'whatsapp',
         consent:true,consent_text:consentText('s-consent'),...meta});
       busy(f,false); if(!saved){$('s2-net').hidden=false;return;}
       /* ventas < $1.000 millones: no es Lead para Meta (no optimizar hacia ellos) y la pantalla final no promete contacto */
