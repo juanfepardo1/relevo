@@ -241,6 +241,14 @@ dialog.m footer{display:flex;justify-content:flex-end;gap:8px;padding-top:6px}
 .meta-chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;color:var(--ink);background:#fff;border:1px solid var(--line-2);border-radius:999px;padding:3px 10px}
 .meta-chip .ic{width:14px;height:14px;color:var(--orange)}
 
+/* grupos de documentos */
+.doc-todos{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;font-size:12.5px;border-top:1px solid var(--line)}
+.doc-grupo{border-top:1px solid var(--line)}
+.doc-grupo-h{appearance:none;border:0;background:none;width:100%;display:flex;align-items:center;gap:8px;padding:11px 16px;font:500 13.5px var(--sans);color:var(--ink);cursor:pointer;text-align:left}
+.doc-grupo-h:hover{background:#f7f9fc}
+.doc-grupo-h .caret{width:14px;height:14px;color:var(--ink-3);transition:transform .15s}
+.doc-grupo .list{border-top:1px solid var(--line);background:#fbfcfe}
+
 /* subir varios */
 .lote{display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow:auto}
 .lote-fila{display:grid;grid-template-columns:minmax(0,1fr) 190px auto;gap:6px;align-items:center}

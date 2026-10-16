@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowDown, ArrowUp, ChatCircle, Envelope, FileText, Note, Phone, Plus, Users, Paperclip, Check, ArrowSquareOut, FilePlus, UploadSimple } from '@phosphor-icons/react';
+import { ArrowDown, ArrowUp, ChatCircle, Envelope, FileText, Note, Phone, Plus, Users, Paperclip, Check, ArrowSquareOut, FilePlus, UploadSimple, CaretRight } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
 import { useQuery, useCatalogo } from '../lib/data';
 import { TIPO_DOC, ESTADO_DOC, TIPO_ACTIVIDAD, label } from '../lib/catalogos';
@@ -63,6 +63,7 @@ export function DocumentosPanel({ entidad, id }: { entidad: Ent; id: string }) {
   const [open, setOpen] = useState(false);
   const [lote, setLote] = useState<File[] | null>(null);
   const [arrastre, setArrastre] = useState(false);
+  const [abiertos, setAbiertos] = useState<Record<string, boolean>>({});
   const toast = useToast();
 
   const marcar = async (d: Row) => {
@@ -77,38 +78,62 @@ export function DocumentosPanel({ entidad, id }: { entidad: Ent; id: string }) {
     window.open(data.signedUrl, '_blank', 'noopener');
   };
 
+  const fila = (d: Row) => {
+    const atraso = d.estado === 'solicitado' ? diasDesde(d.solicitado_en) : null;
+    const pend = d.estado === 'solicitado' || d.estado === 'pendiente';
+    return (
+      <div className="li" key={d.id}>
+        {d.direccion === 'recibir' ? <ArrowDown className="ic" aria-label="Recibir" /> : <ArrowUp className="ic" aria-label="Enviar" />}
+        <div style={{ minWidth: 0 }}>
+          <b>{d.nombre}</b>
+          <p className="meta">
+            {label(TIPO_DOC, d.tipo)} · {d.direccion === 'recibir' ? 'Lo envía la contraparte' : 'Lo enviamos nosotros'}
+            {d.solicitado_en && ` · pedido ${fecha(d.solicitado_en)}`}{d.completado_en && ` · completado ${fecha(d.completado_en)}`}
+          </p>
+          {d.notas && <p className="meta">{d.notas}</p>}
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <span className={'b ' + (atraso != null && atraso >= 15 ? 'err' : pend ? 'warn' : d.estado === 'descartado' ? '' : 'ok')}>
+            {label(ESTADO_DOC, d.estado)}{atraso != null ? ` · ${atraso} d` : ''}
+          </span>
+          {(d.archivo_path || d.url) && <button className="btn ghost" title="Abrir" onClick={() => abrir(d)}><ArrowSquareOut className="ic" /></button>}
+          {pend && <button className="btn ghost" title={d.direccion === 'recibir' ? 'Marcar recibido' : 'Marcar enviado'} onClick={() => marcar(d)}><Check className="ic" /></button>}
+        </div>
+      </div>
+    );
+  };
+  const lista = (q.data || []) as Row[];
+  const pendientes = lista.filter((d) => d.estado === 'solicitado' || d.estado === 'pendiente');
+  const resto = lista.filter((d) => !(d.estado === 'solicitado' || d.estado === 'pendiente'));
+  const grupos = Object.entries(resto.reduce((m: Record<string, Row[]>, d) => { (m[d.tipo] ||= []).push(d); return m; }, {}));
   return (
     <section className={'panel' + (arrastre ? ' drop-on' : '')} onDragOver={(e) => { if (e.dataTransfer.types.includes('Files')) { e.preventDefault(); setArrastre(true); } }} onDragLeave={() => setArrastre(false)} onDrop={(e) => { e.preventDefault(); setArrastre(false); const f = Array.from(e.dataTransfer.files || []); if (f.length) setLote(f); }}>
       <header><h2>Documentos</h2><div style={{ display: 'flex', gap: 6 }}>{entidad === 'vendedor' && <Link className="btn" to={`/documentos?tipo=nda&vendedor=${id}`}><FilePlus className="ic" />Generar NDA</Link>}<label className="btn" style={{ cursor: 'pointer' }} title="Sube varios archivos de una vez"><UploadSimple className="ic" />Subir varios<input type="file" multiple hidden onChange={(e) => { const f = Array.from(e.target.files || []); e.target.value = ''; if (f.length) setLote(f); }} /></label><button className="btn" onClick={() => setOpen(true)}><Plus className="ic" />Registrar</button></div></header>
       {q.loading ? <Skeleton rows={3} /> : !q.data?.length ? (
         <p className="empty-state">Sin documentos. Registra lo que pides, recibes o envías para que el sistema avise cuando algo se atrase.</p>
       ) : (
-        <div className="list">
-          {q.data.map((d: Row) => {
-            const atraso = d.estado === 'solicitado' ? diasDesde(d.solicitado_en) : null;
-            const pend = d.estado === 'solicitado' || d.estado === 'pendiente';
+        <>
+          {pendientes.length > 0 && <div className="list">{pendientes.map(fila)}</div>}
+          {grupos.length > 1 && (
+            <div className="doc-todos">
+              <span className="muted">{resto.length} documentos en {grupos.length} grupos</span>
+              <button type="button" className="linkish" onClick={() => { const todos = grupos.every(([t]) => abiertos[t]); setAbiertos(Object.fromEntries(grupos.map(([t]) => [t, !todos]))); }}>{grupos.every(([t]) => abiertos[t]) ? 'Recoger todo' : 'Expandir todo'}</button>
+            </div>
+          )}
+          {grupos.map(([tipo, docs]) => {
+            const abierto = abiertos[tipo] ?? (grupos.length === 1 && docs.length <= 5);
             return (
-              <div className="li" key={d.id}>
-                {d.direccion === 'recibir' ? <ArrowDown className="ic" aria-label="Recibir" /> : <ArrowUp className="ic" aria-label="Enviar" />}
-                <div style={{ minWidth: 0 }}>
-                  <b>{d.nombre}</b>
-                  <p className="meta">
-                    {label(TIPO_DOC, d.tipo)} · {d.direccion === 'recibir' ? 'Lo envía la contraparte' : 'Lo enviamos nosotros'}
-                    {d.solicitado_en && ` · pedido ${fecha(d.solicitado_en)}`}{d.completado_en && ` · completado ${fecha(d.completado_en)}`}
-                  </p>
-                  {d.notas && <p className="meta">{d.notas}</p>}
-                </div>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                  <span className={'b ' + (atraso != null && atraso >= 15 ? 'err' : pend ? 'warn' : d.estado === 'descartado' ? '' : 'ok')}>
-                    {label(ESTADO_DOC, d.estado)}{atraso != null ? ` · ${atraso} d` : ''}
-                  </span>
-                  {(d.archivo_path || d.url) && <button className="btn ghost" title="Abrir" onClick={() => abrir(d)}><ArrowSquareOut className="ic" /></button>}
-                  {pend && <button className="btn ghost" title={d.direccion === 'recibir' ? 'Marcar recibido' : 'Marcar enviado'} onClick={() => marcar(d)}><Check className="ic" /></button>}
-                </div>
+              <div key={tipo} className="doc-grupo">
+                <button type="button" className="doc-grupo-h" aria-expanded={abierto} onClick={() => setAbiertos({ ...abiertos, [tipo]: !abierto })}>
+                  <CaretRight className="ic caret" style={{ transform: abierto ? 'rotate(90deg)' : 'none' }} />
+                  <span>{label(TIPO_DOC, tipo)}</span><span className="b num">{docs.length}</span>
+                  <span className="muted" style={{ marginLeft: 'auto', fontSize: 12 }}>{fecha(docs[0].completado_en || docs[0].created_at)}</span>
+                </button>
+                {abierto && <div className="list">{docs.map(fila)}</div>}
               </div>
             );
           })}
-        </div>
+        </>
       )}
       <Modal open={!!lote} onClose={() => setLote(null)} title={`Subir ${lote?.length ?? 0} documentos recibidos`}>
         {lote && <SubirVarios entidad={entidad} id={id} archivos={lote} pendientes={((q.data || []) as Row[]).filter((d) => d.direccion === 'recibir' && d.estado === 'solicitado')} onDone={() => { setLote(null); q.reload(); }} />}
