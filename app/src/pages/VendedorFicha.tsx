@@ -68,7 +68,8 @@ export default function VendedorFicha() {
             <header><h2>Empresa</h2></header>
             <div className="body fields">
               <Field label="Empresa" value={v.empresa} onSave={save('empresa')} />
-              <Field label="NIT" value={v.empresa_nit} />
+              <Field label="NIT" value={v.nit ?? v.empresa_nit} onSave={save('nit')} placeholder="Ej.: 802022698-1" />
+              <Field label="Razón social" value={v.razon_social} onSave={save('razon_social')} placeholder="Como aparece en Cámara de Comercio" />
               <Field label="Sector" type="select" options={SECTORES} value={v.sector} onSave={save('sector')} />
               <Field label="Ventas último año" type="select" options={VENTAS} value={v.ventas_rango} onSave={save('ventas_rango')} />
               <Field label="Ciudad" value={v.ciudad} onSave={save('ciudad')} />
