@@ -32,7 +32,6 @@ export default function Calendario() {
   const [cuentas, setCuentas] = useState<{ email: string; estado: string; reuniones?: number; error?: string }[]>([]);
 
   const reu = useQuery(() => supabase.from('reuniones').select('*, vendedores(empresa,nombre), compradores(nombre)').order('inicio'));
-  const vend = useQuery(() => supabase.from('v_vendedores').select('id,empresa,nombre,responsable,proxima_accion,fecha_proxima_accion,etapa').not('fecha_proxima_accion', 'is', null));
   const subs = useQuery(() => supabase.from('suscripciones').select('id,nombre,monto,proxima_renovacion,pagado_por').eq('estado', 'activa'));
   const docs = useQuery(() => supabase.from('documentos').select('id,nombre,solicitado_en,vendedor_id,comprador_id,vendedores(empresa,nombre,responsable)').eq('estado', 'solicitado').not('solicitado_en', 'is', null));
 
@@ -48,7 +47,7 @@ export default function Calendario() {
       if (!j.configurado) { setSync({ estado: 'off' }); return; }
       const errores = (j.cuentas || []).filter((c: any) => c.estado === 'error');
       setSync({ estado: errores.length ? 'err' : 'ok', msg: errores.length ? errores.map((c: any) => `${c.email.split('@')[0]}: ${c.error}`).join(' · ') : `${j.sincronizadas} reuniones al día` });
-      reu.reload(); vend.reload();
+      reu.reload();
     } catch (e: any) { setSync({ estado: 'err', msg: e.message }); }
   };
   useEffect(() => { sincronizar(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -61,10 +60,6 @@ export default function Calendario() {
       const quien = r.vendedores ? (r.vendedores.empresa || r.vendedores.nombre) : r.compradores?.nombre ?? r.invitado_nombre ?? r.invitado_email;
       out.push({ id: 'r' + r.id, dia: diaDe(r.inicio), hora: horaDe(r.inicio), titulo: quien || r.evento, detalle: r.evento, tipo: r.estado === 'cancelada' ? 'cancelada' : 'reunion', ir: r.vendedor_id ? `/vendedores/${r.vendedor_id}` : r.comprador_id ? `/compradores/${r.comprador_id}` : undefined, link: r.link, de: r.organizador });
     }
-    for (const v of (vend.data || []) as Row[]) {
-      if (!v.fecha_proxima_accion || !mio(v.responsable) || ['cerrado', 'perdido'].includes(v.etapa)) continue;
-      out.push({ id: 'v' + v.id, dia: v.fecha_proxima_accion, titulo: v.empresa || v.nombre, detalle: v.proxima_accion, tipo: 'accion', ir: `/vendedores/${v.id}`, de: v.responsable });
-    }
     for (const s of (subs.data || []) as Row[]) {
       if (!s.proxima_renovacion || (solo && s.pagado_por !== yo?.socio && s.pagado_por !== 'relevo')) continue;
       out.push({ id: 's' + s.id, dia: s.proxima_renovacion, titulo: s.nombre, detalle: 'Se renueva', tipo: 'renovacion', ir: '/finanzas/suscripciones', de: equipo.find((m) => m.socio === s.pagado_por)?.email ?? null });
@@ -75,7 +70,7 @@ export default function Calendario() {
       out.push({ id: 'd' + d.id, dia: sumarDias(d.solicitado_en, 15), titulo: d.vendedores ? (d.vendedores.empresa || d.vendedores.nombre) : d.nombre, detalle: `Cumple 15 días: ${d.nombre}`, tipo: 'doc', de: d.vendedores?.responsable ?? null, ir: d.vendedor_id ? `/vendedores/${d.vendedor_id}` : `/compradores/${d.comprador_id}` });
     }
     return out.sort((a, b) => (a.dia + (a.hora ?? '')).localeCompare(b.dia + (b.hora ?? '')));
-  }, [reu.data, vend.data, subs.data, docs.data, solo, yo, equipo]);
+  }, [reu.data, subs.data, docs.data, solo, yo, equipo]);
 
   const porDia = useMemo(() => { const m = new Map<string, Item[]>(); items.forEach((i) => m.set(i.dia, [...(m.get(i.dia) || []), i])); return m; }, [items]);
 
@@ -92,7 +87,7 @@ export default function Calendario() {
   return (
     <div className="page">
       <div className="head">
-        <div><h1>Calendario</h1><p>{verOtro ? `Lo tuyo y lo de ${nombreOtro}. Lo de ${nombreOtro} va marcado con su inicial.` : 'Tus reuniones de Calendly, próximas acciones, renovaciones y documentos por vencer.'}</p></div>
+        <div><h1>Calendario</h1><p>{verOtro ? `Lo tuyo y lo de ${nombreOtro}. Lo de ${nombreOtro} va marcado con su inicial.` : 'Tus reuniones de Calendly, renovaciones y documentos por vencer.'}</p></div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <span className={'muted'} style={{ fontSize: 12.5 }}>
             {sync.estado === 'busy' ? 'Sincronizando Calendly' : sync.estado === 'ok' ? `Calendly: ${sync.msg}` : sync.estado === 'off' ? 'Calendly sin conectar' : sync.estado === 'err' ? 'Calendly con error' : ''}
@@ -129,7 +124,7 @@ export default function Calendario() {
         <button className="btn ghost" aria-label="Mes siguiente" onClick={() => moverMes(1)}><CaretRight className="ic" /></button>
         <button className="btn ghost" onClick={() => setMes(h.slice(0, 7) + '-01')}>Hoy</button>
         <button className={'btn ' + (verOtro ? 'primary' : '')} style={{ marginLeft: 12 }} aria-pressed={verOtro} onClick={alternar}><Users className="ic" />{verOtro ? `Ocultar lo de ${nombreOtro}` : `Ver también lo de ${nombreOtro}`}</button>
-        <span className="cal-leyenda">{(['reunion', 'accion', 'renovacion', 'doc'] as Item['tipo'][]).map((t) => <span key={t} className={'tag ' + TONO[t]}>{NOMBRE[t]}</span>)}</span>
+        <span className="cal-leyenda">{(['reunion', 'renovacion', 'doc'] as Item['tipo'][]).map((t) => <span key={t} className={'tag ' + TONO[t]}>{NOMBRE[t]}</span>)}</span>
       </div>
 
       <div className="cal-wrap">

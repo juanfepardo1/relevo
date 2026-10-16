@@ -72,10 +72,9 @@ export async function valorarYGuardar(A: Supuestos, L: Lead, op: Opciones): Prom
   }
 
   op.say('actualizando la ficha…');
-  const accion = draft.made ? 'Enviar el borrador de la valoración flash desde Gmail' : `Enviar la valoración flash por ${L.correo ? L.canal : 'WhatsApp'}`;
   await must(supabase.from('vendedores').update({
     etapa: 'en_reserva', valoracion_tipo: 'flash', valoracion_min: r.lo * 1e6, valoracion_max: r.hi * 1e6, valoracion_fecha: hoy(),
-    proxima_accion: accion, fecha_proxima_accion: hoy(), flash_enviado_en: null,
+    flash_enviado_en: null,
     flash_subsector: L.subsector || null, flash_subtipo: L.subtipo || 0, flash_mult: L.multManual ? Number(L.multManual.replace(',', '.')) : null,
   }).eq('id', L.id));
   const calc = `${r.sub ? 'subsector ' + r.sub.nombre : 'sector ' + L.sector} · margen ${dec(r.mLo, 1)}% · múltiplo ${dec(r.xLo, 2)}x${Math.abs(r.xLo - r.xHi) > 0.005 ? ' a ' + dec(r.xHi, 2) + 'x' : ''}${r.hasManual ? ' (manual)' : ''}`;
@@ -97,11 +96,11 @@ export async function borradorDeValorado(A: Supuestos, L: Lead, de: Remitente, a
 export async function marcarEnviado(L: Lead, tipo: 'flash' | 'fuera') {
   const d = hoy();
   if (tipo === 'fuera') {
-    await must(supabase.from('vendedores').update({ etapa: 'perdido', motivo_perdida: 'muy_pequena', ultimo_contacto: d, proxima_accion: 'Ninguna. Se envió el mensaje de crecimiento', fecha_proxima_accion: null }).eq('id', L.id));
+    await must(supabase.from('vendedores').update({ etapa: 'perdido', motivo_perdida: 'muy_pequena', ultimo_contacto: d }).eq('id', L.id));
     await supabase.from('actividades').insert({ vendedor_id: L.id, tipo: L.canal === 'Correo' ? 'correo' : 'whatsapp', resumen: 'Se envió el mensaje de empresa muy pequeña (ventas bajo el piso).' });
     return;
   }
-  await must(supabase.from('vendedores').update({ etapa: 'en_reserva', valoracion_tipo: 'flash', flash_enviado_en: d, ultimo_contacto: d, proxima_accion: 'Cruzar con compradores', fecha_proxima_accion: null }).eq('id', L.id));
+  await must(supabase.from('vendedores').update({ etapa: 'en_reserva', valoracion_tipo: 'flash', flash_enviado_en: d, ultimo_contacto: d }).eq('id', L.id));
   await supabase.from('documentos').update({ estado: 'enviado', completado_en: d }).eq('vendedor_id', L.id).eq('tipo', 'valoracion_preliminar').eq('estado', 'pendiente');
   await supabase.from('actividades').insert({ vendedor_id: L.id, tipo: L.canal === 'Correo' ? 'correo' : 'whatsapp', resumen: 'Se envió la valoración flash. Queda en reserva para cruzar con compradores.' });
 }

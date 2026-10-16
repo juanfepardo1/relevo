@@ -49,10 +49,8 @@ export default function VendedorFicha() {
       <div className="grid-ficha">
         <div className="stack">
           <section className="panel">
-            <header><h2>Próximo paso</h2></header>
+            <header><h2>Seguimiento</h2></header>
             <div className="body fields">
-              <Field label="Próxima acción" value={v.proxima_accion} onSave={save('proxima_accion')} placeholder="Qué sigue" />
-              <Field label="Fecha" type="date" value={v.fecha_proxima_accion} display={fecha(v.fecha_proxima_accion, true)} onSave={save('fecha_proxima_accion')} />
               <Field label="Responsable" type="select" options={EQ} value={v.responsable} onSave={save('responsable')} />
               <Field label="Último contacto" type="date" value={v.ultimo_contacto} display={fecha(v.ultimo_contacto, true)} onSave={save('ultimo_contacto')} />
               {v.etapa === 'perdido' && <Field label="Motivo de pérdida" type="select" options={MOTIVO_PERDIDA} value={v.motivo_perdida} onSave={save('motivo_perdida')} />}

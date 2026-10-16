@@ -10,7 +10,6 @@ import { BotonNota } from '../components/Nota';
 
 const TIPO: Record<string, { t: string; I: any }> = {
   doc_atrasado: { t: 'Documentos atrasados', I: FileArrowDown },
-  accion_vencida: { t: 'Acciones para hoy o vencidas', I: Clock },
   etapa_estancada: { t: 'Vendedores fuera de la meta de su etapa', I: WarningCircle },
   orden_por_vencer: { t: 'Búsquedas de compradores por vencer', I: CalendarX },
 };

@@ -84,7 +84,7 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
       {q.error ? <ErrorBox msg={q.error} retry={q.reload} /> : q.loading ? <div className="panel"><Skeleton rows={8} /></div> : vista === 'tabla' ? (
         <div className="tablewrap">
           <table className="t">
-            <thead><tr>{th('nombre', 'Contacto')}{th('etapa', 'Etapa')}{th('dias_en_etapa', 'Días', 'r')}{th('bucket', 'Bucket')}{th('ventas_rango', 'Ventas')}{th('sector', 'Sector')}{th('ciudad', 'Ciudad')}{th('responsable', 'Responsable')}{th('fecha_proxima_accion', 'Próxima acción')}{th('docs_pendientes', 'Docs', 'r')}{th('fecha_ingreso', 'Ingreso')}</tr></thead>
+            <thead><tr>{th('nombre', 'Contacto')}{th('etapa', 'Etapa')}{th('dias_en_etapa', 'Días', 'r')}{th('bucket', 'Bucket')}{th('ventas_rango', 'Ventas')}{th('sector', 'Sector')}{th('ciudad', 'Ciudad')}{th('responsable', 'Responsable')}{th('docs_pendientes', 'Docs', 'r')}{th('fecha_ingreso', 'Ingreso')}</tr></thead>
             <tbody>
               {!rows.length ? <tr><td colSpan={11}><p className="empty-state">{mios ? 'No tienes vendedores asignados. Asígnate como responsable desde la ficha de un vendedor.' : 'Ningún vendedor coincide con los filtros.'}</p></td></tr> : rows.map((v: Row) => (
                 <tr key={v.id} onClick={() => nav(`/vendedores/${v.id}`)}>
@@ -96,7 +96,6 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
                   <td>{label(SECTORES, v.sector)}</td>
                   <td>{v.ciudad}</td>
                   <td><Persona email={v.responsable} /></td>
-                  <td>{v.fecha_proxima_accion ? <span className={v.fecha_proxima_accion <= hoy() ? 'b warn' : 'soft'}>{fecha(v.fecha_proxima_accion)} {v.proxima_accion ? '· ' + v.proxima_accion : ''}</span> : <span className="muted">Sin definir</span>}</td>
                   <td className="r">{v.docs_pendientes ? <span className="b warn num">{v.docs_pendientes}</span> : ''}</td>
                   <td className="num soft">{fecha(v.fecha_ingreso)}</td>
                 </tr>

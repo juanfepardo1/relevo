@@ -43,7 +43,7 @@ export default function Compradores() {
       {q.error ? <ErrorBox msg={q.error} retry={q.reload} /> : q.loading ? <div className="panel"><Skeleton rows={6} /></div> : (
         <div className="tablewrap">
           <table className="t">
-            <thead><tr><th>Comprador</th><th>Tipo</th><th>Estado</th><th>Certeza</th><th>Etapa</th><th className="r">Días</th><th>Ticket</th><th>Sectores</th><th>Próxima acción</th><th>Ingreso</th></tr></thead>
+            <thead><tr><th>Comprador</th><th>Tipo</th><th>Estado</th><th>Certeza</th><th>Etapa</th><th className="r">Días</th><th>Ticket</th><th>Sectores</th><th>Ingreso</th></tr></thead>
             <tbody>
               {!rows.length ? <tr><td colSpan={10}><p className="empty-state">Ningún comprador coincide.</p></td></tr> : rows.map((c: Row) => (
                 <tr key={c.id} onClick={() => nav(`/compradores/${c.id}`)}>
@@ -55,7 +55,6 @@ export default function Compradores() {
                   <td className="r"><Dias d={c.dias_en_etapa} /></td>
                   <td className="num">{rango(c.ticket_min, c.ticket_max)}</td>
                   <td style={{ maxWidth: 220 }}>{(c.categorias || []).map((s: string) => label(SECTORES, s)).join(', ')}</td>
-                  <td>{c.fecha_proxima_accion ? `${fecha(c.fecha_proxima_accion)} · ${c.proxima_accion ?? ''}` : <span className="muted">Sin definir</span>}</td>
                   <td className="num soft">{fecha(c.created_at)}</td>
                 </tr>
               ))}

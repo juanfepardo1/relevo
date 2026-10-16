@@ -63,10 +63,8 @@ export default function CompradorFicha() {
             )}
           </section>
           <section className="panel">
-            <header><h2>Próximo paso</h2></header>
+            <header><h2>Seguimiento</h2></header>
             <div className="body fields">
-              <Field label="Próxima acción" value={c.proxima_accion} onSave={save('proxima_accion')} placeholder="Qué sigue" />
-              <Field label="Fecha" type="date" value={c.fecha_proxima_accion} display={fecha(c.fecha_proxima_accion, true)} onSave={save('fecha_proxima_accion')} />
               <Field label="Responsable" type="select" options={EQ} value={c.responsable} onSave={save('responsable')} />
               <Field label="Último contacto" type="date" value={c.ultimo_contacto} display={fecha(c.ultimo_contacto, true)} onSave={save('ultimo_contacto')} />
             </div>
