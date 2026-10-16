@@ -241,6 +241,12 @@ dialog.m footer{display:flex;justify-content:flex-end;gap:8px;padding-top:6px}
 .meta-chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;color:var(--ink);background:#fff;border:1px solid var(--line-2);border-radius:999px;padding:3px 10px}
 .meta-chip .ic{width:14px;height:14px;color:var(--orange)}
 
+/* subir varios */
+.lote{display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow:auto}
+.lote-fila{display:grid;grid-template-columns:minmax(0,1fr) 190px auto;gap:6px;align-items:center}
+.panel.drop-on{outline:2px dashed var(--orange);outline-offset:-4px}
+dialog.m{width:min(680px,calc(100% - 32px))}
+
 /* documentos */
 .grid-doc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px;align-items:start}
 .opcion{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line-2);border-radius:10px;cursor:pointer}

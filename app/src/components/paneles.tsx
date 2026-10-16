@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowDown, ArrowUp, ChatCircle, Envelope, FileText, Note, Phone, Plus, Users, Paperclip, Check, ArrowSquareOut, FilePlus } from '@phosphor-icons/react';
+import { ArrowDown, ArrowUp, ChatCircle, Envelope, FileText, Note, Phone, Plus, Users, Paperclip, Check, ArrowSquareOut, FilePlus, UploadSimple } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
 import { useQuery, useCatalogo } from '../lib/data';
 import { TIPO_DOC, ESTADO_DOC, TIPO_ACTIVIDAD, label } from '../lib/catalogos';
@@ -61,6 +61,8 @@ export function Persona({ email }: { email: string | null | undefined }) {
 export function DocumentosPanel({ entidad, id }: { entidad: Ent; id: string }) {
   const q = useQuery(() => supabase.from('documentos').select('*').eq(fk(entidad), id).order('created_at', { ascending: false }), [id]);
   const [open, setOpen] = useState(false);
+  const [lote, setLote] = useState<File[] | null>(null);
+  const [arrastre, setArrastre] = useState(false);
   const toast = useToast();
 
   const marcar = async (d: Row) => {
@@ -76,8 +78,8 @@ export function DocumentosPanel({ entidad, id }: { entidad: Ent; id: string }) {
   };
 
   return (
-    <section className="panel">
-      <header><h2>Documentos</h2><div style={{ display: 'flex', gap: 6 }}>{entidad === 'vendedor' && <Link className="btn" to={`/documentos?tipo=nda&vendedor=${id}`}><FilePlus className="ic" />Generar NDA</Link>}<button className="btn" onClick={() => setOpen(true)}><Plus className="ic" />Registrar</button></div></header>
+    <section className={'panel' + (arrastre ? ' drop-on' : '')} onDragOver={(e) => { if (e.dataTransfer.types.includes('Files')) { e.preventDefault(); setArrastre(true); } }} onDragLeave={() => setArrastre(false)} onDrop={(e) => { e.preventDefault(); setArrastre(false); const f = Array.from(e.dataTransfer.files || []); if (f.length) setLote(f); }}>
+      <header><h2>Documentos</h2><div style={{ display: 'flex', gap: 6 }}>{entidad === 'vendedor' && <Link className="btn" to={`/documentos?tipo=nda&vendedor=${id}`}><FilePlus className="ic" />Generar NDA</Link>}<label className="btn" style={{ cursor: 'pointer' }} title="Sube varios archivos de una vez"><UploadSimple className="ic" />Subir varios<input type="file" multiple hidden onChange={(e) => { const f = Array.from(e.target.files || []); e.target.value = ''; if (f.length) setLote(f); }} /></label><button className="btn" onClick={() => setOpen(true)}><Plus className="ic" />Registrar</button></div></header>
       {q.loading ? <Skeleton rows={3} /> : !q.data?.length ? (
         <p className="empty-state">Sin documentos. Registra lo que pides, recibes o envías para que el sistema avise cuando algo se atrase.</p>
       ) : (
@@ -108,6 +110,9 @@ export function DocumentosPanel({ entidad, id }: { entidad: Ent; id: string }) {
           })}
         </div>
       )}
+      <Modal open={!!lote} onClose={() => setLote(null)} title={`Subir ${lote?.length ?? 0} documentos recibidos`}>
+        {lote && <SubirVarios entidad={entidad} id={id} archivos={lote} pendientes={((q.data || []) as Row[]).filter((d) => d.direccion === 'recibir' && d.estado === 'solicitado')} onDone={() => { setLote(null); q.reload(); }} />}
+      </Modal>
       <Modal open={open} onClose={() => setOpen(false)} title="Registrar documento">
         <DocForm entidad={entidad} id={id} onDone={() => { setOpen(false); q.reload(); }} />
       </Modal>
@@ -233,5 +238,65 @@ export function HistorialPanel({ entidad, id }: { entidad: Ent; id: string }) {
         </div>
       )}
     </section>
+  );
+}
+
+/* ---------- Subir varios documentos recibidos ---------- */
+function adivinarTipo(nombre: string) {
+  const n = nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (/renta|declaracion|dian|110\b/.test(n)) return 'declaracion_renta';
+  if (/estado|financ|balance|eeff|pyg|p&g|resultado|flujo|patrimonio|notas a los/.test(n)) return 'estados_financieros';
+  if (/factur/.test(n)) return 'facturacion';
+  if (/extracto|bancari/.test(n)) return 'extractos';
+  if (/camara|existencia|representacion|rues|rut\b/.test(n)) return 'camara_comercio';
+  if (/nda|confidencial/.test(n)) return 'nda';
+  return 'otro';
+}
+
+function SubirVarios({ entidad, id, archivos, pendientes, onDone }: { entidad: Ent; id: string; archivos: File[]; pendientes: Row[]; onDone: () => void }) {
+  const toast = useToast();
+  const [filas, setFilas] = useState(() => archivos.map((f) => ({ f, nombre: f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim(), tipo: adivinarTipo(f.name) })));
+  const [cerrar, setCerrar] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [hechos, setHechos] = useState(0);
+  const subir = async (e: FormEvent) => {
+    e.preventDefault(); setBusy(true);
+    let ok = 0; const fallos: string[] = [];
+    for (const r of filas) {
+      try {
+        const path = `${entidad}/${id}/${Date.now()}-${r.f.name.replace(/[^\w.\-]+/g, '_')}`;
+        const up = await supabase.storage.from('documentos').upload(path, r.f);
+        if (up.error) throw new Error(up.error.message);
+        await must(supabase.from('documentos').insert({ [fk(entidad)]: id, tipo: r.tipo, nombre: r.nombre || r.f.name, direccion: 'recibir', estado: 'recibido', completado_en: hoy(), archivo_path: path }));
+        ok++; setHechos(ok);
+      } catch (err: any) { fallos.push(`${r.f.name}: ${err.message}`); }
+    }
+    if (cerrar && ok && pendientes.length) {
+      await supabase.from('documentos').update({ estado: 'recibido', completado_en: hoy(), notas: 'Cerrado al subir los archivos recibidos' }).in('id', pendientes.map((d) => d.id));
+    }
+    setBusy(false);
+    if (fallos.length) toast(`Subidos ${ok} de ${filas.length}. Fallaron: ${fallos.join(' · ')}`, true);
+    else toast(`${ok} documentos subidos`);
+    onDone();
+  };
+  return (
+    <form onSubmit={subir}>
+      <div className="lote">
+        {filas.map((r, i) => (
+          <div key={i} className="lote-fila">
+            <input className="in" value={r.nombre} onChange={(e) => setFilas(filas.map((x, j) => (j === i ? { ...x, nombre: e.target.value } : x)))} aria-label="Nombre" />
+            <select className="sel" value={r.tipo} onChange={(e) => setFilas(filas.map((x, j) => (j === i ? { ...x, tipo: e.target.value } : x)))} aria-label="Tipo">
+              {TIPO_DOC.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+            </select>
+            <button type="button" className="btn ghost" aria-label="Quitar" onClick={() => setFilas(filas.filter((_, j) => j !== i))}>×</button>
+          </div>
+        ))}
+      </div>
+      {pendientes.length > 0 && (
+        <label style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><input type="checkbox" checked={cerrar} onChange={(e) => setCerrar(e.target.checked)} />
+          Marcar como recibido lo que estaba solicitado ({pendientes.map((d) => d.nombre).join(', ')})</label>
+      )}
+      <footer><button className="btn primary" disabled={busy || !filas.length}>{busy ? `Subiendo ${hechos} de ${filas.length}` : `Subir ${filas.length} documentos`}</button></footer>
+    </form>
   );
 }
