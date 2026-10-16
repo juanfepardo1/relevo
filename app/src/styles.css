@@ -208,6 +208,14 @@ dialog.m footer{display:flex;justify-content:flex-end;gap:8px;padding-top:6px}
 .card{border-left:3px solid var(--t-dot,var(--line))}
 
 
+/* nav group */
+.nav-group{appearance:none;border:0;background:none;font:500 14px var(--sans);width:100%;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--ink-2);cursor:pointer;text-align:left}
+.nav-group:hover{background:rgba(255,255,255,.6);color:var(--ink)}
+.nav-group.here{color:var(--ink)}.nav-group.here>.ic:first-child{color:var(--orange)}
+.nav-group .caret{margin-left:auto;width:14px;height:14px;transition:transform .15s}
+.nav-sub{display:flex;flex-direction:column;margin:2px 0 4px 19px;padding-left:12px;border-left:1px solid var(--line-2)}
+.nav-sub a{padding:6px 10px;font-size:13.5px}
+
 /* ficha meta */
 .ficha-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .meta-chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;color:var(--ink);background:#fff;border:1px solid var(--line-2);border-radius:999px;padding:3px 10px}

@@ -48,8 +48,12 @@ function App() {
           <Route path="compradores/:id" element={<CompradorFicha />} />
           <Route path="stats" element={<Stats />} />
           <Route path="bandeja" element={<Bandeja />} />
-          <Route path="finanzas" element={<Finanzas />} />
-          <Route path="suscripciones" element={<Suscripciones />} />
+          <Route path="finanzas" element={<Navigate to="/finanzas/movimientos" replace />} />
+          <Route path="finanzas/movimientos" element={<Finanzas key="m" seccion="movimientos" />} />
+          <Route path="finanzas/estados" element={<Finanzas key="e" seccion="estados" />} />
+          <Route path="finanzas/suscripciones" element={<Suscripciones />} />
+          <Route path="finanzas/socios" element={<Finanzas key="s" seccion="socios" />} />
+          <Route path="suscripciones" element={<Navigate to="/finanzas/suscripciones" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

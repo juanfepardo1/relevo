@@ -7,14 +7,20 @@ import { fecha, hoy } from '../lib/format';
 import { Skeleton, ErrorBox, useToast } from '../components/ui';
 import { TIPOS, QUIEN, TODAS_CAT, categoriasDe, cop, nombreMes, resultados, flujo, balance, socios, csv, type Mov, type Tratamiento } from '../lib/finanzas';
 
-type Vista = 'movimientos' | 'resultados' | 'flujo' | 'balance' | 'socios';
-const VISTAS: [Vista, string][] = [['movimientos', 'Movimientos'], ['resultados', 'Estado de resultados'], ['flujo', 'Flujo de caja'], ['balance', 'Balance'], ['socios', 'Cuentas entre socios']];
+export type Seccion = 'movimientos' | 'estados' | 'socios';
+type Estado = 'resultados' | 'flujo' | 'balance';
+const ESTADOS: [Estado, string][] = [['resultados', 'Estado de resultados'], ['flujo', 'Flujo de caja'], ['balance', 'Balance']];
+const TITULO: Record<Seccion, [string, string]> = {
+  movimientos: ['Movimientos', 'Registra cada ingreso, gasto, aporte o reembolso. Lo demás se calcula solo.'],
+  estados: ['Estados financieros', 'Se arman solos a partir de los movimientos.'],
+  socios: ['Cuentas entre socios', 'Cuánto ha puesto cada uno y cómo quedar 50/50.'],
+};
 const quien = (k: string) => label(QUIEN, k);
 
-export default function Finanzas() {
+export default function Finanzas({ seccion }: { seccion: Seccion }) {
   const q = useQuery(() => supabase.from('movimientos').select('*').order('fecha', { ascending: false }).order('created_at', { ascending: false }));
   const aj = useQuery(() => supabase.from('ajustes').select('valor').eq('clave', 'gastos_socios').maybeSingle());
-  const [vista, setVista] = useState<Vista>(() => { try { return (localStorage.getItem('fin-vista') as Vista) || 'movimientos'; } catch { return 'movimientos'; } });
+  const [estado, setEstado] = useState<Estado>(() => { try { return (localStorage.getItem('fin-estado') as Estado) || 'resultados'; } catch { return 'resultados'; } });
   const toast = useToast();
   const movs = (q.data || []) as Mov[];
   const trato = ((aj.data as Row | null)?.valor as Tratamiento) || 'deuda';
@@ -23,23 +29,26 @@ export default function Finanzas() {
     try { await must(supabase.from('ajustes').upsert({ clave: 'gastos_socios', valor: t, updated_at: new Date().toISOString() })); aj.reload(); }
     catch (e: any) { toast(e.message, true); }
   };
-  const ir = (v: Vista) => { setVista(v); try { localStorage.setItem('fin-vista', v); } catch {} };
+  const ir = (v: Estado) => { setEstado(v); try { localStorage.setItem('fin-estado', v); } catch {} };
+  const [t, sub] = TITULO[seccion];
 
   return (
     <div className="page fin">
       <div className="head">
-        <div><h1>Finanzas</h1><p>Registra cada movimiento; los estados financieros se arman solos.</p></div>
-        {vista !== 'movimientos' && <button className="btn" onClick={() => window.print()}><Printer className="ic" />Imprimir o guardar PDF</button>}
+        <div><h1>{t}</h1><p>{sub}</p></div>
+        {seccion !== 'movimientos' && <button className="btn" onClick={() => window.print()}><Printer className="ic" />Imprimir o guardar PDF</button>}
       </div>
-      <div className="seg no-print" role="tablist" style={{ marginBottom: 16, flexWrap: 'wrap' }}>
-        {VISTAS.map(([k, l]) => <button key={k} role="tab" aria-selected={vista === k} className={vista === k ? 'on' : ''} onClick={() => ir(k)}>{l}</button>)}
-      </div>
+      {seccion === 'estados' && (
+        <div className="seg no-print" role="tablist" style={{ marginBottom: 16 }}>
+          {ESTADOS.map(([k, l]) => <button key={k} role="tab" aria-selected={estado === k} className={estado === k ? 'on' : ''} onClick={() => ir(k)}>{l}</button>)}
+        </div>
+      )}
       {q.error ? <ErrorBox msg={q.error} retry={q.reload} /> : q.loading ? <div className="panel"><Skeleton rows={6} /></div> : (
-        vista === 'movimientos' ? <Movimientos movs={movs} reload={q.reload} /> :
-        vista === 'resultados' ? <Resultados movs={movs} /> :
-        vista === 'flujo' ? <Flujo movs={movs} /> :
-        vista === 'balance' ? <Balance movs={movs} trato={trato} onTrato={cambiarTrato} /> :
-        <Socios movs={movs} />
+        seccion === 'movimientos' ? <Movimientos movs={movs} reload={q.reload} /> :
+        seccion === 'socios' ? <Socios movs={movs} /> :
+        estado === 'resultados' ? <Resultados movs={movs} /> :
+        estado === 'flujo' ? <Flujo movs={movs} /> :
+        <Balance movs={movs} trato={trato} onTrato={cambiarTrato} />
       )}
     </div>
   );

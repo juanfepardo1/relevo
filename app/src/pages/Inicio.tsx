@@ -45,7 +45,7 @@ export default function Inicio() {
           <header><h2 style={{ display: 'flex', gap: 8, alignItems: 'center' }}><CreditCard className="ic" style={{ color: 'var(--orange)' }} />Suscripciones que se renuevan esta semana</h2><span className="b num">{renuevan.length}</span></header>
           <div className="list">
             {renuevan.map((s) => (
-              <div key={s.id} className="li click" style={{ gridTemplateColumns: 'minmax(0,1fr) auto' }} onClick={() => nav('/suscripciones')}>
+              <div key={s.id} className="li click" style={{ gridTemplateColumns: 'minmax(0,1fr) auto' }} onClick={() => nav('/finanzas/suscripciones')}>
                 <div><b>{s.nombre}</b><div className="meta">{cop(Number(s.monto))} el {fecha(s.proxima_renovacion)}. Si no se va a usar, cancélala antes.</div></div>
                 <Faltan d={s.proxima_renovacion} />
               </div>
