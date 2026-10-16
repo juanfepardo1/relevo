@@ -19,10 +19,11 @@ const mesTitulo = (d: string) => { const t = new Intl.DateTimeFormat('es-CO', { 
 export default function Calendario() {
   const nav = useNavigate();
   const toast = useToast();
-  const { yo } = useCatalogo();
+  const { yo, equipo } = useCatalogo();
   const [mes, setMes] = useState(hoy().slice(0, 7) + '-01');
   const [solo, setSolo] = useState(false);
   const [sync, setSync] = useState<{ estado: 'idle' | 'busy' | 'ok' | 'off' | 'err'; msg?: string }>({ estado: 'idle' });
+  const [cuentas, setCuentas] = useState<{ email: string; estado: string; reuniones?: number; error?: string }[]>([]);
 
   const reu = useQuery(() => supabase.from('reuniones').select('*, vendedores(empresa,nombre), compradores(nombre)').order('inicio'));
   const vend = useQuery(() => supabase.from('v_vendedores').select('id,empresa,nombre,responsable,proxima_accion,fecha_proxima_accion,etapa').not('fecha_proxima_accion', 'is', null));
@@ -35,9 +36,11 @@ export default function Calendario() {
       const { data } = await supabase.auth.getSession();
       const r = await fetch('/api/calendly', { method: 'POST', headers: { Authorization: `Bearer ${data.session?.access_token}` } });
       const j = await r.json().catch(() => ({}));
+      if (r.status === 404) throw new Error('La función de sincronización todavía no está publicada. Espera el despliegue y vuelve a intentar.');
       if (!r.ok) throw new Error(j.error || `Error ${r.status}`);
+      setCuentas(j.cuentas || []);
       if (!j.configurado) { setSync({ estado: 'off' }); return; }
-      const errores = (j.cuentas || []).filter((c: any) => c.error);
+      const errores = (j.cuentas || []).filter((c: any) => c.estado === 'error');
       setSync({ estado: errores.length ? 'err' : 'ok', msg: errores.length ? errores.map((c: any) => `${c.email.split('@')[0]}: ${c.error}`).join(' · ') : `${j.sincronizadas} reuniones al día` });
       reu.reload(); vend.reload();
     } catch (e: any) { setSync({ estado: 'err', msg: e.message }); }
@@ -92,7 +95,27 @@ export default function Calendario() {
         </div>
       </div>
       {sync.estado === 'err' && <div className="aviso" style={{ marginBottom: 12 }}><div><b>No se pudo leer Calendly.</b> {sync.msg}</div></div>}
-      {sync.estado === 'off' && <div className="aviso" style={{ marginBottom: 12 }}><div><b>Falta conectar Calendly.</b> Hay que poner los tokens de Calendly en Vercel. Mientras tanto se ven las demás fechas.</div></div>}
+      {cuentas.length > 0 && (
+        <div className="cal-cuentas">
+          {cuentas.map((c) => {
+            const quien = equipo.find((m) => m.email === c.email)?.apodo ?? c.email.split('@')[0];
+            return <span key={c.email} className={'tag ' + (c.estado === 'ok' ? 'tone-ganado' : c.estado === 'error' ? 'tone-perdido' : 'tone-nuevo')} title={c.error}>
+              Calendly de {quien}: {c.estado === 'ok' ? `conectado · ${c.reuniones} reuniones` : c.estado === 'error' ? 'token inválido' : 'sin conectar'}</span>;
+          })}
+        </div>
+      )}
+      {cuentas.some((c) => c.estado !== 'ok') && (
+        <details className="panel cal-guia" open={sync.estado === 'off'}>
+          <summary><b>Cómo conectar Calendly</b> <span className="muted">Una vez, unos 5 minutos</span></summary>
+          <ol>
+            <li>Cada uno entra a Calendly, va a <b>Integraciones</b>, abre <b>API y webhooks</b> y en <b>Personal access tokens</b> da <b>Generate new token</b>. Lo nombra "Relevo app" y lo copia: Calendly no lo vuelve a mostrar.</li>
+            <li>Alejo le pasa su token a Pardo por un canal privado, no por correo ni chat de grupo.</li>
+            <li>Pardo entra a Vercel, proyecto <b>relevo_app</b>, Settings, <b>Environment Variables</b>, y crea <code>CALENDLY_TOKEN_FELIPE</code> y <code>CALENDLY_TOKEN_ALEJANDRO</code> en Production.</li>
+            <li>En Deployments, abre el último y da <b>Redeploy</b>. Los tokens solo se leen después de redesplegar.</li>
+            <li>Vuelve aquí y da <b>Sincronizar</b>. Arriba debe decir "Calendly de Pardo: conectado".</li>
+          </ol>
+        </details>
+      )}
 
       <div className="toolbar">
         <button className="btn ghost" aria-label="Mes anterior" onClick={() => moverMes(-1)}><CaretLeft className="ic" /></button>

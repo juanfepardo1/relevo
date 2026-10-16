@@ -309,6 +309,11 @@ dialog.m{width:min(680px,calc(100% - 32px))}
 .cal-i .num{opacity:.75}
 .cal-i.tone-nuevo{text-decoration:line-through}
 .cal-mas{font-size:11px;color:var(--ink-3);padding-left:4px}
+.cal-cuentas{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.cal-guia{padding:12px 16px;margin-bottom:14px}
+.cal-guia summary{cursor:pointer;display:flex;gap:10px;align-items:baseline}
+.cal-guia ol{margin:10px 0 2px;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:13.5px;color:var(--ink-2)}
+.cal-guia code{font:12.5px var(--mono);background:var(--raise);padding:1px 5px;border-radius:4px}
 .cal-leyenda{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
 @media (max-width:1100px){.cal-wrap{grid-template-columns:1fr}}
 @media (max-width:800px){.cal{display:none}.cal-leyenda{margin-left:0}}

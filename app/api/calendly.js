@@ -11,7 +11,7 @@ const DIAS_ADELANTE = 120;
 const cuentas = () => [
   ['felipe@relevobrokers.com', process.env.CALENDLY_TOKEN_FELIPE],
   ['alejandro@relevobrokers.com', process.env.CALENDLY_TOKEN_ALEJANDRO],
-].filter(([, t]) => t);
+];
 
 async function cal(token, url) {
   const r = await fetch(url.startsWith('http') ? url : CAL + url, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } });
@@ -60,13 +60,15 @@ export default async function handler(req, res) {
   if (!ok.ok || (await ok.json()) !== true) return res.status(403).json({ error: 'No autorizado' });
 
   const lista = cuentas();
-  if (!lista.length) return res.status(200).json({ configurado: false, sincronizadas: 0, cuentas: [] });
+  const conToken = lista.filter(([, t]) => t);
+  if (!conToken.length) return res.status(200).json({ configurado: false, sincronizadas: 0, cuentas: lista.map(([email]) => ({ email, estado: 'sin_token' })) });
 
   const resumen = [];
   const todas = [];
   for (const [email, token] of lista) {
-    try { const f = await reunionesDe(email, token); todas.push(...f); resumen.push({ email, reuniones: f.length }); }
-    catch (e) { resumen.push({ email, error: String(e.message || e) }); }
+    if (!token) { resumen.push({ email, estado: 'sin_token' }); continue; }
+    try { const f = await reunionesDe(email, token); todas.push(...f); resumen.push({ email, estado: 'ok', reuniones: f.length }); }
+    catch (e) { resumen.push({ email, estado: 'error', error: String(e.message || e).includes('401') ? 'El token no sirve o expiró. Genera uno nuevo.' : String(e.message || e) }); }
   }
   let sincronizadas = 0;
   if (todas.length) {
