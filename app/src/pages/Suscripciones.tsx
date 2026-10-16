@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { Plus, ArrowSquareOut, CheckCircle, Prohibit, ArrowCounterClockwise } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
-import { useQuery } from '../lib/data';
+import { useQuery, useCatalogo } from '../lib/data';
 import { label } from '../lib/catalogos';
 import { fecha, hoy, diasDesde } from '../lib/format';
 import { Skeleton, ErrorBox, Modal, Field, useToast } from '../components/ui';
-import { CAT_GASTO, QUIEN, cop } from '../lib/finanzas';
+import { CAT_GASTO, QUIEN, cop, quienPuede, puedeEditar } from '../lib/finanzas';
 
 export const PERIODO: [string, string][] = [['mensual', 'Mensual'], ['trimestral', 'Trimestral'], ['anual', 'Anual']];
 const MESES: Record<string, number> = { mensual: 1, trimestral: 3, anual: 12 };
@@ -29,6 +29,7 @@ export function Faltan({ d }: { d: string }) {
 export default function Suscripciones() {
   const q = useQuery(() => supabase.from('suscripciones').select('*').order('proxima_renovacion'));
   const toast = useToast();
+  const { yo } = useCatalogo();
   const [nueva, setNueva] = useState(false);
   const [abierta, setAbierta] = useState<Row | null>(null);
   const [verCanceladas, setVerCanceladas] = useState(false);
@@ -80,7 +81,7 @@ export default function Suscripciones() {
                     <td><span className={'tag plain ' + (s.pagado_por === 'felipe' ? 'tone-p1' : s.pagado_por === 'alejandro' ? 'tone-p2' : 'tone-nuevo')}>{label(QUIEN, s.pagado_por)}</span></td>
                     <td className="r" onClick={(e) => e.stopPropagation()}><div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                       {s.url_gestion && <a className="btn ghost" href={s.url_gestion} target="_blank" rel="noopener" title="Abrir para gestionar o cancelar"><ArrowSquareOut className="ic" />Gestionar</a>}
-                      {s.estado === 'activa' ? <>
+                      {!puedeEditar(s.pagado_por, yo?.socio) ? <span className="muted" style={{ fontSize: 12.5, alignSelf: 'center' }}>La gestiona {label(QUIEN, s.pagado_por)}</span> : s.estado === 'activa' ? <>
                         <button className="btn" title="Registra el gasto en Finanzas y mueve la fecha al siguiente periodo" onClick={() => pagada(s)}><CheckCircle className="ic" />Se cobró</button>
                         <button className="btn ghost danger" title="Marcar como cancelada" onClick={() => upd(s, { estado: 'cancelada' }, 'Marcada como cancelada')}><Prohibit className="ic" /></button>
                       </> : <button className="btn ghost" title="Reactivar" onClick={() => upd(s, { estado: 'activa' }, 'Reactivada')}><ArrowCounterClockwise className="ic" /></button>}
@@ -95,21 +96,21 @@ export default function Suscripciones() {
       )}
       <Modal open={nueva} onClose={() => setNueva(false)} title="Nueva suscripción"><NuevaSuscripcion onDone={() => { setNueva(false); q.reload(); }} /></Modal>
       <Modal open={!!abierta} onClose={() => setAbierta(null)} title={abierta?.nombre ?? ''}>
-        {abierta && <Editar s={abierta} onSaved={(n) => { setAbierta(n); q.reload(); }} />}
+        {abierta && <Editar s={abierta} mio={puedeEditar(abierta.pagado_por, yo?.socio)} socio={yo?.socio} onSaved={(n) => { setAbierta(n); q.reload(); }} />}
       </Modal>
     </div>
   );
 }
 
-function Editar({ s, onSaved }: { s: Row; onSaved: (n: Row) => void }) {
-  const save = (k: string) => async (v: any) => { const n = await must(supabase.from('suscripciones').update({ [k]: v }).eq('id', s.id).select().single()); onSaved(n as Row); };
+function Editar({ s, mio, socio, onSaved }: { s: Row; mio: boolean; socio: string | null | undefined; onSaved: (n: Row) => void }) {
+  const save = (k: string) => !mio ? undefined : async (v: any) => { const n = await must(supabase.from('suscripciones').update({ [k]: v }).eq('id', s.id).select().single()); onSaved(n as Row); };
   return (
     <div className="fields" style={{ padding: '14px 20px 20px' }}>
       <Field label="Nombre" value={s.nombre} onSave={save('nombre')} />
       <Field label="Próxima renovación" type="date" value={s.proxima_renovacion} display={fecha(s.proxima_renovacion, true)} onSave={save('proxima_renovacion')} />
       <Field label="Monto (COP)" type="number" value={Number(s.monto)} display={cop(Number(s.monto))} onSave={save('monto')} />
       <Field label="Cada" type="select" options={PERIODO} value={s.periodicidad} onSave={save('periodicidad')} />
-      <Field label="La paga" type="select" options={QUIEN} value={s.pagado_por} onSave={save('pagado_por')} />
+      <Field label="La paga" type="select" options={mio ? quienPuede(socio) : QUIEN} value={s.pagado_por} onSave={save('pagado_por')} />
       <Field label="Categoría" type="select" options={CAT_GASTO} value={s.categoria} onSave={save('categoria')} />
       <Field label="Link para gestionar" value={s.url_gestion} onSave={save('url_gestion')} wide />
       <Field label="Notas" type="textarea" value={s.notas} onSave={save('notas')} wide />
@@ -119,7 +120,8 @@ function Editar({ s, onSaved }: { s: Row; onSaved: (n: Row) => void }) {
 
 function NuevaSuscripcion({ onDone }: { onDone: () => void }) {
   const toast = useToast();
-  const [f, setF] = useState<Row>({ nombre: '', monto: '', periodicidad: 'mensual', proxima_renovacion: '', pagado_por: 'felipe', categoria: 'software', url_gestion: '' });
+  const { yo } = useCatalogo();
+  const [f, setF] = useState<Row>({ nombre: '', monto: '', periodicidad: 'mensual', proxima_renovacion: '', pagado_por: yo?.socio ?? 'relevo', categoria: 'software', url_gestion: '' });
   const [busy, setBusy] = useState(false);
   const set = (k: string) => (e: any) => setF({ ...f, [k]: e.target.value });
   const monto = Number(String(f.monto).replace(/\D/g, ''));
@@ -138,7 +140,7 @@ function NuevaSuscripcion({ onDone }: { onDone: () => void }) {
       </div>
       <div className="row">
         <label>Próxima renovación<input className="in" type="date" required value={f.proxima_renovacion} onChange={set('proxima_renovacion')} /></label>
-        <label>La paga<select className="sel" value={f.pagado_por} onChange={set('pagado_por')}>{QUIEN.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
+        <label>La paga<select className="sel" value={f.pagado_por} onChange={set('pagado_por')}>{quienPuede(yo?.socio).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
       </div>
       <div className="row">
         <label>Categoría<select className="sel" value={f.categoria} onChange={set('categoria')}>{CAT_GASTO.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>

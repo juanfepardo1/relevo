@@ -38,7 +38,7 @@ function App() {
   if (!permitido) return <Login noAutorizado={session.user.email ?? ''} />;
 
   return (
-    <CatalogoProvider>
+    <CatalogoProvider email={session.user.email ?? ''}>
       <Routes>
         <Route element={<Layout email={session.user.email ?? ''} />}>
           <Route index element={<Inicio />} />

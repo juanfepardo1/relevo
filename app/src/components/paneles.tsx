@@ -52,7 +52,8 @@ export function Persona({ email }: { email: string | null | undefined }) {
   const { equipo } = useCatalogo();
   if (!email) return <span className="muted">Nadie</span>;
   const n = equipo.find((m) => m.email === email)?.nombre ?? email;
-  return <span className={'who ' + tonoPersona(email)}><span className="avatar">{n.split(' ').map((x) => x[0]).slice(0, 2).join('')}</span>{n.split(' ')[0]}</span>;
+  const m = equipo.find((x) => x.email === email);
+  return <span className={'who ' + tonoPersona(email)} title={n}><span className="avatar">{n.split(' ').map((x) => x[0]).slice(0, 2).join('')}</span>{m?.apodo ?? n.split(' ')[0]}</span>;
 }
 
 /* ---------- Documentos ---------- */

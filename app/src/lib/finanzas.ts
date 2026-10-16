@@ -1,6 +1,6 @@
 import type { Opt } from './catalogos';
 
-export type Mov = { id: string; fecha: string; tipo: 'ingreso' | 'gasto' | 'aporte' | 'reembolso'; categoria: string; descripcion: string | null; monto: number; pagado_por: 'felipe' | 'alejandro' | 'relevo' };
+export type Mov = { id: string; fecha: string; tipo: 'ingreso' | 'gasto' | 'aporte' | 'reembolso'; categoria: string; descripcion: string | null; monto: number; pagado_por: 'felipe' | 'alejandro' | 'relevo'; soporte_path?: string | null };
 export type Tratamiento = 'deuda' | 'aporte';
 
 export const TIPOS: Opt[] = [['gasto', 'Gasto'], ['ingreso', 'Ingreso'], ['aporte', 'Aporte a la cuenta de Relevo'], ['reembolso', 'Reembolso a socio']];
@@ -9,7 +9,10 @@ export const CAT_INGRESO: Opt[] = [['exito', 'Comisión de éxito'], ['valoracio
 export const CAT_MOV: Opt[] = [['aporte', 'Aporte'], ['reembolso', 'Reembolso']];
 export const categoriasDe = (tipo: string): Opt[] => (tipo === 'gasto' ? CAT_GASTO : tipo === 'ingreso' ? CAT_INGRESO : tipo === 'aporte' ? [['aporte', 'Aporte']] : [['reembolso', 'Reembolso']]);
 export const TODAS_CAT: Opt[] = [...CAT_GASTO, ...CAT_INGRESO, ...CAT_MOV];
-export const QUIEN: Opt[] = [['felipe', 'Pardito'], ['alejandro', 'Alejito'], ['relevo', 'Cuenta de Relevo']];
+export const QUIEN: Opt[] = [['felipe', 'Pardo'], ['alejandro', 'Alejo'], ['relevo', 'Relevo']];
+/** A nombre de quién puede registrar el usuario: él mismo o Relevo. */
+export const quienPuede = (socio: string | null | undefined, soloSocio = false): Opt[] => QUIEN.filter(([k]) => k === socio || (!soloSocio && k === 'relevo'));
+export const puedeEditar = (pagadoPor: string, socio: string | null | undefined) => pagadoPor === 'relevo' || pagadoPor === socio;
 export const SOCIOS = ['felipe', 'alejandro'] as const;
 
 const nf = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
@@ -88,7 +91,7 @@ export function socios(movs: Mov[]) {
   for (const m of movs) { const e = efecto(m); if (e.socio) puesto[e.socio] += e.cuenta ?? 0; }
   const total = puesto.felipe + puesto.alejandro;
   const mitad = total / 2;
-  const dif = puesto.felipe - mitad; // > 0: Alejito le debe a Pardito
+  const dif = puesto.felipe - mitad; // > 0: Alejo le debe a Pardo
   return { puesto, total, mitad, transferencia: Math.abs(dif), de: dif > 0 ? 'alejandro' : 'felipe', a: dif > 0 ? 'felipe' : 'alejandro' };
 }
 

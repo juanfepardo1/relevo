@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Plus, Trash, DownloadSimple, Printer } from '@phosphor-icons/react';
+import { Plus, Trash, DownloadSimple, Printer, Paperclip, UploadSimple } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
-import { useQuery } from '../lib/data';
+import { useQuery, useCatalogo } from '../lib/data';
 import { label } from '../lib/catalogos';
 import { fecha, hoy } from '../lib/format';
-import { Skeleton, ErrorBox, useToast } from '../components/ui';
-import { TIPOS, QUIEN, TODAS_CAT, categoriasDe, cop, nombreMes, resultados, flujo, balance, socios, csv, type Mov, type Tratamiento } from '../lib/finanzas';
+import { Skeleton, ErrorBox, Modal, useToast } from '../components/ui';
+import { TIPOS, QUIEN, TODAS_CAT, quienPuede, puedeEditar, categoriasDe, cop, nombreMes, resultados, flujo, balance, socios, csv, type Mov, type Tratamiento } from '../lib/finanzas';
 
 export type Seccion = 'movimientos' | 'estados' | 'socios';
 type Estado = 'resultados' | 'flujo' | 'balance';
@@ -55,77 +55,146 @@ export default function Finanzas({ seccion }: { seccion: Seccion }) {
 }
 
 /* ---------- Movimientos ---------- */
+const ACEPTA = 'application/pdf,image/*';
+const rutaSoporte = (id: string, f: File) => `movimientos/${id}/${Date.now()}-${f.name.replace(/[^\w.\-]+/g, '_')}`;
+
+async function subirSoporte(id: string, file: File) {
+  const path = rutaSoporte(id, file);
+  const up = await supabase.storage.from('documentos').upload(path, file);
+  if (up.error) throw new Error('No se subió el soporte: ' + up.error.message);
+  await must(supabase.from('movimientos').update({ soporte_path: path }).eq('id', id));
+}
+
 function Movimientos({ movs, reload }: { movs: Mov[]; reload: () => void }) {
   const toast = useToast();
-  const vacio = { fecha: hoy(), tipo: 'gasto', categoria: 'marketing', descripcion: '', monto: '', pagado_por: 'felipe' };
-  const [f, setF] = useState<Row>(vacio);
-  const [busy, setBusy] = useState(false);
+  const { yo } = useCatalogo();
+  const [nuevo, setNuevo] = useState(false);
   const [mes, setMes] = useState('');
-  const cats = categoriasDe(f.tipo);
-  useEffect(() => { if (!cats.some(([k]) => k === f.categoria)) setF((x) => ({ ...x, categoria: cats[0][0] })); }, [f.tipo]); // eslint-disable-line
-  useEffect(() => { if ((f.tipo === 'aporte' || f.tipo === 'reembolso') && f.pagado_por === 'relevo') setF((x) => ({ ...x, pagado_por: 'felipe' })); }, [f.tipo, f.pagado_por]);
-  const set = (k: string) => (e: any) => setF({ ...f, [k]: e.target.value });
-  const monto = Number(String(f.monto).replace(/\D/g, ''));
+  const [subiendo, setSubiendo] = useState<string | null>(null);
 
-  const add = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!monto) { toast('Falta el monto', true); return; }
-    setBusy(true);
-    try {
-      await must(supabase.from('movimientos').insert({ fecha: f.fecha, tipo: f.tipo, categoria: f.categoria, descripcion: f.descripcion.trim() || null, monto, pagado_por: f.pagado_por }));
-      setF({ ...vacio, fecha: f.fecha, tipo: f.tipo, categoria: f.categoria, pagado_por: f.pagado_por });
-      toast('Movimiento registrado'); reload();
-    } catch (err: any) { toast(err.message, true); }
-    setBusy(false);
-  };
   const borrar = async (m: Mov) => {
-    try { await must(supabase.from('movimientos').delete().eq('id', m.id)); toast('Movimiento borrado'); reload(); }
-    catch (err: any) { toast(err.message, true); }
+    if (!confirmar(m)) return;
+    try {
+      if (m.soporte_path) await supabase.storage.from('documentos').remove([m.soporte_path]);
+      await must(supabase.from('movimientos').delete().eq('id', m.id)); toast('Movimiento borrado'); reload();
+    } catch (err: any) { toast(err.message, true); }
+  };
+  const ver = async (m: Mov) => {
+    const { data, error } = await supabase.storage.from('documentos').createSignedUrl(m.soporte_path!, 120);
+    if (error) return toast('No se pudo abrir: ' + error.message, true);
+    window.open(data.signedUrl, '_blank', 'noopener');
+  };
+  const adjuntar = async (m: Mov, file: File | undefined) => {
+    if (!file) return;
+    setSubiendo(m.id);
+    try { await subirSoporte(m.id, file); toast('Soporte adjuntado'); reload(); } catch (err: any) { toast(err.message, true); }
+    setSubiendo(null);
   };
 
   const ms = [...new Set(movs.map((m) => m.fecha.slice(0, 7)))].sort().reverse();
   const lista = movs.filter((m) => !mes || m.fecha.startsWith(mes));
-  const quienOpts = f.tipo === 'aporte' || f.tipo === 'reembolso' ? QUIEN.filter(([k]) => k !== 'relevo') : QUIEN;
-  const pagoLabel = f.tipo === 'ingreso' ? 'Lo recibió' : f.tipo === 'aporte' ? 'Lo puso' : f.tipo === 'reembolso' ? 'Se le devolvió a' : 'Lo pagó';
+  const sinSoporte = lista.filter((m) => !m.soporte_path && m.tipo === 'gasto').length;
 
   return (
     <>
-      <form className="panel mov-form" onSubmit={add}>
-        <label>Fecha<input className="in" type="date" required value={f.fecha} onChange={set('fecha')} /></label>
-        <label>Tipo<select className="sel" value={f.tipo} onChange={set('tipo')}>{TIPOS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
-        <label>Categoría<select className="sel" value={f.categoria} onChange={set('categoria')} disabled={cats.length === 1}>{cats.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
-        <label className="grow">Descripción<input className="in" placeholder="Meta Ads, Notion, valoración UNICARIBE" value={f.descripcion} onChange={set('descripcion')} /></label>
-        <label>Monto (COP)<input className="in num" inputMode="numeric" required placeholder="0" value={f.monto ? '$' + new Intl.NumberFormat('es-CO').format(monto) : ''} onChange={(e) => setF({ ...f, monto: e.target.value.replace(/\D/g, '') })} /></label>
-        <label>{pagoLabel}<select className="sel" value={f.pagado_por} onChange={set('pagado_por')}>{quienOpts.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
-        <button className="btn primary" disabled={busy}><Plus className="ic" />Agregar</button>
-      </form>
-
       <div className="toolbar">
+        <button className="btn primary" onClick={() => setNuevo(true)}><Plus className="ic" />Nuevo movimiento</button>
         <select className="sel" value={mes} onChange={(e) => setMes(e.target.value)} aria-label="Mes">
           <option value="">Todos los meses</option>{ms.map((m) => <option key={m} value={m}>{nombreMes(m)}</option>)}
         </select>
-        <span className="muted">{lista.length} movimientos</span>
-        <button className="btn ghost" style={{ marginLeft: 'auto' }} onClick={() => csv('relevo_movimientos', [['Fecha', 'Tipo', 'Categoría', 'Descripción', 'Monto', 'Quién'], ...lista.map((m) => [m.fecha, label(TIPOS, m.tipo), label(TODAS_CAT, m.categoria), m.descripcion ?? '', Number(m.monto), quien(m.pagado_por)])])}><DownloadSimple className="ic" />Descargar CSV</button>
+        <span className="muted">{lista.length} movimientos{sinSoporte ? ` · ${sinSoporte} gastos sin soporte` : ''}</span>
+        <button className="btn ghost" style={{ marginLeft: 'auto' }} onClick={() => csv('relevo_movimientos', [['Fecha', 'Tipo', 'Categoría', 'Descripción', 'Monto', 'Quién', 'Soporte'], ...lista.map((m) => [m.fecha, label(TIPOS, m.tipo), label(TODAS_CAT, m.categoria), m.descripcion ?? '', Number(m.monto), quien(m.pagado_por), m.soporte_path ? 'Sí' : 'No'])])}><DownloadSimple className="ic" />Descargar CSV</button>
       </div>
       <div className="tablewrap">
         <table className="t">
-          <thead><tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Descripción</th><th className="r">Monto</th><th>Quién</th><th></th></tr></thead>
+          <thead><tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Descripción</th><th className="r">Monto</th><th>Quién</th><th>Soporte</th><th></th></tr></thead>
           <tbody>
-            {!lista.length ? <tr><td colSpan={7}><p className="empty-state">Sin movimientos todavía.</p></td></tr> : lista.map((m) => (
-              <tr key={m.id} style={{ cursor: 'default' }}>
-                <td className="num soft">{fecha(m.fecha)}</td>
-                <td><span className={'tag tone-' + (m.tipo === 'ingreso' ? 'ganado' : m.tipo === 'gasto' ? 'cierre' : 'captacion')}>{label(TIPOS, m.tipo)}</span></td>
-                <td>{label(TODAS_CAT, m.categoria)}</td>
-                <td>{m.descripcion}</td>
-                <td className={'r num' + (m.tipo === 'ingreso' ? ' pos' : m.tipo === 'gasto' ? ' neg' : '')}>{m.tipo === 'gasto' ? '-' : ''}{cop(Number(m.monto))}</td>
-                <td><span className={'tag plain ' + (m.pagado_por === 'felipe' ? 'tone-p1' : m.pagado_por === 'alejandro' ? 'tone-p2' : 'tone-nuevo')}>{quien(m.pagado_por)}</span></td>
-                <td className="r"><button className="btn ghost danger" aria-label="Borrar" title="Borrar" onClick={() => borrar(m)}><Trash className="ic" /></button></td>
-              </tr>
-            ))}
+            {!lista.length ? <tr><td colSpan={8}><p className="empty-state">Sin movimientos todavía.</p></td></tr> : lista.map((m) => {
+              const mio = puedeEditar(m.pagado_por, yo?.socio);
+              return (
+                <tr key={m.id} style={{ cursor: 'default' }}>
+                  <td className="num soft">{fecha(m.fecha)}</td>
+                  <td><span className={'tag tone-' + (m.tipo === 'ingreso' ? 'ganado' : m.tipo === 'gasto' ? 'cierre' : 'captacion')}>{label(TIPOS, m.tipo)}</span></td>
+                  <td>{label(TODAS_CAT, m.categoria)}</td>
+                  <td>{m.descripcion}</td>
+                  <td className={'r num' + (m.tipo === 'ingreso' ? ' pos' : m.tipo === 'gasto' ? ' neg' : '')}>{m.tipo === 'gasto' ? '-' : ''}{cop(Number(m.monto))}</td>
+                  <td><span className={'tag plain ' + (m.pagado_por === 'felipe' ? 'tone-p1' : m.pagado_por === 'alejandro' ? 'tone-p2' : 'tone-nuevo')}>{quien(m.pagado_por)}</span></td>
+                  <td>
+                    {m.soporte_path ? <button className="btn ghost" onClick={() => ver(m)}><Paperclip className="ic" />Ver</button>
+                      : mio ? <label className="btn ghost" style={{ cursor: 'pointer' }}>{subiendo === m.id ? 'Subiendo' : <><UploadSimple className="ic" />Adjuntar</>}<input type="file" accept={ACEPTA} hidden onChange={(e) => adjuntar(m, e.target.files?.[0])} /></label>
+                      : <span className="muted">Sin soporte</span>}
+                  </td>
+                  <td className="r">{mio && <button className="btn ghost danger" aria-label="Borrar" title="Borrar" onClick={() => borrar(m)}><Trash className="ic" /></button>}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
+      <p className="muted" style={{ fontSize: 12.5, marginTop: 10 }}>Cada uno registra, edita y borra solo lo que está a su nombre o a nombre de Relevo.</p>
+      <Modal open={nuevo} onClose={() => setNuevo(false)} title="Nuevo movimiento">
+        <NuevoMovimiento onDone={() => { setNuevo(false); reload(); }} />
+      </Modal>
     </>
+  );
+}
+
+function confirmar(m: Mov) {
+  return window.confirm(`¿Borrar "${m.descripcion ?? label(TODAS_CAT, m.categoria)}" por ${cop(Number(m.monto))}?`);
+}
+
+function NuevoMovimiento({ onDone }: { onDone: () => void }) {
+  const toast = useToast();
+  const { yo } = useCatalogo();
+  const socio = yo?.socio ?? null;
+  const [f, setF] = useState<Row>({ fecha: hoy(), tipo: 'gasto', categoria: 'marketing', descripcion: '', monto: '', pagado_por: socio ?? 'relevo' });
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const cats = categoriasDe(f.tipo);
+  const soloSocio = f.tipo === 'aporte' || f.tipo === 'reembolso';
+  const opts = quienPuede(socio, soloSocio);
+  useEffect(() => { if (!cats.some(([k]) => k === f.categoria)) setF((x) => ({ ...x, categoria: cats[0][0] })); }, [f.tipo]); // eslint-disable-line
+  useEffect(() => { if (!opts.some(([k]) => k === f.pagado_por) && opts[0]) setF((x) => ({ ...x, pagado_por: opts[0][0] })); }, [f.tipo]); // eslint-disable-line
+  const set = (k: string) => (e: any) => setF({ ...f, [k]: e.target.value });
+  const monto = Number(String(f.monto).replace(/\D/g, ''));
+  const pagoLabel = f.tipo === 'ingreso' ? 'Lo recibió' : f.tipo === 'aporte' ? 'Lo puso' : f.tipo === 'reembolso' ? 'Se le devolvió a' : 'Lo pagó';
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!monto) { toast('Falta el monto', true); return; }
+    setBusy(true);
+    try {
+      const m = await must(supabase.from('movimientos').insert({ fecha: f.fecha, tipo: f.tipo, categoria: f.categoria, descripcion: f.descripcion.trim() || null, monto, pagado_por: f.pagado_por }).select('id').single()) as Row;
+      if (file) {
+        try { await subirSoporte(m.id, file); } catch (err: any) { toast('Movimiento guardado, pero ' + err.message.toLowerCase(), true); onDone(); setBusy(false); return; }
+      }
+      toast('Movimiento registrado'); onDone();
+    } catch (err: any) { toast(err.message, true); }
+    setBusy(false);
+  };
+
+  if (!socio) return <form><p className="err-text">Tu usuario no tiene socio asignado. Pide que lo configuren en la tabla equipo.</p></form>;
+  return (
+    <form onSubmit={submit}>
+      <div className="row">
+        <label>Tipo<select className="sel" value={f.tipo} onChange={set('tipo')}>{TIPOS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
+        <label>Fecha<input className="in" type="date" required value={f.fecha} onChange={set('fecha')} /></label>
+      </div>
+      <div className="row">
+        <label>Categoría<select className="sel" value={f.categoria} onChange={set('categoria')} disabled={cats.length === 1}>{cats.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
+        <label>Monto (COP)<input className="in num" inputMode="numeric" required autoFocus placeholder="$0" value={f.monto ? '$' + new Intl.NumberFormat('es-CO').format(monto) : ''} onChange={(e) => setF({ ...f, monto: e.target.value.replace(/\D/g, '') })} /></label>
+      </div>
+      <label>Descripción<input className="in" placeholder="Meta Ads, Notion, valoración UNICARIBE" value={f.descripcion} onChange={set('descripcion')} /></label>
+      <label>{pagoLabel}
+        <div className="seg" role="radiogroup">
+          {opts.map(([k, l]) => <button type="button" key={k} role="radio" aria-checked={f.pagado_por === k} className={f.pagado_por === k ? 'on' : ''} onClick={() => setF({ ...f, pagado_por: k })}>{l}</button>)}
+        </div>
+      </label>
+      <label>Soporte de pago (PDF o imagen)
+        <input className="in" type="file" accept={ACEPTA} onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+      </label>
+      <footer><button className="btn primary" disabled={busy}>{busy ? 'Guardando' : 'Registrar movimiento'}</button></footer>
+    </form>
   );
 }
 
@@ -204,7 +273,7 @@ function Balance({ movs, trato, onTrato }: { movs: Mov[]; trato: Tratamiento; on
             <option value="deuda">Deuda de Relevo con el socio</option><option value="aporte">Aporte de capital</option>
           </select>
         </label>
-        <button className="btn ghost" style={{ marginLeft: 'auto' }} onClick={() => csv('relevo_balance_' + corte, [['Cuenta', 'Valor'], ['Caja', b.caja], ['Total activos', b.caja], ['Cuentas por pagar a Pardito', trato === 'deuda' ? b.cuenta.felipe : 0], ['Cuentas por pagar a Alejito', trato === 'deuda' ? b.cuenta.alejandro : 0], ['Total pasivos', b.pasivo], ['Aportes de Pardito', trato === 'aporte' ? b.cuenta.felipe : 0], ['Aportes de Alejito', trato === 'aporte' ? b.cuenta.alejandro : 0], ['Resultado acumulado', b.resultado], ['Total patrimonio', b.patrimonio]])}><DownloadSimple className="ic" />CSV</button>
+        <button className="btn ghost" style={{ marginLeft: 'auto' }} onClick={() => csv('relevo_balance_' + corte, [['Cuenta', 'Valor'], ['Caja', b.caja], ['Total activos', b.caja], ['Cuentas por pagar a Pardo', trato === 'deuda' ? b.cuenta.felipe : 0], ['Cuentas por pagar a Alejo', trato === 'deuda' ? b.cuenta.alejandro : 0], ['Total pasivos', b.pasivo], ['Aportes de Pardo', trato === 'aporte' ? b.cuenta.felipe : 0], ['Aportes de Alejo', trato === 'aporte' ? b.cuenta.alejandro : 0], ['Resultado acumulado', b.resultado], ['Total patrimonio', b.patrimonio]])}><DownloadSimple className="ic" />CSV</button>
       </div>
       <p className="muted" style={{ fontSize: 12.5, marginBottom: 12 }}>Esta regla está pendiente de decidir entre ustedes. Cambiarla aquí solo cambia cómo se presenta el balance, no los movimientos.</p>
       <div className="grid2">
@@ -213,9 +282,9 @@ function Balance({ movs, trato, onTrato }: { movs: Mov[]; trato: Tratamiento; on
         </section>
         <section className="panel report"><header><h2>Pasivos y patrimonio</h2></header>
           <table className="t fin-t"><tbody>
-            {trato === 'deuda' && <><L l="Por pagar a Pardito" v={b.cuenta.felipe} /><L l="Por pagar a Alejito" v={b.cuenta.alejandro} /></>}
+            {trato === 'deuda' && <><L l="Por pagar a Pardo" v={b.cuenta.felipe} /><L l="Por pagar a Alejo" v={b.cuenta.alejandro} /></>}
             <L l="Total pasivos" v={b.pasivo} k="tot" />
-            {trato === 'aporte' && <><L l="Aportes de Pardito" v={b.cuenta.felipe} /><L l="Aportes de Alejito" v={b.cuenta.alejandro} /></>}
+            {trato === 'aporte' && <><L l="Aportes de Pardo" v={b.cuenta.felipe} /><L l="Aportes de Alejo" v={b.cuenta.alejandro} /></>}
             <L l="Resultado acumulado" v={b.resultado} k="resultado" />
             <L l="Total patrimonio" v={b.patrimonio} k="tot" />
             <L l="Pasivos más patrimonio" v={b.pasivo + b.patrimonio} k="tot" />
@@ -231,7 +300,7 @@ function Socios({ movs }: { movs: Mov[] }) {
   const s = useMemo(() => socios(movs), [movs]);
   return (
     <>
-      <Kpis items={[['Pardito ha puesto', s.puesto.felipe], ['Alejito ha puesto', s.puesto.alejandro], ['Total puesto por socios', s.total]]} />
+      <Kpis items={[['Pardo ha puesto', s.puesto.felipe], ['Alejo ha puesto', s.puesto.alejandro], ['Total puesto por socios', s.total]]} />
       <section className="panel report">
         <header><h2>Para quedar 50/50</h2></header>
         <div className="body">
