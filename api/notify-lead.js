@@ -31,7 +31,7 @@ function capiEvent(r) {
     event_time: created,
     event_id: r.id,
     action_source: 'website',
-    event_source_url: r.landing_url || 'https://relevo-murex.vercel.app/vender',
+    event_source_url: r.landing_url || 'https://relevobrokers.com/',
     user_data,
     custom_data: { content_name: 'vendedor', utm_content: r.utm_content || undefined },
   };

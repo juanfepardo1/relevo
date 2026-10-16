@@ -34,7 +34,7 @@ Relevo sells profitable Colombian SMEs end to end: free valuation, anonymous con
 - Static HTML/CSS/JS on Vercel; no framework.
 - Copy in Spanish, using "tú".
 - Pricing for buyers is not published.
-- No company constituted yet; Felipe operates as persona natural under the Relevo brand.
+- Operated by RELEVO BROKERS S.A.S. (NIT 902.117.149-4), constituted 16 Oct 2026; legal representative Juan Felipe Pardo Blanco.
 
 ## Brand Commitments
 
