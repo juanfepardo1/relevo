@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useEffect, useState, type ReactNode } from 'react';
-import { House, Tray, AddressBook, UserCircle, ChartBar, SignOut, Wallet, CaretDown, FileText, ShieldStar } from '@phosphor-icons/react';
+import { House, Tray, AddressBook, UserCircle, ChartBar, SignOut, Wallet, CaretDown, FileText, ShieldStar, CalendarBlank } from '@phosphor-icons/react';
 import { supabase } from '../lib/supabase';
 import { useCatalogo } from '../lib/data';
 
@@ -34,6 +34,7 @@ export default function Layout({ email }: { email: string }) {
           <NavLink to="/" end><House className="ic" />Inicio</NavLink>
           <NavLink to="/bandeja"><Tray className="ic" />Bandeja{nBandeja ? <span className="count num">{nBandeja}</span> : null}</NavLink>
           <NavLink to="/mis-clientes"><UserCircle className="ic" />Mis clientes</NavLink>
+          <NavLink to="/calendario"><CalendarBlank className="ic" />Calendario</NavLink>
           <Grupo icono={<AddressBook className="ic" />} titulo="CRM" rutas={['/vendedores', '/compradores']}>
             <NavLink to="/vendedores">Vendedores</NavLink>
             <NavLink to="/compradores">Compradores</NavLink>

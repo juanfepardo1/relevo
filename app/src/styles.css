@@ -262,6 +262,23 @@ dialog.m footer{display:flex;justify-content:flex-end;gap:8px;padding-top:6px}
 .side .me-link:hover span{color:var(--orange)}
 @media (max-width:1100px){.grid-doc{grid-template-columns:1fr}.doc-out{position:static}}
 
+/* calendario */
+.cal-wrap{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--line);gap:1px}
+.cal-h{background:var(--bg-2);padding:8px 10px;font-size:12px;color:var(--ink-3);text-transform:capitalize}
+.cal-d{background:var(--bg-2);min-height:112px;padding:6px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.cal-d.fuera{background:#f8fafc}.cal-d.fuera .cal-n{color:#b3bdcc}
+.cal-n{font-size:12px;color:var(--ink-2);align-self:flex-end;width:22px;height:22px;display:grid;place-items:center;border-radius:50%}
+.cal-d.hoy .cal-n{background:var(--orange);color:#fff;font-weight:600}
+.cal-i{appearance:none;border:0;text-align:left;font:500 11.5px var(--sans);padding:2px 6px;border-radius:5px;background:var(--t-bg);color:var(--t-fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;display:flex;gap:5px}
+.cal-i:hover{filter:brightness(.96)}
+.cal-i .num{opacity:.75}
+.cal-i.tone-nuevo{text-decoration:line-through}
+.cal-mas{font-size:11px;color:var(--ink-3);padding-left:4px}
+.cal-leyenda{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+@media (max-width:1100px){.cal-wrap{grid-template-columns:1fr}}
+@media (max-width:800px){.cal{display:none}.cal-leyenda{margin-left:0}}
+
 /* finanzas */
 .mov-form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:14px 16px;margin-bottom:16px}
 .mov-form label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--ink-3);min-width:130px}
