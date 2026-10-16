@@ -5,7 +5,7 @@ import { useQuery, useCatalogo } from '../lib/data';
 import { label } from '../lib/catalogos';
 import { fecha, hoy } from '../lib/format';
 import { Skeleton, ErrorBox, Modal, useToast } from '../components/ui';
-import { TIPOS, QUIEN, TODAS_CAT, quienPuede, puedeEditar, type Transfer, categoriasDe, cop, nombreMes, balance, socios, csv, resultadosPuc, flujoPuc, GRUPOS, CONSTITUCION, cuentaDe, type Mov } from '../lib/finanzas';
+import { TIPOS, QUIEN, TODAS_CAT, quienPuede, puedeEditar, type Transfer, categoriasDe, cop, nombreMes, balance, socios, csv, resultadosPuc, flujoPuc, GRUPOS, CONSTITUCION, CAPITAL, cuentaDe, type Mov } from '../lib/finanzas';
 
 export type Seccion = 'movimientos' | 'estados' | 'socios';
 type Estado = 'resultados' | 'flujo' | 'balance';
@@ -261,6 +261,7 @@ function Flujo({ movs }: { movs: Mov[] }) {
     { l: 'Actividades de inversión', v: [], t: 0, k: 'grupo' },
     { l: 'Efectivo neto de actividades de inversión', v: f.op.map(() => 0), t: 0, k: 'tot' },
     { l: 'Actividades de financiación', v: [], t: 0, k: 'grupo' },
+    { c: '3105', l: 'Aportes de capital pagado', v: f.capital, t: sum(f.capital) },
     { l: 'Préstamos recibidos de socios', v: f.recibidoSocios, t: sum(f.recibidoSocios) },
     { l: 'Pagos a socios', v: f.pagadoSocios, t: sum(f.pagadoSocios) },
     { l: 'Efectivo neto de actividades de financiación', v: f.fin, t: sum(f.fin), k: 'tot' },
@@ -287,14 +288,14 @@ function Balance({ movs }: { movs: Mov[] }) {
     <tr className={k ?? ''}><td className="puc-c num">{c}</td><td>{l}</td><td className={'r num' + (k === 'resultado' ? (Number(v) < 0 ? ' neg' : '') : '')}>{v == null ? '' : cop(v)}</td></tr>
   );
   const socios = b.cuenta.felipe + b.cuenta.alejandro;
-  const filas: [string, string, number | ''][] = [['1110', 'Bancos', b.caja], ['', 'Total activo', b.caja], ['2355', 'Deudas con accionistas o socios', socios], ['', 'Total pasivo', b.pasivo], ['3105', 'Capital suscrito y pagado', 0], [b.resultado >= 0 ? '3605' : '3610', b.resultado >= 0 ? 'Utilidad del ejercicio' : 'Pérdida del ejercicio', b.resultado], ['', 'Total patrimonio', b.patrimonio], ['', 'Total pasivo y patrimonio', b.pasivo + b.patrimonio]];
+  const filas: [string, string, number | ''][] = [['1110', 'Bancos', b.caja], ['', 'Total activo', b.caja], ['2355', 'Deudas con accionistas o socios', socios], ['', 'Total pasivo', b.pasivo], ['3105', 'Capital suscrito y pagado', b.pagado], ['310505', 'Capital autorizado', b.pagado ? CAPITAL.autorizado : 0], ['310510', 'Capital por suscribir', b.pagado ? -(CAPITAL.autorizado - CAPITAL.suscrito) : 0], ['310515', 'Capital suscrito por cobrar', b.pagado ? -(CAPITAL.suscrito - CAPITAL.pagado) : 0], [b.resultado >= 0 ? '3605' : '3610', b.resultado >= 0 ? 'Utilidad del ejercicio' : 'Pérdida del ejercicio', b.resultado], ['', 'Total patrimonio', b.patrimonio], ['', 'Total pasivo y patrimonio', b.pasivo + b.patrimonio]];
   return (
     <>
       <div className="toolbar no-print">
         <label className="who">Corte<input className="in" type="date" value={corte} onChange={(e) => setCorte(e.target.value)} style={{ width: 160 }} /></label>
         <button className="btn ghost" style={{ marginLeft: 'auto' }} onClick={() => csv('relevo_situacion_financiera_' + corte, [['Código', 'Cuenta', 'Valor'], ...filas])}><DownloadSimple className="ic" />CSV</button>
       </div>
-      <p className="muted" style={{ fontSize: 12.5, marginBottom: 12 }}>Estado de situación financiera de Relevo Brokers S.A.S. al {fechaCorta(corte)}. Lo que los socios pagan de su bolsillo queda como deuda de la sociedad con ellos (2355).</p>
+      <p className="muted" style={{ fontSize: 12.5, marginBottom: 12 }}>Estado de situación financiera de Relevo Brokers S.A.S. al {fechaCorta(corte)}. Lo que los socios pagan de su bolsillo queda como deuda de la sociedad con ellos (2355). Capital: autorizado {cop(CAPITAL.autorizado)}, suscrito {cop(CAPITAL.suscrito)}, pagado {cop(CAPITAL.pagado)}.</p>
       <div className="grid2">
         <section className="panel report"><header><h2>Activo</h2></header>
           <table className="t fin-t"><tbody>
@@ -312,7 +313,12 @@ function Balance({ movs }: { movs: Mov[] }) {
             <L l="Alejandro González (Alejo)" v={b.cuenta.alejandro} k="subcta" />
             <L l="Total pasivo" v={b.pasivo} k="tot" />
             <L c="3" l="Patrimonio" k="grupo" />
-            <L c="3105" l="Capital suscrito y pagado" v={0} />
+            <L c="3105" l="Capital suscrito y pagado" v={b.pagado} />
+            {b.pagado > 0 && <>
+              <L c="310505" l="Capital autorizado" v={CAPITAL.autorizado} k="subcta" />
+              <L c="310510" l="Capital por suscribir" v={-(CAPITAL.autorizado - CAPITAL.suscrito)} k="subcta" />
+              <L c="310515" l="Capital suscrito por cobrar" v={-(CAPITAL.suscrito - CAPITAL.pagado)} k="subcta" />
+            </>}
             <L c={b.resultado >= 0 ? '3605' : '3610'} l={b.resultado >= 0 ? 'Utilidad del ejercicio' : 'Pérdida del ejercicio'} v={b.resultado} k="resultado" />
             <L l="Total patrimonio" v={b.patrimonio} k="tot" />
             <L l="Total pasivo y patrimonio" v={b.pasivo + b.patrimonio} k="tot" />
