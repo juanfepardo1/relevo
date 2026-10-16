@@ -1,10 +1,11 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { ArrowDown, ArrowUp, ChatCircle, Envelope, FileText, Note, Phone, Plus, Users, Paperclip, Check, ArrowSquareOut } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
 import { useQuery, useCatalogo } from '../lib/data';
 import { TIPO_DOC, ESTADO_DOC, TIPO_ACTIVIDAD, label } from '../lib/catalogos';
 import { fecha, fechaHora, hoy, diasDesde } from '../lib/format';
 import { Modal, Skeleton, useToast } from './ui';
+import { tonoEtapa, tonoPersona } from '../lib/colores';
 
 type Ent = 'vendedor' | 'comprador';
 const fk = (e: Ent) => (e === 'vendedor' ? 'vendedor_id' : 'comprador_id');
@@ -13,24 +14,45 @@ const fk = (e: Ent) => (e === 'vendedor' ? 'vendedor_id' : 'comprador_id');
 export function Stepper({ pipeline, actual, onChange }: { pipeline: Ent; actual: string; onChange: (c: string) => Promise<unknown> }) {
   const { etapasDe } = useCatalogo();
   const etapas = etapasDe(pipeline);
-  const ordenActual = etapas.find((e) => e.codigo === actual)?.orden ?? 0;
   const toast = useToast();
+  const [valor, setValor] = useState(actual);
+  useEffect(() => setValor(actual), [actual]);
   const [busy, setBusy] = useState(false);
+  const e = etapas.find((x) => x.codigo === valor);
+  const fases = [...new Set(etapas.map((x) => x.fase))];
   const go = async (c: string) => {
-    if (c === actual || busy) return;
-    setBusy(true);
-    try { await onChange(c); toast('Etapa actualizada'); } catch (e: any) { toast('No se cambió la etapa: ' + e.message, true); }
+    if (c === valor || busy) return;
+    const antes = valor;
+    setValor(c); setBusy(true);
+    try { await onChange(c); toast('Etapa actualizada'); }
+    catch (err: any) { setValor(antes); toast('No se cambió la etapa: ' + err.message, true); }
     setBusy(false);
   };
   return (
-    <div className="stepper" aria-label="Etapa" style={{ opacity: busy ? 0.6 : 1 }}>
-      {etapas.map((e) => (
-        <button key={e.codigo} type="button" title={e.fase + (e.sla_dias ? ` · meta ${e.sla_dias} días` : '')}
-          className={e.codigo === actual ? 'now' : !e.terminal && e.orden < ordenActual ? 'past' : ''}
-          aria-pressed={e.codigo === actual} onClick={() => go(e.codigo)}>{e.nombre}</button>
-      ))}
-    </div>
+    <label className="who" style={{ gap: 10 }}>
+      <span className="muted" style={{ fontSize: 12.5 }}>Etapa</span>
+      <select className={'etapa-sel ' + tonoEtapa(e?.fase, valor)} value={valor} disabled={busy} onChange={(ev) => go(ev.target.value)}>
+        {fases.map((f) => (
+          <optgroup key={f} label={f}>
+            {etapas.filter((x) => x.fase === f).map((x) => <option key={x.codigo} value={x.codigo}>{x.nombre}</option>)}
+          </optgroup>
+        ))}
+      </select>
+    </label>
   );
+}
+
+export function EtapaTag({ pipeline, codigo, nombre }: { pipeline: Ent; codigo: string; nombre?: string }) {
+  const { etapasDe } = useCatalogo();
+  const e = etapasDe(pipeline).find((x) => x.codigo === codigo);
+  return <span className={'tag ' + tonoEtapa(e?.fase, codigo)}>{nombre ?? e?.nombre ?? codigo}</span>;
+}
+
+export function Persona({ email }: { email: string | null | undefined }) {
+  const { equipo } = useCatalogo();
+  if (!email) return <span className="muted">Nadie</span>;
+  const n = equipo.find((m) => m.email === email)?.nombre ?? email;
+  return <span className={'who ' + tonoPersona(email)}><span className="avatar">{n.split(' ').map((x) => x[0]).slice(0, 2).join('')}</span>{n.split(' ')[0]}</span>;
 }
 
 /* ---------- Documentos ---------- */

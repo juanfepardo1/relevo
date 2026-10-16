@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { supabase, must, type Row } from './supabase';
 
 export type Etapa = { pipeline: 'vendedor' | 'comprador'; codigo: string; nombre: string; orden: number; fase: string; sla_dias: number | null; terminal: boolean };
@@ -26,9 +26,12 @@ export function useQuery<T = Row[]>(fn: () => PromiseLike<{ data: any; error: an
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [tick, setTick] = useState(0);
+  const key = JSON.stringify(deps);
+  const lastKey = useRef<string | null>(null);
   useEffect(() => {
     let alive = true;
-    setLoading(true);
+    // Solo muestra "cargando" la primera vez o si cambia lo que se pide. Al recargar tras guardar, deja los datos en pantalla.
+    if (lastKey.current !== key) { setLoading(true); setData(null); lastKey.current = key; }
     must(fn()).then(
       (d) => { if (alive) { setData(d as T); setError(null); setLoading(false); } },
       (e) => { if (alive) { setError(e.message); setLoading(false); } },
@@ -36,7 +39,7 @@ export function useQuery<T = Row[]>(fn: () => PromiseLike<{ data: any; error: an
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps, tick]);
-  return { data, error, loading, reload: () => setTick((t) => t + 1) };
+  return { data, error, loading, reload: () => setTick((t) => t + 1), setData };
 }
 
 export async function guardar(tabla: string, id: string, cambios: Row, key = 'id') {

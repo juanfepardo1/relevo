@@ -5,6 +5,7 @@ import { supabase, must, type Row } from '../lib/supabase';
 import { useQuery, useCatalogo, guardar } from '../lib/data';
 import { SECTORES, VENTAS, HORIZONTE, MOTIVO_VENTA, MOTIVO_PERDIDA, VALORACION, CANAL } from '../lib/catalogos';
 import { millones, fecha, waLink } from '../lib/format';
+import { tonoBucket } from '../lib/colores';
 import { Field, Skeleton, ErrorBox, Dias, useToast } from '../components/ui';
 import { Stepper, DocumentosPanel, ActividadesPanel, HistorialPanel } from '../components/paneles';
 
@@ -25,19 +26,17 @@ export default function VendedorFicha() {
       <Link to="/vendedores" className="btn ghost" style={{ marginBottom: 12, paddingLeft: 4 }}><CaretLeft className="ic" />Vendedores</Link>
       <div className="head">
         <div>
-          <h1>{v.empresa || v.nombre}</h1>
-          <p>{[v.empresa ? v.nombre : null, v.ciudad, v.bucket ? `Bucket ${v.bucket}` : null, `ingresó ${fecha(v.fecha_ingreso, true)}`].filter(Boolean).join(' · ')}</p>
+          <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}>{v.empresa || v.nombre}{v.bucket && <span className={'tag plain ' + tonoBucket(v.bucket)}>Bucket {v.bucket}</span>}</h1>
+          <p>{[v.empresa ? v.nombre : null, v.ciudad, `ingresó ${fecha(v.fecha_ingreso, true)}`].filter(Boolean).join(' · ')}</p>
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Stepper pipeline="vendedor" actual={v.etapa} onChange={save('etapa')} />
           <Dias d={v.dias_en_etapa} sla={v.sla_dias} />
           {wa && <a className="btn" href={wa} target="_blank" rel="noopener"><WhatsappLogo className="ic" />WhatsApp</a>}
           {v.correo && <a className="btn" href={`mailto:${v.correo}`}><Envelope className="ic" />Correo</a>}
         </div>
       </div>
 
-      <section className="panel" style={{ marginBottom: 16 }}>
-        <div className="body"><Stepper pipeline="vendedor" actual={v.etapa} onChange={save('etapa')} /></div>
-      </section>
 
       <div className="grid-ficha">
         <div className="stack">

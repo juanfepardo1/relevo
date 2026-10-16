@@ -6,6 +6,8 @@ import { useQuery, useCatalogo } from '../lib/data';
 import { SECTORES, VENTAS, HORIZONTE, CANAL, label } from '../lib/catalogos';
 import { fecha, hoy } from '../lib/format';
 import { Skeleton, ErrorBox, Modal, Dias, useToast } from '../components/ui';
+import { Persona } from '../components/paneles';
+import { tonoEtapa, tonoBucket } from '../lib/colores';
 
 const VENTAS_ORD = VENTAS.map((v) => v[0]);
 export const BUCKETS: [string, string][] = [['A', '5.000 a 20.000M'], ['B', '1.000 a 5.000M'], ['C', 'menos de 1.000M'], ['D', 'más de 20.000M']];
@@ -87,13 +89,13 @@ export default function Vendedores() {
               {!rows.length ? <tr><td colSpan={11}><p className="empty-state">Ningún vendedor coincide con los filtros.</p></td></tr> : rows.map((v: Row) => (
                 <tr key={v.id} onClick={() => nav(`/vendedores/${v.id}`)}>
                   <td><span className="primary-cell">{v.empresa || v.nombre}</span><span className="sub">{v.empresa ? v.nombre : ''}</span></td>
-                  <td><span className="b">{v.etapa_nombre}</span></td>
+                  <td><span className={'tag ' + tonoEtapa(v.fase, v.etapa)}>{v.etapa_nombre}</span></td>
                   <td className="r"><Dias d={v.dias_en_etapa} sla={v.sla_dias} /></td>
-                  <td>{v.bucket ? <span className={'b ' + (v.bucket === 'A' ? 'or' : v.bucket === 'D' ? 'bl' : '')}>{v.bucket}</span> : <span className="muted">·</span>}</td>
+                  <td>{v.bucket ? <span className={'tag plain ' + tonoBucket(v.bucket)}>{v.bucket}</span> : <span className="muted">·</span>}</td>
                   <td>{label(VENTAS, v.ventas_rango)}</td>
                   <td>{label(SECTORES, v.sector)}</td>
                   <td>{v.ciudad}</td>
-                  <td>{equipo.find((m) => m.email === v.responsable)?.nombre.split(' ')[0] ?? <span className="muted">Nadie</span>}</td>
+                  <td><Persona email={v.responsable} /></td>
                   <td>{v.fecha_proxima_accion ? <span className={v.fecha_proxima_accion <= hoy() ? 'b warn' : 'soft'}>{fecha(v.fecha_proxima_accion)} {v.proxima_accion ? '· ' + v.proxima_accion : ''}</span> : <span className="muted">Sin definir</span>}</td>
                   <td className="r">{v.docs_pendientes ? <span className="b warn num">{v.docs_pendientes}</span> : ''}</td>
                   <td className="num soft">{fecha(v.fecha_ingreso)}</td>
@@ -113,16 +115,16 @@ export default function Vendedores() {
   );
 }
 
-function Pipeline({ rows, etapas, onOpen, onMove }: { rows: Row[]; etapas: { codigo: string; nombre: string }[]; onOpen: (id: string) => void; onMove: (id: string, e: string) => void }) {
+function Pipeline({ rows, etapas, onOpen, onMove }: { rows: Row[]; etapas: { codigo: string; nombre: string; fase: string }[]; onOpen: (id: string) => void; onMove: (id: string, e: string) => void }) {
   const [over, setOver] = useState<string | null>(null);
   const cols = etapas.map((e) => ({ ...e, items: rows.filter((r) => r.etapa === e.codigo) })).filter((c) => c.items.length || etapas.length < 12 || true);
   return (
     <div className="board">
       {cols.map((c) => (
-        <section key={c.codigo} className={'col' + (over === c.codigo ? ' drop' : '')}
+        <section key={c.codigo} className={'col ' + tonoEtapa(c.fase, c.codigo) + (over === c.codigo ? ' drop' : '')}
           onDragOver={(e) => { e.preventDefault(); setOver(c.codigo); }} onDragLeave={() => setOver(null)}
           onDrop={(e) => { e.preventDefault(); setOver(null); const id = e.dataTransfer.getData('text/plain'); if (id) onMove(id, c.codigo); }}>
-          <header><span>{c.nombre}</span><span className="muted num">{c.items.length}</span></header>
+          <header><span className="tag">{c.nombre}</span><span className="muted num">{c.items.length}</span></header>
           <div className="cards">
             {c.items.map((v) => (
               <article key={v.id} className={'card' + (v.sla_dias != null && v.dias_en_etapa > v.sla_dias ? ' over' : '')} draggable

@@ -6,6 +6,7 @@ import { useQuery, useCatalogo } from '../lib/data';
 import { TIPO_COMPRADOR, SUBTIPO, ESTADO_COMPRADOR, CERTEZA, ORIGEN, SECTORES, label } from '../lib/catalogos';
 import { rango, fecha } from '../lib/format';
 import { Skeleton, ErrorBox, Modal, Dias, useToast } from '../components/ui';
+import { EtapaTag } from '../components/paneles';
 
 export default function Compradores() {
   const nav = useNavigate();
@@ -50,7 +51,7 @@ export default function Compradores() {
                   <td>{label(TIPO_COMPRADOR, c.tipo)}{c.subtipo ? <span className="sub">{label(SUBTIPO[c.tipo] || [], c.subtipo)}</span> : null}</td>
                   <td><span className={'b ' + (c.estado === 'registrado' ? 'ok' : c.estado === 'inactivo' ? '' : 'bl')}>{label(ESTADO_COMPRADOR, c.estado)}</span></td>
                   <td>{c.certeza === 'sin_verificar' ? <span className="muted">Sin verificar</span> : <span className="b or">{c.certeza}</span>}</td>
-                  <td>{c.etapa_nombre}</td>
+                  <td><EtapaTag pipeline="comprador" codigo={c.etapa} nombre={c.etapa_nombre} /></td>
                   <td className="r"><Dias d={c.dias_en_etapa} /></td>
                   <td className="num">{rango(c.ticket_min, c.ticket_max)}</td>
                   <td style={{ maxWidth: 220 }}>{(c.categorias || []).map((s: string) => label(SECTORES, s)).join(', ')}</td>

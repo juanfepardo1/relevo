@@ -6,6 +6,7 @@ import { useQuery } from '../lib/data';
 import { VENTAS, HORIZONTE, label } from '../lib/catalogos';
 import { fechaHora } from '../lib/format';
 import { Skeleton, ErrorBox, useToast } from '../components/ui';
+import { tonoBucket } from '../lib/colores';
 
 const HORIZ: Record<string, string> = { 'En los próximos 6 meses': '6m', 'Entre 6 y 24 meses': '6_24m', 'Solo quiero saber cuánto vale': 'solo_valor' };
 const BUCKET: Record<string, string> = { '5000_10000': 'A', '10000_20000': 'A', '1000_2000': 'B', '2000_5000': 'B', '2000_3000': 'B', '3000_5000': 'B', lt1000: 'C', gt20000: 'D' };
@@ -45,7 +46,7 @@ export default function Bandeja() {
                   <tr key={l.id} style={{ cursor: 'default' }}>
                     <td className="num soft">{fechaHora(l.created_at)}</td>
                     <td><span className="primary-cell">{l.company || l.name}</span><span className="sub">{[l.company ? l.name : null, l.role, l.phone, l.email].filter(Boolean).join(' · ')}</span></td>
-                    <td>{b ? <span className={'b ' + (b === 'A' ? 'or' : b === 'D' ? 'bl' : b === 'C' ? 'err' : '')}>{b}</span> : <span className="muted">·</span>}</td>
+                    <td>{b ? <span className={'tag plain ' + tonoBucket(b)}>{b}</span> : <span className="muted">·</span>}</td>
                     <td>{label(VENTAS, l.sales_range) || l.sales_range}</td>
                     <td>{l.sector}</td>
                     <td>{l.city}</td>

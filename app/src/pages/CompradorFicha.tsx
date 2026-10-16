@@ -32,16 +32,14 @@ export default function CompradorFicha() {
           <h1>{c.nombre}</h1>
           <p>{[label(TIPO_COMPRADOR, c.tipo), label(SUBTIPO[c.tipo] || [], c.subtipo), label(ESTADO_COMPRADOR, c.estado)].filter(Boolean).join(' · ')}</p>
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Stepper pipeline="comprador" actual={c.etapa} onChange={save('etapa')} />
           <Dias d={c.dias_en_etapa} />
           {wa && <a className="btn" href={wa} target="_blank" rel="noopener"><WhatsappLogo className="ic" />WhatsApp</a>}
           {c.contacto_email && <a className="btn" href={`mailto:${c.contacto_email}`}><Envelope className="ic" />Correo</a>}
         </div>
       </div>
 
-      <section className="panel" style={{ marginBottom: 16 }}>
-        <div className="body"><Stepper pipeline="comprador" actual={c.etapa} onChange={save('etapa')} /></div>
-      </section>
 
       <div className="grid-ficha">
         <div className="stack">
