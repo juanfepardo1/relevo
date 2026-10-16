@@ -161,16 +161,15 @@ function EstadoGmail({ g }: { g: { estado: string; msg?: string } }) {
 function GuiaGmail({ g }: { g: { estado: string; msg?: string } }) {
   return (
     <details className="panel cal-guia" style={{ marginBottom: 14 }}>
-      <summary><b>Conectar Gmail para crear los borradores</b> <span className="muted">Una vez, unos 20 minutos, lo hace Felipe (admin de Google Workspace)</span></summary>
+      <summary><b>Conectar Gmail para crear los borradores</b> <span className="muted">Una vez, unos 20 minutos, lo hace Felipe (admin de Google Workspace). Sin llaves: Google no deja crearlas.</span></summary>
       {g.msg && <p className="aviso" style={{ margin: '0 16px 8px' }}>{g.msg}</p>}
       <ol>
-        <li>Entra a <b>console.cloud.google.com</b> con felipe@relevobrokers.com. Crea un proyecto llamado <b>Relevo app</b>.</li>
-        <li>En <b>APIs y servicios, Biblioteca</b>, busca <b>Gmail API</b> y dale <b>Habilitar</b>.</li>
-        <li>En <b>IAM y administración, Cuentas de servicio</b>, crea una llamada <b>relevo-gmail</b> (sin roles). Ábrela y copia su <b>ID de cliente</b> (un número largo).</li>
-        <li>En esa cuenta, pestaña <b>Claves</b>, <b>Agregar clave, JSON</b>. Se descarga un archivo. Si Google dice que la creación de claves está bloqueada: en <b>IAM, Políticas de la organización</b>, busca <code>iam.disableServiceAccountKeyCreation</code>, dale <b>Administrar política</b>, ponla en <b>No aplicar</b> y vuelve a intentar.</li>
-        <li>Entra a <b>admin.google.com</b>, <b>Seguridad, Control de acceso y de datos, Controles de API, Delegación de todo el dominio</b>. <b>Agregar nuevo</b>: pega el ID de cliente y en permisos escribe <code>https://www.googleapis.com/auth/gmail.compose</code>. Autorizar.</li>
-        <li>En Vercel, proyecto de la app, <b>Settings, Environment Variables</b>: crea <code>GOOGLE_SERVICE_ACCOUNT</code> y pega todo el contenido del archivo JSON. Luego <b>Deployments, Redeploy</b>.</li>
-        <li>Vuelve aquí y recarga: arriba debe decir <b>Gmail conectado</b>. Borra el archivo JSON de tu computador.</li>
+        <li>En <b>console.cloud.google.com</b>, proyecto <b>Relevo App</b>: habilita <b>Gmail API</b>, <b>IAM Service Account Credentials API</b> y <b>Security Token Service API</b>. Crea la cuenta de servicio <b>relevo-gmail</b> (sin roles, sin llave).</li>
+        <li><b>IAM y administración, Workload Identity Federation, Crear grupo</b>: nombre e ID <code>vercel</code>. Proveedor OpenID Connect, ID <code>vercel</code>, URL del emisor <code>https://oidc.vercel.com/juanfepardo1s-projects</code>, público permitido <code>https://vercel.com/juanfepardo1s-projects</code>, mapeo <code>google.subject = assertion.sub</code>.</li>
+        <li>En <b>relevo-gmail, Principales con acceso, Otorgar acceso</b>: principal <code>principal://iam.googleapis.com/projects/NÚMERO_DEL_PROYECTO/locations/global/workloadIdentityPools/vercel/subject/owner:juanfepardo1s-projects:project:relevo_app:environment:production</code>, rol <b>Creador de tokens de cuenta de servicio</b>.</li>
+        <li><b>admin.google.com, Seguridad, Control de acceso y de datos, Controles de API, Delegación de todo el dominio, Agregar nuevo</b>: ID único de relevo-gmail y permiso <code>https://www.googleapis.com/auth/gmail.compose</code>.</li>
+        <li>En Vercel, proyecto relevo_app: <b>Settings, Security</b>, OIDC Federation activado (modo Team). En <b>Environment Variables</b>: <code>GCP_PROJECT_NUMBER</code> y <code>GCP_SERVICE_ACCOUNT_EMAIL</code>. <b>Redeploy</b>.</li>
+        <li>Recarga esta página: arriba debe decir <b>Gmail conectado</b>.</li>
       </ol>
       <p className="muted" style={{ margin: '0 16px 14px' }}>El permiso solo deja crear borradores y enviar desde las cuentas @relevobrokers.com; no deja leer correos. Cada uno ve el borrador en su propio Gmail.</p>
     </details>
