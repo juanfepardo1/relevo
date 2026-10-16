@@ -8,7 +8,7 @@ import { fechaHora } from '../lib/format';
 import { Skeleton, ErrorBox, useToast } from '../components/ui';
 
 const HORIZ: Record<string, string> = { 'En los próximos 6 meses': '6m', 'Entre 6 y 24 meses': '6_24m', 'Solo quiero saber cuánto vale': 'solo_valor' };
-const BUCKET: Record<string, string> = { '5000_10000': 'A', '10000_20000': 'A', '1000_2000': 'B', '2000_5000': 'B', lt1000: 'C', gt20000: 'D' };
+const BUCKET: Record<string, string> = { '5000_10000': 'A', '10000_20000': 'A', '1000_2000': 'B', '2000_5000': 'B', '2000_3000': 'B', '3000_5000': 'B', lt1000: 'C', gt20000: 'D' };
 
 export default function Bandeja() {
   const nav = useNavigate();
