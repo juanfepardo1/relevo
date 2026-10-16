@@ -7,6 +7,7 @@ import { SECTORES, VENTAS, HORIZONTE, MOTIVO_VENTA, MOTIVO_PERDIDA, VALORACION, 
 import { millones, fecha, waLink } from '../lib/format';
 import { tonoBucket } from '../lib/colores';
 import { BotonEliminar } from '../components/Eliminar';
+import { ContactosPanel } from '../components/Contactos';
 import { Field, Skeleton, ErrorBox, Dias, useToast } from '../components/ui';
 import { Stepper, DocumentosPanel, ActividadesPanel, HistorialPanel } from '../components/paneles';
 
@@ -94,6 +95,7 @@ export default function VendedorFicha() {
               <Field label="Canal preferido" type="select" options={CANAL} value={v.canal} onSave={save('canal')} />
             </div>
           </section>
+          <ContactosPanel vendedorId={id} />
           <section className="panel">
             <header><h2>Origen</h2></header>
             <div className="body fields">
