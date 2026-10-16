@@ -330,6 +330,9 @@ dialog.m{width:min(680px,calc(100% - 32px))}
 .fin-t td,.fin-t th{white-space:nowrap}
 .fin-t tbody tr{cursor:default}
 .fin-t tr.tot td{font-weight:600;border-top:1px solid var(--line-2);background:var(--raise)}
+.fin-t .puc-c{width:56px;color:var(--ink-3);font-size:12.5px}
+.fin-t tr.grupo td{font-weight:600;color:var(--ink);padding-top:14px;border-top:0}
+.fin-t tr.subcta td:nth-child(2){padding-left:24px;color:var(--ink-2)}
 .fin-t tr.resultado td{font-weight:700;font-size:14.5px;border-top:2px solid var(--line-3)}
 .report>header p{margin:0}
 @media print{

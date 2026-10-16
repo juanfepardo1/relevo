@@ -107,3 +107,73 @@ export function csv(nombre: string, filas: (string | number)[][]) {
   const a = document.createElement('a'); a.href = url; a.download = nombre + '.csv'; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+/* ---------- PUC (Decreto 2650 de 1993), a 4 dígitos ---------- */
+/** Fecha de constitución de Relevo Brokers S.A.S. Lo anterior son gastos preoperativos. */
+export const CONSTITUCION = '2026-10-16';
+type Cta = { codigo: string; nombre: string; grupo: '41' | '42' | '51' | '52' | '53' };
+export const GRUPOS: Record<Cta['grupo'], string> = {
+  '41': 'Ingresos operacionales', '42': 'Ingresos no operacionales',
+  '51': 'Gastos operacionales de administración', '52': 'Gastos operacionales de ventas', '53': 'Gastos no operacionales',
+};
+/** Categoría de la app → cuenta del PUC. */
+export const PUC: Record<string, Cta> = {
+  exito: { codigo: '4155', nombre: 'Actividades inmobiliarias, empresariales y de alquiler', grupo: '41' },
+  valoracion: { codigo: '4155', nombre: 'Actividades inmobiliarias, empresariales y de alquiler', grupo: '41' },
+  asesoria: { codigo: '4155', nombre: 'Actividades inmobiliarias, empresariales y de alquiler', grupo: '41' },
+  otros_ingresos: { codigo: '4295', nombre: 'Diversos', grupo: '42' },
+  software: { codigo: '5135', nombre: 'Servicios', grupo: '51' },
+  hosting: { codigo: '5135', nombre: 'Servicios', grupo: '51' },
+  legal: { codigo: '5140', nombre: 'Gastos legales', grupo: '51' },
+  transporte: { codigo: '5155', nombre: 'Gastos de viaje', grupo: '51' },
+  otros: { codigo: '5195', nombre: 'Diversos', grupo: '51' },
+  marketing: { codigo: '5235', nombre: 'Servicios (publicidad y promoción)', grupo: '52' },
+};
+export const cuentaDe = (categoria: string, tipo: string): Cta => PUC[categoria] ?? (tipo === 'ingreso' ? PUC.otros_ingresos : PUC.otros);
+
+type Linea = { codigo: string; nombre: string; porMes: number[]; total: number };
+const porCuenta = (movs: Mov[], ms: string[], grupo: Cta['grupo']): Linea[] => {
+  const m = new Map<string, Linea>();
+  for (const x of movs) {
+    if (x.tipo !== 'ingreso' && x.tipo !== 'gasto') continue;
+    const c = cuentaDe(x.categoria, x.tipo);
+    if (c.grupo !== grupo) continue;
+    const l = m.get(c.codigo) ?? { codigo: c.codigo, nombre: c.nombre, porMes: ms.map(() => 0), total: 0 };
+    const i = ms.indexOf(x.fecha.slice(0, 7)); l.porMes[i] += Number(x.monto); l.total += Number(x.monto);
+    m.set(c.codigo, l);
+  }
+  return [...m.values()].sort((a, b) => a.codigo.localeCompare(b.codigo));
+};
+const sumaL = (ls: Linea[], n: number) => ({ porMes: Array.from({ length: n }, (_, i) => ls.reduce((a, l) => a + l.porMes[i], 0)), total: ls.reduce((a, l) => a + l.total, 0) });
+const resta = (a: { porMes: number[]; total: number }, ...bs: { porMes: number[]; total: number }[]) => ({ porMes: a.porMes.map((v, i) => bs.reduce((x, b) => x - b.porMes[i], v)), total: bs.reduce((x, b) => x - b.total, a.total) });
+const mas = (a: { porMes: number[]; total: number }, b: { porMes: number[]; total: number }) => ({ porMes: a.porMes.map((v, i) => v + b.porMes[i]), total: a.total + b.total });
+
+/** Estado de resultados con la estructura del PUC. Base caja. */
+export function resultadosPuc(movs: Mov[]) {
+  const ms = meses(movs), n = ms.length;
+  const g = (k: Cta['grupo']) => porCuenta(movs, ms, k);
+  const i41 = g('41'), i42 = g('42'), g51 = g('51'), g52 = g('52'), g53 = g('53');
+  const t41 = sumaL(i41, n), t42 = sumaL(i42, n), t51 = sumaL(g51, n), t52 = sumaL(g52, n), t53 = sumaL(g53, n);
+  const operacional = resta(t41, t51, t52);
+  const antesImp = resta(mas(operacional, t42), t53);
+  const preoperativos = movs.filter((m) => m.tipo === 'gasto' && m.fecha < CONSTITUCION).reduce((a, m) => a + Number(m.monto), 0);
+  return { meses: ms, i41, i42, g51, g52, g53, t41, t42, t51, t52, t53, operacional, antesImp, neta: antesImp, preoperativos };
+}
+
+/** Estado de flujos de efectivo, método directo, sobre la cuenta bancaria de Relevo. */
+export function flujoPuc(movs: Mov[]) {
+  const ms = meses(movs);
+  const fila = (f: (m: Mov) => number) => ms.map((mm) => movs.filter((m) => m.fecha.startsWith(mm)).reduce((a, m) => a + f(m), 0));
+  const v = (m: Mov) => Number(m.monto);
+  const cobros = fila((m) => (m.tipo === 'ingreso' && m.pagado_por === 'relevo' ? v(m) : 0));
+  const pagos = fila((m) => (m.tipo === 'gasto' && m.pagado_por === 'relevo' ? -v(m) : 0));
+  const recibidoSocios = fila((m) => (m.tipo === 'aporte' ? v(m) : 0));
+  const pagadoSocios = fila((m) => (m.tipo === 'reembolso' ? -v(m) : 0));
+  const op = cobros.map((x, i) => x + pagos[i]);
+  const fin = recibidoSocios.map((x, i) => x + pagadoSocios[i]);
+  const neto = op.map((x, i) => x + fin[i]);
+  let acc = 0; const inicio: number[] = [], fin_: number[] = [];
+  neto.forEach((x) => { inicio.push(acc); acc += x; fin_.push(acc); });
+  const sinCaja = { gastosSocios: movs.filter((m) => m.tipo === 'gasto' && m.pagado_por !== 'relevo').reduce((a, m) => a + v(m), 0), ingresosSocios: movs.filter((m) => m.tipo === 'ingreso' && m.pagado_por !== 'relevo').reduce((a, m) => a + v(m), 0) };
+  return { meses: ms, cobros, pagos, op, recibidoSocios, pagadoSocios, fin, neto, inicio, final: fin_, sinCaja };
+}
