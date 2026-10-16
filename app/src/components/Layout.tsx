@@ -41,7 +41,6 @@ export default function Layout({ email }: { email: string }) {
           </Grupo>
           <NavLink to="/documentos"><FileText className="ic" />Documentos</NavLink>
           <NavLink to="/stats"><ChartBar className="ic" />Embudo</NavLink>
-          <NavLink to="/empresa"><Buildings className="ic" />Empresa</NavLink>
           <Grupo icono={<Wallet className="ic" />} titulo="Finanzas" rutas={['/finanzas']}>
             <NavLink to="/finanzas/movimientos">Movimientos</NavLink>
             <NavLink to="/finanzas/estados">Estados financieros</NavLink>
@@ -49,7 +48,7 @@ export default function Layout({ email }: { email: string }) {
             <NavLink to="/finanzas/socios">Cuentas socios</NavLink>
           </Grupo>
         </nav>
-        {miembro?.es_admin && <nav className="nav nav-admin" aria-label="Administración"><NavLink to="/admin"><ShieldStar className="ic" />Admin{nNotas ? <span className="count num">{nNotas}</span> : null}</NavLink></nav>}
+        <nav className="nav nav-admin" aria-label="Empresa y administración"><NavLink to="/empresa"><Buildings className="ic" />Empresa</NavLink>{miembro?.es_admin && <NavLink to="/admin"><ShieldStar className="ic" />Admin{nNotas ? <span className="count num">{nNotas}</span> : null}</NavLink>}</nav>
         <div className="me">
           <NavLink to="/perfil" className="me-link">{yo}<span>Mi perfil</span></NavLink>
           <button className="btn ghost" style={{ justifyContent: 'flex-start', padding: 0 }} onClick={() => supabase.auth.signOut()}><SignOut className="ic" />Salir</button>
