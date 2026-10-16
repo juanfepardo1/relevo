@@ -223,6 +223,10 @@ dialog.m footer{display:flex;justify-content:flex-end;gap:8px;padding-top:6px}
 .side .me .btn.ghost{color:#a9b8d0}.side .me .btn.ghost:hover{background:none;color:#fff}
 .side :focus-visible{outline-color:var(--orange)}
 
+/* admin al fondo del menú */
+.side .nav-admin{margin-top:auto;padding-bottom:6px}
+.side .nav-admin+.me{margin-top:0}
+
 /* nav group */
 .nav-group{appearance:none;border:0;background:none;font:500 14px var(--sans);width:100%;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--ink-2);cursor:pointer;text-align:left}
 .nav-group:hover{background:rgba(255,255,255,.6);color:var(--ink)}
