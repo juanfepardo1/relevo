@@ -2,14 +2,14 @@
 <title>Relevo · Vende tu empresa por lo que realmente vale</title>
 <meta name="description" content="Relevo vende empresas colombianas de principio a fin: valoración gratis, búsqueda de compradores y negociación hasta el cierre, con total confidencialidad.">
 <meta property="og:title" content="Relevo · Vende tu empresa por lo que realmente vale"><meta property="og:description" content="Relevo vende empresas colombianas de principio a fin: valoración gratis, búsqueda de compradores y negociación hasta el cierre, con total confidencialidad."><meta property="og:type" content="website"><meta property="og:locale" content="es_CO">
-<meta name="theme-color" content="#fafaf8"><link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#fafaf8"><meta name="color-scheme" content="light"><link rel="icon" href="/favicon.svg" type="image/svg+xml">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@72,600&text=Relevo&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
 <style>
-:root{
+:root{color-scheme:light;
   --bg:#fafaf8; --paper-2:#f2f2ef; --surface:#ffffff; --ink:#131f33; --muted:#4b5567; --line:#e7e4de; --line-strong:#cfc9bf;
   --navy:#26497c; --navy-2:#1e3d6b; --on-navy:#f6f3ec; --on-navy-muted:#c6d2e4; --navy-line:#41659b;
   --accent:#f08a4b; --accent-hover:#f49a62; --accent-ink:#131f33; --accent-deep:#df6f30; --accent-tint:#fcebdf;
@@ -21,18 +21,6 @@
   --ease:cubic-bezier(.16,1,.3,1); --ink-ease:cubic-bezier(.65,0,.35,1);
   --r-ctl:4px; --r-card:6px; --r-tile:8px; --r-band:0px;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0d1726; --paper-2:#121f33; --surface:#15233a; --ink:#ece6da; --muted:#a9b4c6; --line:#23324b; --line-strong:#34486a;
-  --navy:#172d52; --navy-2:#10213f; --on-navy:#f4efe6; --on-navy-muted:#b8c3d6; --navy-line:#2f4a76;
-  --accent:#f28a50; --accent-hover:#f59c68; --accent-ink:#131f33; --accent-deep:#f6a072; --accent-tint:#3a2618;
-  --eng:#c7d2e3; --ok:#c7d2e3; --err:#ff8a80;
-  --sh:0 1px 2px rgba(0,0,0,.3),0 22px 48px -20px rgba(0,0,0,.7); color-scheme:dark }}
-:root[data-theme="dark"]{
-  --bg:#0d1726; --paper-2:#121f33; --surface:#15233a; --ink:#ece6da; --muted:#a9b4c6; --line:#23324b; --line-strong:#34486a;
-  --navy:#172d52; --navy-2:#10213f; --on-navy:#f4efe6; --on-navy-muted:#b8c3d6; --navy-line:#2f4a76;
-  --accent:#f28a50; --accent-hover:#f59c68; --accent-ink:#131f33; --accent-deep:#f6a072; --accent-tint:#3a2618;
-  --eng:#c7d2e3; --ok:#c7d2e3; --err:#ff8a80;
-  --sh:0 1px 2px rgba(0,0,0,.3),0 22px 48px -20px rgba(0,0,0,.7); color-scheme:dark }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{scrollbar-color:var(--line-strong) var(--bg);scroll-padding-top:90px}
@@ -60,8 +48,6 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px;heigh
 .mark i{position:absolute;height:7px;border-radius:1.5px}
 .mark i:nth-child(1){left:0;top:5px;width:17px;background:var(--navy)}
 .mark i:nth-child(2){left:9px;top:14px;width:17px;background:var(--accent)}
-:root[data-theme="dark"] .mark i:nth-child(1){background:var(--on-navy)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mark i:nth-child(1){background:var(--on-navy)}}
 .btn-sm{min-height:44px;padding:0 18px;font-size:15px}
 
 /* buttons */
@@ -115,8 +101,6 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px;heigh
 .range{position:relative;height:4px;border-radius:2px;background:var(--line);margin:18px 0 6px}
 .range b{position:absolute;left:36%;width:30%;top:0;bottom:0;background:var(--navy);border-radius:2px}
 .range i{position:absolute;left:52%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--surface)}
-:root[data-theme="dark"] .range b{background:var(--on-navy-muted)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .range b{background:var(--on-navy-muted)}}
 .srcs{margin-top:12px;color:var(--muted);font-size:13px}
 .fc-val{left:max(24px,calc(50% - 596px));top:5%;width:340px}
 .fc-no{right:max(24px,calc(50% - 596px));top:9%;width:352px;display:flex;gap:14px;align-items:center;padding:14px 18px}
@@ -139,8 +123,6 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px;heigh
 .pst li:not(.ok):not(.now) b{color:var(--muted);font-weight:500}
 .pst span{font-size:13px;color:var(--muted)}
 .pst .now span{color:var(--ink);font-weight:600}
-:root[data-theme="dark"] .pst .ok i{background:var(--on-navy-muted);border-color:var(--on-navy-muted);color:var(--navy)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pst .ok i{background:var(--on-navy-muted);border-color:var(--on-navy-muted);color:var(--navy)}}
 html.js .pst li{opacity:0;transform:translateY(6px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
 html.js .city.go .pst li{opacity:1;transform:none}
 html.js .city.go .pst li:nth-child(1){transition-delay:1.9s} html.js .city.go .pst li:nth-child(2){transition-delay:2.1s} html.js .city.go .pst li:nth-child(3){transition-delay:2.3s} html.js .city.go .pst li:nth-child(4){transition-delay:2.5s} html.js .city.go .pst li:nth-child(5){transition-delay:2.7s}
@@ -284,7 +266,6 @@ form.f{display:flex;flex-direction:column;gap:18px;margin-top:24px}
 .plate{height:var(--plate-h);border:1px solid var(--line);border-radius:var(--r-tile);background:var(--paper-2);display:grid;place-items:center}
 .plate .eng{width:150px} .plate .eng.docs{width:180px}
 .dot{width:16px;height:16px;border-radius:50%;background:var(--bg);border:2px solid var(--navy);margin-top:16px;position:relative;z-index:1}
-:root[data-theme="dark"] .dot{border-color:var(--eng)}
 .stop:last-child .dot{border-color:var(--accent);background:var(--accent)}
 .when{align-self:flex-start;font-weight:600;font-size:14px;padding:3px 10px;border:1px solid var(--line-strong);border-radius:4px;margin-top:10px;color:var(--muted)}
 .stop h3{font-size:27px;letter-spacing:-.015em}
@@ -534,8 +515,6 @@ html.js .in .checks li:nth-child(2) .ck{transition-delay:.45s} html.js .in .chec
 .tl-key i{display:inline-block;width:22px;height:10px}
 .tl-key .k-mn{background:var(--navy)}
 .tl-key .k-mx{margin-left:14px;background:repeating-linear-gradient(135deg,var(--navy) 0 1.5px,transparent 1.5px 5px);box-shadow:inset 0 0 0 1px var(--navy)}
-:root[data-theme="dark"] .tl-bar .mn,:root[data-theme="dark"] .tl-key .k-mn{background:var(--eng)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tl-bar .mn,:root:not([data-theme="light"]) .tl-key .k-mn{background:var(--eng)}}
 .proof{display:grid;grid-template-columns:5fr 6fr;gap:72px;align-items:center}
 .proof>*{min-width:0}
 .proof .lead{margin-top:16px}
@@ -565,8 +544,6 @@ summary{font-family:var(--body);font-weight:600;font-size:19px;letter-spacing:-.
 .city-img{display:block;width:100%;height:auto;mix-blend-mode:multiply;user-select:none}
 @media (min-width:761px){.city .fc-val{left:auto;right:max(24px,calc(50% - 596px));top:auto;bottom:-5%;width:330px}.sectors{margin-top:56px}}
 @media (max-width:760px){.city-img{height:260px;object-fit:cover;object-position:46% 70%}.city .fc-val{margin-top:-34px!important}}
-:root[data-theme="dark"] .city-img{filter:invert(1) hue-rotate(180deg) brightness(.95);mix-blend-mode:screen}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .city-img{filter:invert(1) hue-rotate(180deg) brightness(.95);mix-blend-mode:screen}}
 @media (prefers-reduced-motion:no-preference){
   html.js .city-img{clip-path:inset(0 100% 0 0);transition:clip-path 2.2s cubic-bezier(.65,0,.35,1) .15s}
   html.js .city.go .city-img{clip-path:inset(0 0 0 0)}
@@ -577,8 +554,6 @@ summary{font-family:var(--body);font-weight:600;font-size:19px;letter-spacing:-.
 /* a tinted band of the bitone to break the white */
 .tint{box-shadow:0 0 0 100vmax var(--tint);clip-path:inset(0 -100vmax);background:var(--tint);margin-top:96px;padding-block:96px}
 :root{--tint:#edf2f9}
-:root[data-theme="dark"]{--tint:#111f36}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--tint:#111f36}}
 .tint .rules{border-color:#d6e0ee} .tint .rules li{border-color:#d6e0ee}
 .sectors-line b{color:var(--ink);font-weight:600}
 /* motion diet: only the hero drawing and state changes move */
