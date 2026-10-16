@@ -5,7 +5,7 @@ import { useQuery, useCatalogo } from '../lib/data';
 import { label } from '../lib/catalogos';
 import { fecha, hoy } from '../lib/format';
 import { Skeleton, ErrorBox, Modal, useToast } from '../components/ui';
-import { TIPOS, QUIEN, TODAS_CAT, quienPuede, puedeEditar, categoriasDe, cop, nombreMes, resultados, flujo, balance, socios, csv, type Mov, type Tratamiento } from '../lib/finanzas';
+import { TIPOS, QUIEN, TODAS_CAT, quienPuede, puedeEditar, type Transfer, categoriasDe, cop, nombreMes, resultados, flujo, balance, socios, csv, type Mov, type Tratamiento } from '../lib/finanzas';
 
 export type Seccion = 'movimientos' | 'estados' | 'socios';
 type Estado = 'resultados' | 'flujo' | 'balance';
@@ -297,20 +297,120 @@ function Balance({ movs, trato, onTrato }: { movs: Mov[]; trato: Tratamiento; on
 }
 
 function Socios({ movs }: { movs: Mov[] }) {
-  const s = useMemo(() => socios(movs), [movs]);
+  const tq = useQuery(() => supabase.from('transferencias_socios').select('*').order('fecha', { ascending: false }).order('created_at', { ascending: false }));
+  const transf = (tq.data || []) as Transfer[];
+  const s = useMemo(() => socios(movs, transf), [movs, transf]);
+  const { yo } = useCatalogo();
+  const toast = useToast();
+  const [nueva, setNueva] = useState(false);
+  const borrar = async (t: Transfer) => {
+    if (!window.confirm(`¿Borrar la transferencia de ${cop(Number(t.monto))} de ${quien(t.de)} a ${quien(t.a)}?`)) return;
+    try {
+      if (t.soporte_path) await supabase.storage.from('documentos').remove([t.soporte_path]);
+      await must(supabase.from('transferencias_socios').delete().eq('id', t.id)); toast('Transferencia borrada'); tq.reload();
+    } catch (e: any) { toast(e.message, true); }
+  };
+  const ver = async (t: Transfer) => {
+    const { data, error } = await supabase.storage.from('documentos').createSignedUrl(t.soporte_path!, 120);
+    if (error) return toast('No se pudo abrir: ' + error.message, true);
+    window.open(data.signedUrl, '_blank', 'noopener');
+  };
+  const SOC = ['felipe', 'alejandro'] as const;
   return (
     <>
       <Kpis items={[['Pardo ha puesto', s.puesto.felipe], ['Alejo ha puesto', s.puesto.alejandro], ['Total puesto por socios', s.total]]} />
-      <section className="panel report">
-        <header><h2>Para quedar 50/50</h2></header>
+      <section className="panel report" style={{ marginBottom: 16 }}>
+        <header><h2>Para quedar 50/50</h2>{yo?.socio && <button className="btn primary" onClick={() => setNueva(true)}><Plus className="ic" />Registrar transferencia</button>}</header>
         <div className="body">
-          {s.transferencia < 1 ? <p>Están a mano.</p> : (
+          {s.transferencia < 1 ? <p style={{ fontSize: 16 }}>Están a mano.</p> : (
             <p style={{ fontSize: 16 }}><b>{quien(s.de)}</b> le transfiere <b className="num">{cop(s.transferencia)}</b> a <b>{quien(s.a)}</b>. Así cada uno queda con <span className="num">{cop(s.mitad)}</span> puestos.</p>
           )}
-          <p className="muted" style={{ fontSize: 12.5, marginTop: 8 }}>Neto de lo puesto: gastos pagados y aportes, menos reembolsos e ingresos que recibió cada uno.</p>
         </div>
+        <table className="t fin-t">
+          <thead><tr><th></th>{SOC.map((k) => <th key={k} className="r">{quien(k)}</th>)}</tr></thead>
+          <tbody>
+            <tr><td>Puesto en Relevo (gastos y aportes, menos reembolsos e ingresos recibidos)</td>{SOC.map((k) => <td key={k} className="r num">{cop(s.enRelevo[k])}</td>)}</tr>
+            <tr><td>Transferencias entre ustedes (dio + / recibió −)</td>{SOC.map((k) => <td key={k} className={'r num' + (s.cruces[k] < 0 ? ' neg' : '')}>{s.cruces[k] ? cop(s.cruces[k]) : <span className="muted">·</span>}</td>)}</tr>
+            <tr className="tot"><td>Total puesto</td>{SOC.map((k) => <td key={k} className="r num">{cop(s.puesto[k])}</td>)}</tr>
+            <tr><td>Le corresponde (50%)</td>{SOC.map((k) => <td key={k} className="r num soft">{cop(s.mitad)}</td>)}</tr>
+            <tr className="resultado"><td>Diferencia</td>{SOC.map((k) => { const d = s.puesto[k] - s.mitad; return <td key={k} className={'r num' + (d < -0.5 ? ' neg' : d > 0.5 ? ' pos' : '')}>{Math.abs(d) < 1 ? '$0' : (d > 0 ? '+' : '') + cop(d)}</td>; })}</tr>
+          </tbody>
+        </table>
       </section>
+
+      <section className="panel report">
+        <header><h2>Transferencias entre socios</h2><span className="muted" style={{ fontSize: 12.5 }}>No cuentan como gasto ni ingreso de Relevo, solo cruzan cuentas</span></header>
+        {tq.error ? <div className="body"><ErrorBox msg={tq.error} retry={tq.reload} /></div> : !transf.length ? <p className="empty-state">Sin transferencias todavía.</p> : (
+          <table className="t">
+            <thead><tr><th>Fecha</th><th>De</th><th>A</th><th className="r">Monto</th><th>Nota</th><th>Soporte</th><th></th></tr></thead>
+            <tbody>
+              {transf.map((t) => {
+                const mia = yo?.socio === t.de || yo?.socio === t.a;
+                return (
+                  <tr key={t.id} style={{ cursor: 'default' }}>
+                    <td className="num soft">{fecha(t.fecha)}</td>
+                    <td><span className={'tag plain ' + (t.de === 'felipe' ? 'tone-p1' : 'tone-p2')}>{quien(t.de)}</span></td>
+                    <td><span className={'tag plain ' + (t.a === 'felipe' ? 'tone-p1' : 'tone-p2')}>{quien(t.a)}</span></td>
+                    <td className="r num">{cop(Number(t.monto))}</td>
+                    <td>{t.nota}</td>
+                    <td>{t.soporte_path ? <button className="btn ghost" onClick={() => ver(t)}><Paperclip className="ic" />Ver</button> : <span className="muted">·</span>}</td>
+                    <td className="r">{mia && <button className="btn ghost danger" aria-label="Borrar" title="Borrar" onClick={() => borrar(t)}><Trash className="ic" /></button>}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </section>
+      <Modal open={nueva} onClose={() => setNueva(false)} title="Registrar transferencia entre socios">
+        {nueva && <NuevaTransferencia sugerida={s} onDone={() => { setNueva(false); tq.reload(); }} />}
+      </Modal>
     </>
+  );
+}
+
+function NuevaTransferencia({ sugerida, onDone }: { sugerida: { transferencia: number; de: string; a: string }; onDone: () => void }) {
+  const toast = useToast();
+  const { yo } = useCatalogo();
+  const otro = (k: string) => (k === 'felipe' ? 'alejandro' : 'felipe');
+  const de0 = sugerida.transferencia >= 1 && [sugerida.de, sugerida.a].includes(yo?.socio ?? '') ? sugerida.de : otro(yo?.socio ?? 'felipe');
+  const [f, setF] = useState({ fecha: hoy(), de: de0, monto: sugerida.transferencia >= 1 ? String(Math.round(sugerida.transferencia)) : '', nota: '' });
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const monto = Number(String(f.monto).replace(/\D/g, ''));
+  const a = otro(f.de);
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!monto) { toast('Falta el monto', true); return; }
+    setBusy(true);
+    try {
+      const t = await must(supabase.from('transferencias_socios').insert({ fecha: f.fecha, de: f.de, a, monto, nota: f.nota.trim() || null }).select('id').single()) as Row;
+      if (file) {
+        const path = `transferencias/${t.id}/${Date.now()}-${file.name.replace(/[^\w.\-]+/g, '_')}`;
+        const up = await supabase.storage.from('documentos').upload(path, file);
+        if (up.error) toast('Transferencia guardada, pero no se subió el soporte: ' + up.error.message, true);
+        else await supabase.from('transferencias_socios').update({ soporte_path: path }).eq('id', t.id);
+      }
+      toast('Transferencia registrada'); onDone();
+    } catch (err: any) { toast(err.message, true); }
+    setBusy(false);
+  };
+  return (
+    <form onSubmit={submit}>
+      <label>Quién transfirió
+        <div className="seg" role="radiogroup">
+          {(['felipe', 'alejandro'] as const).map((k) => <button type="button" key={k} role="radio" aria-checked={f.de === k} className={f.de === k ? 'on' : ''} onClick={() => setF({ ...f, de: k })}>{quien(k)} le transfirió a {quien(otro(k))}</button>)}
+        </div>
+      </label>
+      <div className="row">
+        <label>Monto (COP)<input className="in num" inputMode="numeric" required autoFocus value={monto ? '$' + new Intl.NumberFormat('es-CO').format(monto) : ''} onChange={(e) => setF({ ...f, monto: e.target.value.replace(/\D/g, '') })} /></label>
+        <label>Fecha<input className="in" type="date" required value={f.fecha} onChange={(e) => setF({ ...f, fecha: e.target.value })} /></label>
+      </div>
+      <label>Nota (opcional)<input className="in" value={f.nota} onChange={(e) => setF({ ...f, nota: e.target.value })} placeholder="Ej.: su mitad de Meta Ads de octubre" /></label>
+      <label>Comprobante (opcional)<input className="in" type="file" accept="application/pdf,image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} /></label>
+      {sugerida.transferencia >= 1 && <p className="muted" style={{ fontSize: 12.5 }}>Para quedar 50/50 faltaba que {quien(sugerida.de)} le transfiriera {cop(sugerida.transferencia)} a {quien(sugerida.a)}.</p>}
+      <footer><button className="btn primary" disabled={busy}>{busy ? 'Guardando' : 'Registrar transferencia'}</button></footer>
+    </form>
   );
 }
 

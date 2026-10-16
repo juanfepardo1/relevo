@@ -86,13 +86,19 @@ export function balance(movs: Mov[], corte: string, trato: Tratamiento) {
 }
 
 /** Cuentas entre socios: cuánto ha puesto cada uno y la transferencia para quedar 50/50. */
-export function socios(movs: Mov[]) {
+export type Transfer = { id: string; fecha: string; de: 'felipe' | 'alejandro'; a: 'felipe' | 'alejandro'; monto: number; nota: string | null; soporte_path: string | null };
+
+/** Lo puesto por cada socio, neto de transferencias entre ellos: quien transfiere suma, quien recibe resta. */
+export function socios(movs: Mov[], transf: Transfer[] = []) {
   const puesto: Record<string, number> = { felipe: 0, alejandro: 0 };
-  for (const m of movs) { const e = efecto(m); if (e.socio) puesto[e.socio] += e.cuenta ?? 0; }
+  const enRelevo: Record<string, number> = { felipe: 0, alejandro: 0 };
+  for (const m of movs) { const e = efecto(m); if (e.socio) { puesto[e.socio] += e.cuenta ?? 0; enRelevo[e.socio] += e.cuenta ?? 0; } }
+  const cruces: Record<string, number> = { felipe: 0, alejandro: 0 };
+  for (const t of transf) { puesto[t.de] += Number(t.monto); puesto[t.a] -= Number(t.monto); cruces[t.de] += Number(t.monto); cruces[t.a] -= Number(t.monto); }
   const total = puesto.felipe + puesto.alejandro;
   const mitad = total / 2;
   const dif = puesto.felipe - mitad; // > 0: Alejo le debe a Pardo
-  return { puesto, total, mitad, transferencia: Math.abs(dif), de: dif > 0 ? 'alejandro' : 'felipe', a: dif > 0 ? 'felipe' : 'alejandro' };
+  return { puesto, enRelevo, cruces, total, mitad, transferencia: Math.abs(dif), de: dif > 0 ? 'alejandro' : 'felipe', a: dif > 0 ? 'felipe' : 'alejandro' };
 }
 
 export function csv(nombre: string, filas: (string | number)[][]) {

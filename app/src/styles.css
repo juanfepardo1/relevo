@@ -341,3 +341,4 @@ dialog.m{width:min(680px,calc(100% - 32px))}
   .side .brand{padding:4px 8px}.side .me{display:none}.nav{display:flex;flex-wrap:wrap}
   .page{padding:20px 16px 48px}.grid2,.fields{grid-template-columns:1fr}.bar-row{grid-template-columns:120px 1fr 80px}
 }
+@media (max-width:800px){.kpis{grid-template-columns:1fr 1fr!important}.kpis dd{font-size:19px}}
