@@ -50,6 +50,7 @@ p{margin:0}
 .btn.primary:hover{background:var(--orange-hi)}
 .btn.ghost{background:none;border-color:transparent;color:var(--ink-2)}.btn.ghost:hover{background:var(--raise);color:var(--ink)}
 .btn.danger:hover{border-color:var(--err);color:var(--err)}
+.btn.danger-solid{background:var(--err);border-color:var(--err);color:#fff;font-weight:600}.btn.danger-solid:hover{background:#a92f22}
 .btn:disabled{opacity:.5;pointer-events:none}
 .linkish{appearance:none;border:0;background:none;color:var(--ink-2);font:inherit;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line-3)}
 .linkish:hover{color:var(--ink)}

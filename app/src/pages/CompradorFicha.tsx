@@ -7,6 +7,7 @@ import { TIPO_COMPRADOR, SUBTIPO, ESTADO_COMPRADOR, CERTEZA, ORIGEN, SECTORES, E
 import { rango, fecha, millones, waLink, hoy } from '../lib/format';
 import { Field, Skeleton, ErrorBox, Modal, Dias, useToast } from '../components/ui';
 import { Stepper, DocumentosPanel, ActividadesPanel, HistorialPanel } from '../components/paneles';
+import { BotonEliminar } from '../components/Eliminar';
 
 export default function CompradorFicha() {
   const { id = '' } = useParams();
@@ -37,6 +38,7 @@ export default function CompradorFicha() {
           <Dias d={c.dias_en_etapa} />
           {wa && <a className="btn" href={wa} target="_blank" rel="noopener"><WhatsappLogo className="ic" />WhatsApp</a>}
           {c.contacto_email && <a className="btn" href={`mailto:${c.contacto_email}`}><Envelope className="ic" />Correo</a>}
+          <BotonEliminar entidad="comprador" id={id} nombre={c.nombre} />
         </div>
       </div>
 

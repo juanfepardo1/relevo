@@ -6,6 +6,7 @@ import { useQuery, useCatalogo, guardar } from '../lib/data';
 import { SECTORES, VENTAS, HORIZONTE, MOTIVO_VENTA, MOTIVO_PERDIDA, VALORACION, CANAL, label } from '../lib/catalogos';
 import { millones, fecha, waLink } from '../lib/format';
 import { tonoBucket } from '../lib/colores';
+import { BotonEliminar } from '../components/Eliminar';
 import { Field, Skeleton, ErrorBox, Dias, useToast } from '../components/ui';
 import { Stepper, DocumentosPanel, ActividadesPanel, HistorialPanel } from '../components/paneles';
 
@@ -39,6 +40,7 @@ export default function VendedorFicha() {
           <Dias d={v.dias_en_etapa} sla={v.sla_dias} />
           {wa && <a className="btn" href={wa} target="_blank" rel="noopener"><WhatsappLogo className="ic" />WhatsApp</a>}
           {v.correo && <a className="btn" href={`mailto:${v.correo}`}><Envelope className="ic" />Correo</a>}
+          <BotonEliminar entidad="vendedor" id={id} nombre={v.empresa || v.nombre} />
         </div>
       </div>
 
