@@ -1,10 +1,13 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { House, Storefront, MagnifyingGlass, ChartBar, SignOut } from '@phosphor-icons/react';
+import { useEffect, useState } from 'react';
+import { House, Tray, Storefront, MagnifyingGlass, ChartBar, SignOut } from '@phosphor-icons/react';
 import { supabase } from '../lib/supabase';
 import { useCatalogo } from '../lib/data';
 
 export default function Layout({ email }: { email: string }) {
   const { equipo } = useCatalogo();
+  const [nBandeja, setNBandeja] = useState<number | null>(null);
+  useEffect(() => { supabase.from('v_bandeja').select('id', { count: 'exact', head: true }).then(({ count }) => setNBandeja(count ?? null)); }, []);
   const yo = equipo.find((m) => m.email === email.toLowerCase())?.nombre ?? email;
   return (
     <div className="shell">
@@ -12,6 +15,7 @@ export default function Layout({ email }: { email: string }) {
         <div className="brand"><span className="mark" aria-hidden="true"><i></i><i></i></span>Relevo</div>
         <nav className="nav" aria-label="Principal">
           <NavLink to="/" end><House className="ic" />Inicio</NavLink>
+          <NavLink to="/bandeja"><Tray className="ic" />Bandeja{nBandeja ? <span className="count num">{nBandeja}</span> : null}</NavLink>
           <NavLink to="/vendedores"><Storefront className="ic" />Vendedores</NavLink>
           <NavLink to="/compradores"><MagnifyingGlass className="ic" />Compradores</NavLink>
           <NavLink to="/stats"><ChartBar className="ic" />Embudo</NavLink>
