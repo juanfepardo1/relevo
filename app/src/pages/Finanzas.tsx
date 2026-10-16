@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Plus, Trash, DownloadSimple, Printer, Paperclip, UploadSimple } from '@phosphor-icons/react';
+import { Plus, Trash, DownloadSimple, FilePdf, Files, Paperclip, UploadSimple } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
 import { useQuery, useCatalogo } from '../lib/data';
 import { label } from '../lib/catalogos';
 import { fecha, hoy } from '../lib/format';
 import { Skeleton, ErrorBox, Modal, useToast } from '../components/ui';
-import { TIPOS, QUIEN, TODAS_CAT, quienPuede, puedeEditar, type Transfer, categoriasDe, cop, nombreMes, balance, socios, csv, resultadosPuc, flujoPuc, GRUPOS, CONSTITUCION, CAPITAL, cuentaDe, type Mov } from '../lib/finanzas';
+import { TIPOS, QUIEN, TODAS_CAT, quienPuede, puedeEditar, type Transfer, categoriasDe, cop, nombreMes, socios, csv, CAPITAL, cuentaDe, type Mov } from '../lib/finanzas';
+import { estadoResultados, estadoFlujo, estadoSituacion, fechaLarga as fechaCorta, type Fila, type Linea, type Presentacion } from '../lib/estados';
+import type { Pieza } from '../docs/estados';
 
 export type Seccion = 'movimientos' | 'estados' | 'socios';
 type Estado = 'resultados' | 'flujo' | 'balance';
@@ -24,12 +26,38 @@ export default function Finanzas({ seccion }: { seccion: Seccion }) {
   const movs = (q.data || []) as Mov[];
   const ir = (v: Estado) => { setEstado(v); try { localStorage.setItem('fin-estado', v); } catch {} };
   const [t, sub] = TITULO[seccion];
+  const [corte, setCorte] = useState(hoy());
+  const [pdf, setPdf] = useState<'' | 'uno' | 'paquete'>('');
+  const descargar = async (piezas: Pieza[], cual: 'uno' | 'paquete' = 'uno') => {
+    setPdf(cual);
+    try {
+      const [{ generarPdf }, { documento, nombrePdf }, aj, rep, tr] = await Promise.all([
+        import('../docs/pdf'), import('../docs/estados'),
+        supabase.from('ajustes').select('valor').eq('clave', 'capital_por_cobrar').maybeSingle(),
+        supabase.from('equipo').select('nombre').eq('email', 'felipe@relevobrokers.com').maybeSingle(),
+        piezas.includes('socios') ? supabase.from('transferencias_socios').select('*') : Promise.resolve({ data: [] as Transfer[] }),
+      ]);
+      const modo: Presentacion = (aj.data as Row | null)?.valor === 'patrimonio' ? 'patrimonio' : 'activo';
+      const transf = (tr.data || []) as Transfer[];
+      const d = { movs, corte, modo, emitido: hoy(), representante: (rep.data as Row | null)?.nombre || 'Juan Felipe Pardo Blanco', transf, sociosRes: socios(movs, transf) };
+      const blob = await generarPdf((img) => documento(piezas, d, img));
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = nombrePdf(piezas, corte); a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 30_000);
+    } catch (e: any) { toast('No se pudo generar el PDF: ' + e.message, true); }
+    setPdf('');
+  };
 
   return (
     <div className="page fin">
       <div className="head">
         <div><h1>{t}</h1><p>{sub}</p></div>
-        {seccion !== 'movimientos' && <button className="btn" onClick={() => window.print()}><Printer className="ic" />Imprimir o guardar PDF</button>}
+        {seccion !== 'movimientos' && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button className="btn" disabled={!!pdf || q.loading} onClick={() => descargar(seccion === 'socios' ? ['socios'] : [estado])}><FilePdf className="ic" />{pdf === 'uno' ? 'Generando' : 'Descargar PDF'}</button>
+            {seccion === 'estados' && <button className="btn primary" disabled={!!pdf || q.loading} onClick={() => descargar(['balance', 'resultados', 'flujo'], 'paquete')}><Files className="ic" />{pdf === 'paquete' ? 'Generando' : 'Paquete completo'}</button>}
+          </div>
+        )}
       </div>
       {seccion === 'estados' && (
         <div className="seg no-print" role="tablist" style={{ marginBottom: 16 }}>
@@ -41,7 +69,7 @@ export default function Finanzas({ seccion }: { seccion: Seccion }) {
         seccion === 'socios' ? <Socios movs={movs} /> :
         estado === 'resultados' ? <Resultados movs={movs} /> :
         estado === 'flujo' ? <Flujo movs={movs} /> :
-        <Balance movs={movs} />
+        <Balance movs={movs} corte={corte} setCorte={setCorte} />
       )}
     </div>
   );
@@ -192,7 +220,6 @@ function NuevoMovimiento({ onDone }: { onDone: () => void }) {
 }
 
 /* ---------- Reportes (estructura del PUC colombiano, cuentas a 4 dígitos) ---------- */
-type Fila = { l: string; c?: string; v: number[]; t: number; k?: 'tot' | 'resultado' | 'grupo' };
 function Reporte({ titulo, nota, meses, filas, descargar }: { titulo: string; nota?: string; meses: string[]; filas: Fila[]; descargar: string }) {
   return (
     <section className="panel report">
@@ -220,139 +247,64 @@ function Reporte({ titulo, nota, meses, filas, descargar }: { titulo: string; no
     </section>
   );
 }
-const fechaCorta = (d: string) => new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(d + 'T12:00:00Z'));
-
 function Resultados({ movs }: { movs: Mov[] }) {
-  const r = useMemo(() => resultadosPuc(movs), [movs]);
-  const n = r.meses.length, cero = { porMes: Array(n).fill(0), total: 0 };
-  const grupo = (c: string, l: string, lineas: { codigo: string; nombre: string; porMes: number[]; total: number }[], tot: { porMes: number[]; total: number }, totL: string): Fila[] =>
-    lineas.length ? [{ c, l, v: [], t: 0, k: 'grupo' }, ...lineas.map((x) => ({ c: x.codigo, l: x.nombre, v: x.porMes, t: x.total })), { l: totL, v: tot.porMes, t: tot.total, k: 'tot' }] : [];
-  const res = (l: string, x: { porMes: number[]; total: number }): Fila => ({ l, v: x.porMes, t: x.total, k: 'resultado' });
-  const filas: Fila[] = [
-    ...grupo('41', GRUPOS['41'], r.i41, r.t41, 'Total ingresos operacionales'),
-    ...(r.i41.length ? [] : [{ c: '41', l: GRUPOS['41'], v: cero.porMes, t: 0, k: 'tot' as const }]),
-    ...grupo('51', GRUPOS['51'], r.g51, r.t51, 'Total gastos de administración'),
-    ...grupo('52', GRUPOS['52'], r.g52, r.t52, 'Total gastos de ventas'),
-    res(r.operacional.total >= 0 ? 'Utilidad operacional' : 'Pérdida operacional', r.operacional),
-    ...grupo('42', GRUPOS['42'], r.i42, r.t42, 'Total ingresos no operacionales'),
-    ...grupo('53', GRUPOS['53'], r.g53, r.t53, 'Total gastos no operacionales'),
-    res(r.antesImp.total >= 0 ? 'Utilidad antes de impuestos' : 'Pérdida antes de impuestos', r.antesImp),
-    { c: '54', l: 'Impuesto de renta y complementarios', v: cero.porMes, t: 0 },
-    res(r.neta.total >= 0 ? 'Utilidad neta del ejercicio' : 'Pérdida neta del ejercicio', r.neta),
-  ];
+  const e = useMemo(() => estadoResultados(movs), [movs]);
   return (
     <>
-      <Kpis items={[['Ingresos operacionales', r.t41.total], ['Gastos operacionales', r.t51.total + r.t52.total], [r.neta.total >= 0 ? 'Utilidad neta' : 'Pérdida neta', r.neta.total]]} />
-      <Reporte titulo="Estado de resultados" descargar="relevo_estado_resultados"
-        nota={`Relevo Brokers S.A.S. · NIT 902.117.149-4 · Cifras en pesos colombianos, base caja. Incluye ${cop(r.preoperativos)} de gastos preoperativos (antes de la constitución, el ${fechaCorta(CONSTITUCION)}). El impuesto de renta lo calcula el contador al cierre.`}
-        meses={r.meses} filas={filas} />
+      <Kpis items={e.kpis} />
+      <Reporte titulo="Estado de resultados" descargar="relevo_estado_resultados" nota={'Relevo Brokers S.A.S. · NIT 902.117.149-4 · ' + e.notas.join(' ')} meses={e.meses} filas={e.filas} />
     </>
   );
 }
 
 function Flujo({ movs }: { movs: Mov[] }) {
-  const f = useMemo(() => flujoPuc(movs), [movs]);
-  const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
-  const filas: Fila[] = [
-    { l: 'Actividades de operación', v: [], t: 0, k: 'grupo' },
-    { l: 'Cobros a clientes', v: f.cobros, t: sum(f.cobros) },
-    { l: 'Pagos a proveedores', v: f.pagos, t: sum(f.pagos) },
-    { l: 'Efectivo neto de actividades de operación', v: f.op, t: sum(f.op), k: 'tot' },
-    { l: 'Actividades de inversión', v: [], t: 0, k: 'grupo' },
-    { l: 'Efectivo neto de actividades de inversión', v: f.op.map(() => 0), t: 0, k: 'tot' },
-    { l: 'Actividades de financiación', v: [], t: 0, k: 'grupo' },
-    { c: '3105', l: 'Aportes de capital', v: f.capital, t: sum(f.capital) },
-    { c: '2355', l: 'Reembolsos a socios', v: f.pagadoSocios, t: sum(f.pagadoSocios) },
-    { l: 'Efectivo neto de actividades de financiación', v: f.fin, t: sum(f.fin), k: 'tot' },
-    { l: 'Aumento (disminución) neto del efectivo', v: f.neto, t: sum(f.neto), k: 'resultado' },
-    { l: 'Efectivo al inicio del periodo', v: f.inicio, t: 0 },
-    { c: '11', l: 'Efectivo al final del periodo', v: f.final, t: f.final[f.final.length - 1] ?? 0, k: 'tot' },
-  ];
+  const e = useMemo(() => estadoFlujo(movs), [movs]);
   return (
     <>
-      <Kpis items={[['Efectivo neto de operación', sum(f.op)], ['Financiación de socios', sum(f.fin)], ['Efectivo al final', f.final[f.final.length - 1] ?? 0]]} />
-      <Reporte titulo="Estado de flujos de efectivo" descargar="relevo_flujo_efectivo" meses={f.meses} filas={filas}
-        nota="Método directo, sobre el efectivo de Relevo (1105 Caja y 1110 Bancos). Los aportes a la cuenta de Relevo son capital. Los gastos que pagan los socios de su bolsillo no mueven el efectivo de Relevo: aumentan la deuda con ellos (2355)." />
-      {(f.sinCaja.gastosSocios > 0 || f.sinCaja.ingresosSocios > 0) && (
-        <p className="muted" style={{ fontSize: 12.5, marginTop: 10 }}>Transacciones que no movieron efectivo: gastos pagados por los socios {cop(f.sinCaja.gastosSocios)}{f.sinCaja.ingresosSocios ? ` · ingresos cobrados por los socios ${cop(f.sinCaja.ingresosSocios)}` : ''}.</p>
-      )}
+      <Kpis items={e.kpis} />
+      <Reporte titulo="Estado de flujos de efectivo" descargar="relevo_flujo_efectivo" meses={e.meses} filas={e.filas} nota={e.notas.join(' ')} />
     </>
   );
 }
 
-type Presentacion = 'activo' | 'patrimonio';
-function Balance({ movs }: { movs: Mov[] }) {
+
+function Balance({ movs, corte, setCorte }: { movs: Mov[]; corte: string; setCorte: (v: string) => void }) {
   const toast = useToast();
-  const [corte, setCorte] = useState(hoy());
   const aj = useQuery(() => supabase.from('ajustes').select('valor').eq('clave', 'capital_por_cobrar').maybeSingle());
   const modo: Presentacion = (aj.data as Row | null)?.valor === 'patrimonio' ? 'patrimonio' : 'activo';
   const cambiar = async (m: Presentacion) => {
     try { await must(supabase.from('ajustes').upsert({ clave: 'capital_por_cobrar', valor: m, updated_at: new Date().toISOString() })); aj.reload(); }
     catch (e: any) { toast(e.message, true); }
   };
-  const b = useMemo(() => balance(movs, corte), [movs, corte]);
-  const L = ({ c, l, v, k }: { c?: string; l: string; v?: number; k?: string }) => (
+  const e = useMemo(() => estadoSituacion(movs, corte, modo), [movs, corte, modo]);
+  const L = ({ c, l, v, k }: Linea) => (
     <tr className={k ?? ''}><td className="puc-c num">{c}</td><td>{l}</td><td className={'r num' + (k === 'resultado' ? (Number(v) < 0 ? ' neg' : '') : '')}>{v == null ? '' : cop(v)}</td></tr>
   );
-  const constituida = corte >= CAPITAL.fecha;
-  // Capital suscrito no pagado: como activo (1325) o restando en el patrimonio (310515).
-  const cxc = modo === 'activo' ? b.porCobrar : 0;
-  const capital = modo === 'activo' ? b.pagado + b.porCobrar : b.pagado;
-  const activo = b.efectivo + cxc;
-  const patrimonio = capital + b.resultado;
-  const filas: [string, string, number | ''][] = [
-    ['1105', 'Caja', b.caja], ['1110', 'Bancos', b.bancos], ...(modo === 'activo' ? [['1325', 'Cuentas por cobrar a socios y accionistas', cxc] as [string, string, number]] : []), ['', 'Total activo', activo],
-    ['2355', 'Deudas con accionistas o socios', b.pasivo], ['', 'Total pasivo', b.pasivo],
-    ['3105', modo === 'activo' ? 'Capital suscrito' : 'Capital suscrito y pagado', capital], ['310505', 'Capital autorizado', constituida ? CAPITAL.autorizado : 0], ['310510', 'Capital por suscribir', constituida ? -(CAPITAL.autorizado - CAPITAL.suscrito) : 0],
-    ...(modo === 'patrimonio' ? [['310515', 'Capital suscrito por cobrar', constituida ? -b.porCobrar : 0] as [string, string, number]] : []),
-    [b.resultado >= 0 ? '3605' : '3610', b.resultado >= 0 ? 'Utilidad del ejercicio' : 'Pérdida del ejercicio', b.resultado], ['', 'Total patrimonio', patrimonio], ['', 'Total pasivo y patrimonio', b.pasivo + patrimonio],
-  ];
   return (
     <>
       <div className="toolbar no-print">
-        <label className="who">Corte<input className="in" type="date" value={corte} onChange={(e) => setCorte(e.target.value)} style={{ width: 160 }} /></label>
+        <label className="who">Corte<input className="in" type="date" value={corte} onChange={(ev) => setCorte(ev.target.value)} style={{ width: 160 }} /></label>
         <label className="who" style={{ marginLeft: 12 }}>Capital por pagar
-          <select className="sel" style={{ width: 'auto' }} value={modo} onChange={(e) => cambiar(e.target.value as Presentacion)}>
+          <select className="sel" style={{ width: 'auto' }} value={modo} onChange={(ev) => cambiar(ev.target.value as Presentacion)}>
             <option value="activo">Como activo (1325), igual al RUES</option>
             <option value="patrimonio">Restando del patrimonio (NIIF Pymes 22.7)</option>
           </select>
         </label>
-        <button className="btn ghost" style={{ marginLeft: 'auto' }} onClick={() => csv('relevo_situacion_financiera_' + corte, [['Código', 'Cuenta', 'Valor'], ...filas])}><DownloadSimple className="ic" />CSV</button>
+        <button className="btn ghost" style={{ marginLeft: 'auto' }} onClick={() => csv('relevo_situacion_financiera_' + corte, [['Código', 'Cuenta', 'Valor'], ...e.csv])}><DownloadSimple className="ic" />CSV</button>
       </div>
-      <p className="muted" style={{ fontSize: 12.5, marginBottom: 12 }}>Estado de situación financiera de Relevo Brokers S.A.S. al {fechaCorta(corte)}. Lo que los socios pagan de su bolsillo queda como deuda de la sociedad con ellos (2355). Los aportes a la cuenta de Relevo son capital pagado. Capital autorizado {cop(CAPITAL.autorizado)}, suscrito {cop(CAPITAL.suscrito)}, pagado {cop(b.pagado)}.</p>
-      {b.excedeSuscrito && <p className="err-text" style={{ marginBottom: 12 }}>Los aportes ya superan el capital suscrito ({cop(CAPITAL.suscrito)}). Para registrar más capital hay que reformar estatutos; mientras tanto el exceso debería ir como préstamo de socio.</p>}
+      <p className="muted" style={{ fontSize: 12.5, marginBottom: 12 }}>Estado de situación financiera de Relevo Brokers S.A.S. al {fechaCorta(corte)}. {e.notas.slice(1, 3).join(' ')}</p>
+      {e.b.excedeSuscrito && <p className="err-text" style={{ marginBottom: 12 }}>Los aportes ya superan el capital suscrito ({cop(CAPITAL.suscrito)}). Para registrar más capital hay que reformar estatutos; mientras tanto el exceso debería ir como préstamo de socio.</p>}
       <div className="grid2">
         <section className="panel report"><header><h2>Activo</h2></header>
-          <table className="t fin-t"><tbody>
-            <L c="1" l="Activo" k="grupo" /><L c="11" l="Efectivo y equivalentes al efectivo" k="grupo" />
-            <L c="1105" l="Caja" v={b.caja} />
-            <L c="1110" l="Bancos (cuenta de Relevo)" v={b.bancos} />
-            {modo === 'activo' && constituida && <><L c="13" l="Deudores" k="grupo" /><L c="1325" l="Cuentas por cobrar a socios y accionistas" v={cxc} /><L l="Capital suscrito pendiente de pago" v={undefined} k="subcta" /></>}
-            <L l="Total activo corriente" v={activo} k="tot" />
-            <L l="Total activo" v={activo} k="tot" />
-          </tbody></table>
+          <table className="t fin-t"><tbody>{e.activoL.map((x, i) => <L key={i} {...x} />)}</tbody></table>
         </section>
         <section className="panel report"><header><h2>Pasivo y patrimonio</h2></header>
           <table className="t fin-t"><tbody>
-            <L c="2" l="Pasivo" k="grupo" /><L c="23" l="Cuentas por pagar" k="grupo" />
-            <L c="2355" l="Deudas con accionistas o socios" v={b.pasivo} />
-            <L l="Juan Felipe Pardo (Pardo)" v={b.cuenta.felipe} k="subcta" />
-            <L l="Alejandro González (Alejo)" v={b.cuenta.alejandro} k="subcta" />
-            <L l="Total pasivo" v={b.pasivo} k="tot" />
-            <L c="3" l="Patrimonio" k="grupo" />
-            <L c="3105" l={modo === 'activo' ? 'Capital suscrito' : 'Capital suscrito y pagado'} v={capital} />
-            {constituida && <>
-              <L c="310505" l="Capital autorizado" v={CAPITAL.autorizado} k="subcta" />
-              <L c="310510" l="Capital por suscribir" v={-(CAPITAL.autorizado - CAPITAL.suscrito)} k="subcta" />
-              {modo === 'patrimonio' && <L c="310515" l="Capital suscrito por cobrar" v={-b.porCobrar} k="subcta" />}
-            </>}
-            <L c={b.resultado >= 0 ? '3605' : '3610'} l={b.resultado >= 0 ? 'Utilidad del ejercicio' : 'Pérdida del ejercicio'} v={b.resultado} k="resultado" />
-            <L l="Total patrimonio" v={patrimonio} k="tot" />
-            <L l="Total pasivo y patrimonio" v={b.pasivo + patrimonio} k="tot" />
+            {[...e.pasivoL, ...e.patL, { l: 'Total pasivo y patrimonio', v: e.totalPP, k: 'tot' as const }].map((x, i) => <L key={i} {...x} />)}
           </tbody></table>
         </section>
       </div>
-      {Math.round(activo) !== Math.round(b.pasivo + patrimonio) && <p className="err-text" style={{ marginTop: 12 }}>El balance no cuadra. Revisa movimientos de aporte o reembolso.</p>}
+      {!e.cuadra && <p className="err-text" style={{ marginTop: 12 }}>El balance no cuadra. Revisa movimientos de aporte o reembolso.</p>}
     </>
   );
 }
