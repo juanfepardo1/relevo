@@ -17,7 +17,7 @@ export const PLANTILLAS = {
   nda: {
     id: 'nda',
     nombre: 'Compromiso de confidencialidad (NDA)',
-    descripcion: 'RELEVO se obliga a guardar reserva frente al propietario. Firma a título personal bajo la marca Relevo.',
+    descripcion: 'Relevo Brokers S.A.S. se obliga a guardar reserva frente a una persona, una empresa o ambas. Firma el representante legal.',
     tipoDoc: 'nda',
     build: nda,
     faltantes: faltantesNda,

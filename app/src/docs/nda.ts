@@ -6,48 +6,63 @@ import type { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
 import type { Marca } from './pdf';
 import { fechaEnLetras, conPuntos } from './letras';
 
-export type Firmante = { nombre_legal: string; cedula: string; cedula_expedida: string; domicilio: string; email: string; firma: string | null };
-export type Propietario = { nombre: string; cedula: string; cedula_expedida: string; email: string; razon_social: string | null; nombre_corto: string | null; nit: string | null };
+/** Datos de la sociedad que firma. */
+export const RELEVO_SAS = { razon_social: 'RELEVO BROKERS S.A.S.', nit: '902.117.149-4', domicilio: 'Bogotá D.C.', rep_email: 'felipe@relevobrokers.com' };
+
+/** Representante legal que firma en nombre de la SAS. */
+export type Firmante = { nombre_legal: string; cedula: string; cedula_expedida: string; email: string; firma: string | null };
+export type Modo = 'persona' | 'empresa' | 'ambas';
+export type Propietario = { modo: Modo; nombre: string; cedula: string; cedula_expedida: string; email: string; razon_social: string | null; nombre_corto: string | null; nit: string | null };
 export type DatosNda = { firmante: Firmante; propietario: Propietario; fecha: string; ciudad_firma: string };
 
-/** Campos que faltan para poder generar. */
+/** Lo único indispensable para generar. Todo lo demás es opcional y, si falta, la frase se omite. */
 export function faltantesNda(d: DatosNda): string[] {
   const f: string[] = [];
   const { firmante: s, propietario: p } = d;
-  if (!s.nombre_legal) f.push('Tu nombre legal (Mi perfil)');
-  if (!s.cedula) f.push('Tu cédula (Mi perfil)');
-  if (!s.cedula_expedida) f.push('Ciudad de expedición de tu cédula (Mi perfil)');
-  if (!s.domicilio) f.push('Tu ciudad de domicilio (Mi perfil)');
-  if (!s.firma) f.push('Tu firma (Mi perfil)');
-  if (!p.nombre) f.push('Nombre del propietario');
-  if (!p.cedula) f.push('Cédula del propietario');
-  if (!p.cedula_expedida) f.push('Ciudad de expedición de la cédula del propietario');
-  if (!p.email) f.push('Correo del propietario');
-  if (p.razon_social && !p.nit) f.push('NIT de la empresa');
+  if (!s.nombre_legal) f.push('Nombre legal del representante legal (Mi perfil de Felipe)');
+  if (!s.cedula) f.push('Cédula del representante legal (Mi perfil de Felipe)');
+  if (!s.firma) f.push('Firma del representante legal (Mi perfil de Felipe)');
+  if (p.modo !== 'empresa' && !p.nombre) f.push('Nombre de la persona');
+  if (p.modo !== 'persona' && !p.razon_social) f.push('Razón social de la empresa');
+  return f;
+}
+
+/** Datos que conviene tener pero no bloquean. */
+export function sugeridosNda(d: DatosNda): string[] {
+  const p = d.propietario, f: string[] = [];
+  if (p.modo !== 'empresa' && !p.cedula) f.push('Cédula de la persona');
+  if (p.modo !== 'persona' && !p.nit) f.push('NIT de la empresa');
+  if (!p.email) f.push('Correo para notificaciones');
   return f;
 }
 
 const C = { ink: '#14243d', azul: '#2c5186', naranja: '#f47b3d', gris: '#5b6577' };
 const B = (text: string): Content => ({ text, bold: true });
 const empresaTexto = (p: Propietario) => (p.nombre_corto ? `${p.razon_social} (${p.nombre_corto})` : p.razon_social ?? '');
+const cc = (cedula: string, exp: string) => (cedula ? `C.C. ${conPuntos(cedula)}${exp ? ` de ${exp}` : ''}` : '');
+const nitTxt = (nit: string | null) => (nit ? (/[.-]/.test(nit) ? nit : conPuntos(nit)) : '');
 
 export function nombreArchivoNda(p: Propietario) {
-  const quien = (p.nombre_corto || p.razon_social || p.nombre).replace(/[^\p{L}\p{N} ]+/gu, '').trim();
+  const quien = (p.modo === 'persona' ? p.nombre : (p.nombre_corto || p.razon_social || p.nombre)).replace(/[^\p{L}\p{N} ]+/gu, '').trim();
   return `Compromiso de Confidencialidad - ${quien}.pdf`;
 }
 
 export function nda(d: DatosNda, img: Marca): TDocumentDefinitions {
   const { firmante: s, propietario: p } = d;
-  const conEmpresa = !!p.razon_social;
+  const persona = p.modo !== 'empresa', empresa = p.modo !== 'persona';
   const parrafo = (text: Content[] | string, extra: object = {}): Content => ({ text, style: 'p', ...extra });
   const clausula = (titulo: string, cuerpo: (string | Content)[]): Content => parrafo([{ text: titulo + ' ', bold: true, color: C.azul }, ...cuerpo as any]);
+  const ccS = cc(s.cedula, s.cedula_expedida), ccP = cc(p.cedula, p.cedula_expedida);
 
+  const frentePersona: Content[] = [B(p.nombre.toUpperCase()), ccP ? `, identificado con ${ccP}` : ''];
+  const frenteEmpresa: Content[] = [B(empresaTexto(p).toUpperCase()), p.nit ? `, NIT ${nitTxt(p.nit)}` : '', !persona && p.nombre ? `, representada por ${p.nombre}${ccP ? `, identificado con ${ccP}` : ''}` : ''];
   const intro: Content[] = [
-    'Yo, ', B(s.nombre_legal.toUpperCase() + ','), ` mayor de edad, identificado con C.C. ${conPuntos(s.cedula)} de ${s.cedula_expedida}, domiciliado en ${s.domicilio}, actuando en nombre propio bajo la marca Relevo (en adelante, `, B('RELEVO'),
-    '), me obligo de manera unilateral frente a ', B(p.nombre.toUpperCase() + ','),
-    ...(conEmpresa
-      ? [` identificado con C.C. ${conPuntos(p.cedula)} de ${p.cedula_expedida}, y frente a `, B(empresaTexto(p).toUpperCase() + ','), ` NIT ${conPuntos(p.nit ?? '')} (en adelante, conjuntamente, `, B('EL PROPIETARIO'), '), a guardar la confidencialidad de su información en los siguientes términos.']
-      : [` identificado con C.C. ${conPuntos(p.cedula)} de ${p.cedula_expedida} (en adelante, `, B('EL PROPIETARIO'), '), a guardar la confidencialidad de su información en los siguientes términos.']),
+    B(RELEVO_SAS.razon_social + ','), ` sociedad identificada con NIT ${RELEVO_SAS.nit}, domiciliada en ${RELEVO_SAS.domicilio}, representada legalmente por `, B(s.nombre_legal.toUpperCase() + ','),
+    ` mayor de edad, identificado con ${ccS} (en adelante, `, B('RELEVO'), '), se obliga de manera unilateral frente a ',
+    ...(persona && empresa
+      ? [...frentePersona, ', y frente a ', ...frenteEmpresa, ' (en adelante, conjuntamente, ', B('EL PROPIETARIO'), ')']
+      : persona ? [...frentePersona, ' (en adelante, ', B('EL PROPIETARIO'), ')'] : [...frenteEmpresa, ' (en adelante, ', B('EL PROPIETARIO'), ')']),
+    ', a guardar la confidencialidad de su información en los siguientes términos.',
   ] as Content[];
 
   const consideraciones = [
@@ -59,7 +74,7 @@ export function nda(d: DatosNda, img: Marca): TDocumentDefinitions {
   return {
     pageSize: 'LETTER',
     pageMargins: [72, 93, 72, 72],
-    info: { title: 'Compromiso de Confidencialidad', author: 'Relevo', subject: empresaTexto(p) || p.nombre },
+    info: { title: 'Compromiso de Confidencialidad', author: 'Relevo Brokers S.A.S.', subject: (empresa ? empresaTexto(p) : '') || p.nombre },
     defaultStyle: { font: 'Sans', fontSize: 10.5, color: C.ink, lineHeight: 1.24 },
     styles: {
       p: { alignment: 'justify', margin: [0, 0, 0, 7] },
@@ -80,7 +95,7 @@ export function nda(d: DatosNda, img: Marca): TDocumentDefinitions {
       stack: [
         { image: img.brush, width: 72, margin: [0, 0, 0, 7] },
         { columns: [
-          { text: `Relevo  ·  relevobrokers.com  ·  ${s.email}`, fontSize: 8, color: C.gris },
+          { text: `Relevo Brokers S.A.S.  ·  relevobrokers.com  ·  ${s.email}`, fontSize: 8, color: C.gris },
           { text: [{ text: 'Página ', fontSize: 8, color: C.gris }, { text: String(pagina), font: 'Serif', fontSize: 10 }, { text: ' de ', fontSize: 8, color: C.gris }, { text: String(total), font: 'Serif', fontSize: 10 }], alignment: 'right' },
         ] },
       ],
@@ -88,7 +103,7 @@ export function nda(d: DatosNda, img: Marca): TDocumentDefinitions {
     content: [
       { text: 'Compromiso de Confidencialidad', font: 'Titulo', fontSize: 20, color: C.ink, lineHeight: 1, margin: [0, -2, 0, 4] },
       { image: img.brush, width: 144, margin: [0, 0, 0, 6] },
-      { text: conEmpresa ? empresaTexto(p) : p.nombre, italics: true, fontSize: 10, color: C.gris, margin: [0, 0, 0, 16] },
+      { text: empresa ? empresaTexto(p) : p.nombre, italics: true, fontSize: 10, color: C.gris, margin: [0, 0, 0, 16] },
       parrafo(intro),
       { text: 'Consideraciones', style: 'h2' },
       { stack: consideraciones.map((t, i) => ({ columns: [{ text: `${i + 1}.`, width: 17, bold: true, color: C.azul, fontSize: 10 }, { text: t, fontSize: 10, alignment: 'justify' }], margin: [7, 0, 0, 5] })), margin: [0, 0, 0, 6] },
@@ -100,17 +115,18 @@ export function nda(d: DatosNda, img: Marca): TDocumentDefinitions {
       clausula('Quinta. Devolución.', ['A solicitud escrita de EL PROPIETARIO, RELEVO devolverá o destruirá la Información Confidencial dentro de los quince (15) días hábiles siguientes.']),
       clausula('Sexta. Vigencia.', ['Este compromiso rige desde su firma, es irrevocable y la obligación de reserva dura tres (3) años desde la última entrega de información.']),
       clausula('Séptima. Ley y controversias.', ['Este compromiso se rige por la ley colombiana. Cualquier diferencia se intentará resolver primero de forma directa y luego mediante conciliación, que podrá adelantarse de forma virtual. A falta de acuerdo, serán competentes los jueces de Bogotá D.C.']),
-      clausula('Octava. Disposiciones finales.', [`RELEVO tratará los datos personales que reciba conforme a la Ley 1581 de 2012. Este compromiso se firma electrónicamente, conforme a la Ley 527 de 1999, y solo puede modificarse a favor de EL PROPIETARIO. Notificaciones: RELEVO en ${s.email}; EL PROPIETARIO en ${p.email}.`]),
+      clausula('Octava. Disposiciones finales.', [`RELEVO tratará los datos personales que reciba conforme a la Ley 1581 de 2012. Este compromiso se firma electrónicamente, conforme a la Ley 527 de 1999, y solo puede modificarse a favor de EL PROPIETARIO. Notificaciones: RELEVO en ${s.email}${p.email ? `; EL PROPIETARIO en ${p.email}` : '; EL PROPIETARIO en el correo que indique por escrito'}.`]),
       parrafo(`Se firma en ${d.ciudad_firma}, ${fechaEnLetras(d.fecha)}.`, { margin: [0, 0, 0, 0] }),
       {
         unbreakable: true,
         margin: [0, 6, 0, 0],
         stack: [
-          s.firma ? { image: s.firma, fit: [201, 72], margin: [-11, 0, 0, -26] } : { text: ' ', margin: [0, 0, 0, 40] },
+          s.firma ? { image: s.firma, fit: [201, 72], margin: [-11, 0, 0, 0] } : { text: ' ', margin: [0, 0, 0, 40] },
           { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 186, y2: 0, lineWidth: 0.6, lineColor: C.ink }] },
-          { text: s.nombre_legal, bold: true, margin: [0, 3, 0, 0] },
-          { text: `C.C. ${conPuntos(s.cedula)} de ${s.cedula_expedida}`, fontSize: 9.5, color: C.gris },
-          { text: 'En nombre propio, bajo la marca Relevo', fontSize: 9.5, color: C.gris },
+          { text: RELEVO_SAS.razon_social, bold: true, margin: [0, 3, 0, 0] },
+          { text: `NIT ${RELEVO_SAS.nit}`, fontSize: 9.5, color: C.gris },
+          { text: s.nombre_legal, margin: [0, 4, 0, 0] },
+          { text: `Representante legal${ccS ? ' · ' + ccS : ''}`, fontSize: 9.5, color: C.gris },
         ],
       },
     ],
