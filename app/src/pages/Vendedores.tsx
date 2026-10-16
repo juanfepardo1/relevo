@@ -12,9 +12,9 @@ import { tonoEtapa, tonoBucket } from '../lib/colores';
 const VENTAS_ORD = VENTAS.map((v) => v[0]);
 export const BUCKETS: [string, string][] = [['A', '5.000 a 20.000M'], ['B', '1.000 a 5.000M'], ['C', 'menos de 1.000M'], ['D', 'más de 20.000M']];
 
-export default function Vendedores() {
+export default function Vendedores({ mios = false }: { mios?: boolean }) {
   const nav = useNavigate();
-  const { etapasDe, equipo } = useCatalogo();
+  const { etapasDe, equipo, yo } = useCatalogo();
   const etapas = etapasDe('vendedor');
   const q = useQuery(() => supabase.from('v_vendedores').select('*').order('fecha_ingreso', { ascending: false }));
   const [vista, setVista] = useState<'tabla' | 'pipeline'>(() => (localStorage.getItem('v-vista') as any) || 'tabla');
@@ -31,14 +31,14 @@ export default function Vendedores() {
     const s = buscar.trim().toLowerCase();
     let r = (q.data || []).filter((v: Row) =>
       (etapa === 'todos' || (etapa === 'activos' ? !['cerrado', 'perdido'].includes(v.etapa) : v.etapa === etapa)) &&
-      (!resp || (resp === 'sin' ? !v.responsable : v.responsable === resp)) &&
+      (mios ? v.responsable === yo?.email : (!resp || (resp === 'sin' ? !v.responsable : v.responsable === resp))) &&
       (!sector || v.sector === sector) && (!bucket || v.bucket === bucket) &&
       (!s || [v.nombre, v.empresa, v.ciudad, v.correo, v.celular].some((x) => String(x || '').toLowerCase().includes(s))));
     const k = orden.k;
     const val = (v: Row) => (k === 'ventas_rango' ? VENTAS_ORD.indexOf(v[k]) : k === 'etapa' ? v.etapa_orden : v[k]);
     r = [...r].sort((a, b) => { const x = val(a), y = val(b); if (x == null) return 1; if (y == null) return -1; return (x > y ? 1 : x < y ? -1 : 0) * (orden.asc ? 1 : -1); });
     return r;
-  }, [q.data, buscar, etapa, resp, sector, bucket, orden]);
+  }, [q.data, buscar, etapa, resp, sector, bucket, orden, mios, yo]);
 
   const th = (k: string, t: string, cls = '') => (
     <th className={cls} onClick={() => setOrden((o) => ({ k, asc: o.k === k ? !o.asc : true }))} aria-sort={orden.k === k ? (orden.asc ? 'ascending' : 'descending') : 'none'}>
@@ -54,7 +54,7 @@ export default function Vendedores() {
   return (
     <div className="page">
       <div className="head">
-        <div><h1>Vendedores</h1><p>{q.loading ? 'Cargando' : `${rows.length} de ${q.data?.length ?? 0}`}</p></div>
+        <div><h1>{mios ? 'Mis clientes' : 'Vendedores'}</h1><p>{q.loading ? 'Cargando' : mios ? `${rows.length} vendedores a cargo de ${yo?.apodo ?? yo?.nombre ?? 'ti'}` : `${rows.length} de ${q.data?.length ?? 0}`}</p></div>
         <div style={{ display: 'flex', gap: 8 }}>
           <div className="seg" role="group" aria-label="Vista">
             {(['tabla', 'pipeline'] as const).map((k) => <button key={k} className={vista === k ? 'on' : ''} onClick={() => { setVista(k); try { localStorage.setItem('v-vista', k); } catch {} }}>{k === 'tabla' ? 'Tabla' : 'Pipeline'}</button>)}
@@ -69,10 +69,10 @@ export default function Vendedores() {
           <option value="activos">Activos</option><option value="todos">Todos</option>
           {etapas.map((e) => <option key={e.codigo} value={e.codigo}>{e.nombre}</option>)}
         </select>
-        <select className="sel" value={resp} onChange={(e) => setResp(e.target.value)} aria-label="Responsable">
+        {!mios && <select className="sel" value={resp} onChange={(e) => setResp(e.target.value)} aria-label="Responsable">
           <option value="">Cualquier responsable</option><option value="sin">Sin responsable</option>
-          {equipo.map((m) => <option key={m.email} value={m.email}>{m.nombre}</option>)}
-        </select>
+          {equipo.map((m) => <option key={m.email} value={m.email}>{m.apodo ?? m.nombre}</option>)}
+        </select>}
         <select className="sel" value={sector} onChange={(e) => setSector(e.target.value)} aria-label="Sector">
           <option value="">Todos los sectores</option>{SECTORES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
         </select>
@@ -86,7 +86,7 @@ export default function Vendedores() {
           <table className="t">
             <thead><tr>{th('nombre', 'Contacto')}{th('etapa', 'Etapa')}{th('dias_en_etapa', 'Días', 'r')}{th('bucket', 'Bucket')}{th('ventas_rango', 'Ventas')}{th('sector', 'Sector')}{th('ciudad', 'Ciudad')}{th('responsable', 'Responsable')}{th('fecha_proxima_accion', 'Próxima acción')}{th('docs_pendientes', 'Docs', 'r')}{th('fecha_ingreso', 'Ingreso')}</tr></thead>
             <tbody>
-              {!rows.length ? <tr><td colSpan={11}><p className="empty-state">Ningún vendedor coincide con los filtros.</p></td></tr> : rows.map((v: Row) => (
+              {!rows.length ? <tr><td colSpan={11}><p className="empty-state">{mios ? 'No tienes vendedores asignados. Asígnate como responsable desde la ficha de un vendedor.' : 'Ningún vendedor coincide con los filtros.'}</p></td></tr> : rows.map((v: Row) => (
                 <tr key={v.id} onClick={() => nav(`/vendedores/${v.id}`)}>
                   <td><span className="primary-cell">{v.empresa || v.nombre}</span><span className="sub">{v.empresa ? v.nombre : ''}</span></td>
                   <td><span className={'tag ' + tonoEtapa(v.fase, v.etapa)}>{v.etapa_nombre}</span></td>

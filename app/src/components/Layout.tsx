@@ -1,14 +1,26 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { House, Tray, Storefront, MagnifyingGlass, ChartBar, SignOut, Wallet, CaretDown } from '@phosphor-icons/react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { House, Tray, AddressBook, UserCircle, ChartBar, SignOut, Wallet, CaretDown } from '@phosphor-icons/react';
 import { supabase } from '../lib/supabase';
 import { useCatalogo } from '../lib/data';
 
+function Grupo({ icono, titulo, rutas, children }: { icono: ReactNode; titulo: string; rutas: string[]; children: ReactNode }) {
+  const path = useLocation().pathname;
+  const aqui = rutas.some((r) => path === r || path.startsWith(r + '/'));
+  const [abierto, setAbierto] = useState(aqui);
+  useEffect(() => { if (aqui) setAbierto(true); }, [aqui]);
+  return (
+    <>
+      <button type="button" className={'nav-group' + (aqui ? ' here' : '')} aria-expanded={abierto} onClick={() => setAbierto(!abierto)}>
+        {icono}{titulo}<CaretDown className="ic caret" style={{ transform: abierto ? 'rotate(180deg)' : 'none' }} />
+      </button>
+      {abierto && <div className="nav-sub">{children}</div>}
+    </>
+  );
+}
+
 export default function Layout({ email }: { email: string }) {
   const { equipo } = useCatalogo();
-  const enFinanzas = useLocation().pathname.startsWith('/finanzas');
-  const [abierto, setAbierto] = useState(enFinanzas);
-  useEffect(() => { if (enFinanzas) setAbierto(true); }, [enFinanzas]);
   const [nBandeja, setNBandeja] = useState<number | null>(null);
   useEffect(() => { supabase.from('v_bandeja').select('id', { count: 'exact', head: true }).then(({ count }) => setNBandeja(count ?? null)); }, []);
   const yo = equipo.find((m) => m.email === email.toLowerCase())?.nombre ?? email;
@@ -19,20 +31,18 @@ export default function Layout({ email }: { email: string }) {
         <nav className="nav" aria-label="Principal">
           <NavLink to="/" end><House className="ic" />Inicio</NavLink>
           <NavLink to="/bandeja"><Tray className="ic" />Bandeja{nBandeja ? <span className="count num">{nBandeja}</span> : null}</NavLink>
-          <NavLink to="/vendedores"><Storefront className="ic" />Vendedores</NavLink>
-          <NavLink to="/compradores"><MagnifyingGlass className="ic" />Compradores</NavLink>
+          <NavLink to="/mis-clientes"><UserCircle className="ic" />Mis clientes</NavLink>
+          <Grupo icono={<AddressBook className="ic" />} titulo="CRM" rutas={['/vendedores', '/compradores']}>
+            <NavLink to="/vendedores">Vendedores</NavLink>
+            <NavLink to="/compradores">Compradores</NavLink>
+          </Grupo>
           <NavLink to="/stats"><ChartBar className="ic" />Embudo</NavLink>
-          <button type="button" className={'nav-group' + (enFinanzas ? ' here' : '')} aria-expanded={abierto} onClick={() => setAbierto(!abierto)}>
-            <Wallet className="ic" />Finanzas<CaretDown className="ic caret" style={{ transform: abierto ? 'rotate(180deg)' : 'none' }} />
-          </button>
-          {abierto && (
-            <div className="nav-sub">
-              <NavLink to="/finanzas/movimientos">Movimientos</NavLink>
-              <NavLink to="/finanzas/estados">Estados financieros</NavLink>
-              <NavLink to="/finanzas/suscripciones">Suscripciones</NavLink>
-              <NavLink to="/finanzas/socios">Cuentas socios</NavLink>
-            </div>
-          )}
+          <Grupo icono={<Wallet className="ic" />} titulo="Finanzas" rutas={['/finanzas']}>
+            <NavLink to="/finanzas/movimientos">Movimientos</NavLink>
+            <NavLink to="/finanzas/estados">Estados financieros</NavLink>
+            <NavLink to="/finanzas/suscripciones">Suscripciones</NavLink>
+            <NavLink to="/finanzas/socios">Cuentas socios</NavLink>
+          </Grupo>
         </nav>
         <div className="me">
           <span>{yo}</span>

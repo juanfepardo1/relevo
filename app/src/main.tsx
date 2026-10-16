@@ -42,7 +42,8 @@ function App() {
       <Routes>
         <Route element={<Layout email={session.user.email ?? ''} />}>
           <Route index element={<Inicio />} />
-          <Route path="vendedores" element={<Vendedores />} />
+          <Route path="vendedores" element={<Vendedores key="todos" />} />
+          <Route path="mis-clientes" element={<Vendedores key="mios" mios />} />
           <Route path="vendedores/:id" element={<VendedorFicha />} />
           <Route path="compradores" element={<Compradores />} />
           <Route path="compradores/:id" element={<CompradorFicha />} />
