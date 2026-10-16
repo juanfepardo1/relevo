@@ -3,7 +3,7 @@ import type { Opt } from './catalogos';
 export type Mov = { id: string; fecha: string; tipo: 'ingreso' | 'gasto' | 'aporte' | 'reembolso'; categoria: string; descripcion: string | null; monto: number; pagado_por: 'felipe' | 'alejandro' | 'relevo'; soporte_path?: string | null };
 export type Tratamiento = 'deuda' | 'aporte';
 
-export const TIPOS: Opt[] = [['gasto', 'Gasto'], ['ingreso', 'Ingreso'], ['aporte', 'Aporte a la cuenta de Relevo'], ['reembolso', 'Reembolso a socio']];
+export const TIPOS: Opt[] = [['gasto', 'Gasto'], ['ingreso', 'Ingreso'], ['aporte', 'Aporte de capital (a la cuenta de Relevo)'], ['reembolso', 'Reembolso a socio']];
 export const CAT_GASTO: Opt[] = [['marketing', 'Marketing'], ['software', 'Herramientas y software'], ['hosting', 'Dominio y hosting'], ['legal', 'Legal y registro'], ['transporte', 'Transporte'], ['otros', 'Otros gastos']];
 export const CAT_INGRESO: Opt[] = [['exito', 'Comisión de éxito'], ['valoracion', 'Valoraciones'], ['asesoria', 'Asesoría'], ['otros_ingresos', 'Otros ingresos']];
 export const CAT_MOV: Opt[] = [['aporte', 'Aporte'], ['reembolso', 'Reembolso']];
@@ -72,21 +72,35 @@ export function flujo(movs: Mov[]) {
 /** Capital de Relevo Brokers S.A.S. según el certificado de Cámara de Comercio. */
 export const CAPITAL = { fecha: '2026-10-16', autorizado: 50_000_000, suscrito: 5_000_000, pagado: 10_000 };
 
-export function balance(movs: Mov[], corte: string, trato: Tratamiento) {
+/**
+ * Situación financiera al corte.
+ * - El capital pagado inicial está en efectivo (1105 Caja) desde la constitución.
+ * - Los aportes a la cuenta de Relevo son capital pagado (3105) y entran a 1110 Bancos.
+ * - Lo que un socio paga de su bolsillo es deuda de la SAS con él (2355); los reembolsos la disminuyen.
+ */
+export function balance(movs: Mov[], corte: string, _trato?: Tratamiento) {
   const xs = movs.filter((m) => m.fecha <= corte);
-  // El capital pagado entra en efectivo el día de la constitución.
-  const pagado = corte >= CAPITAL.fecha ? CAPITAL.pagado : 0;
-  let caja = pagado;
-  const cuenta: Record<string, number> = { felipe: 0, alejandro: 0 };
-  for (const m of xs) { const e = efecto(m); caja += e.caja; if (e.socio) cuenta[e.socio] += e.cuenta ?? 0; }
+  const inicial = corte >= CAPITAL.fecha ? CAPITAL.pagado : 0;
+  const v = (m: Mov) => Number(m.monto);
+  let bancos = 0;
+  const deuda: Record<string, number> = { felipe: 0, alejandro: 0 };
+  const aportes: Record<string, number> = { felipe: 0, alejandro: 0 };
+  for (const m of xs) {
+    const p = m.pagado_por;
+    if (m.tipo === 'gasto') { if (p === 'relevo') bancos -= v(m); else deuda[p] += v(m); }
+    else if (m.tipo === 'ingreso') { if (p === 'relevo') bancos += v(m); else deuda[p] -= v(m); }
+    else if (m.tipo === 'aporte') { bancos += v(m); if (p !== 'relevo') aportes[p] += v(m); }
+    else if (m.tipo === 'reembolso') { bancos -= v(m); if (p !== 'relevo') deuda[p] -= v(m); }
+  }
   const r = resultados(xs).resultado.total;
-  const socios = cuenta.felipe + cuenta.alejandro;
+  const pasivo = deuda.felipe + deuda.alejandro;
+  const pagado = inicial + aportes.felipe + aportes.alejandro;
+  const caja = inicial;
   return {
-    caja, cuenta, resultado: r, pagado,
-    pasivo: trato === 'deuda' ? socios : 0,
-    capital: pagado + (trato === 'aporte' ? socios : 0),
-    patrimonio: pagado + (trato === 'aporte' ? socios : 0) + r,
-    cuadra: Math.round(caja) === Math.round(socios + pagado + r),
+    caja, bancos, efectivo: caja + bancos, cuenta: deuda, aportes, resultado: r, pagado, pasivo,
+    porCobrar: Math.max(0, CAPITAL.suscrito - pagado), excedeSuscrito: pagado > CAPITAL.suscrito,
+    patrimonio: pagado + r,
+    cuadra: Math.round(caja + bancos) === Math.round(pasivo + pagado + r),
   };
 }
 
@@ -173,10 +187,10 @@ export function flujoPuc(movs: Mov[]) {
   const cobros = fila((m) => (m.tipo === 'ingreso' && m.pagado_por === 'relevo' ? v(m) : 0));
   const pagos = fila((m) => (m.tipo === 'gasto' && m.pagado_por === 'relevo' ? -v(m) : 0));
   const recibidoSocios = fila((m) => (m.tipo === 'aporte' ? v(m) : 0));
-  const capital = ms.map((mm) => (mm === CAPITAL.fecha.slice(0, 7) ? CAPITAL.pagado : 0));
+  const capital = ms.map((mm, i) => (mm === CAPITAL.fecha.slice(0, 7) ? CAPITAL.pagado : 0) + recibidoSocios[i]);
   const pagadoSocios = fila((m) => (m.tipo === 'reembolso' ? -v(m) : 0));
   const op = cobros.map((x, i) => x + pagos[i]);
-  const fin = recibidoSocios.map((x, i) => x + pagadoSocios[i] + capital[i]);
+  const fin = capital.map((x, i) => x + pagadoSocios[i]);
   const neto = op.map((x, i) => x + fin[i]);
   let acc = 0; const inicio: number[] = [], fin_: number[] = [];
   neto.forEach((x) => { inicio.push(acc); acc += x; fin_.push(acc); });

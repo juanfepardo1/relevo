@@ -96,7 +96,7 @@ function Movimientos({ movs, reload }: { movs: Mov[]; reload: () => void }) {
           <option value="">Todos los meses</option>{ms.map((m) => <option key={m} value={m}>{nombreMes(m)}</option>)}
         </select>
         <span className="muted">{lista.length} movimientos{sinSoporte ? ` · ${sinSoporte} gastos sin soporte` : ''}</span>
-        <button className="btn ghost" style={{ marginLeft: 'auto' }} onClick={() => csv('relevo_movimientos', [['Fecha', 'Tipo', 'Categoría', 'Cuenta PUC', 'Descripción', 'Monto', 'Quién', 'Soporte'], ...lista.map((m) => [m.fecha, label(TIPOS, m.tipo), label(TODAS_CAT, m.categoria), m.tipo === 'gasto' || m.tipo === 'ingreso' ? cuentaDe(m.categoria, m.tipo).codigo : m.tipo === 'aporte' || m.tipo === 'reembolso' ? '2355' : '', m.descripcion ?? '', Number(m.monto), quien(m.pagado_por), m.soporte_path ? 'Sí' : 'No'])])}><DownloadSimple className="ic" />Descargar CSV</button>
+        <button className="btn ghost" style={{ marginLeft: 'auto' }} onClick={() => csv('relevo_movimientos', [['Fecha', 'Tipo', 'Categoría', 'Cuenta PUC', 'Descripción', 'Monto', 'Quién', 'Soporte'], ...lista.map((m) => [m.fecha, label(TIPOS, m.tipo), label(TODAS_CAT, m.categoria), m.tipo === 'gasto' || m.tipo === 'ingreso' ? cuentaDe(m.categoria, m.tipo).codigo : m.tipo === 'aporte' ? '3105' : m.tipo === 'reembolso' ? '2355' : '', m.descripcion ?? '', Number(m.monto), quien(m.pagado_por), m.soporte_path ? 'Sí' : 'No'])])}><DownloadSimple className="ic" />Descargar CSV</button>
       </div>
       <div className="tablewrap">
         <table className="t">
@@ -108,7 +108,7 @@ function Movimientos({ movs, reload }: { movs: Mov[]; reload: () => void }) {
                 <tr key={m.id} style={{ cursor: 'default' }}>
                   <td className="num soft">{fecha(m.fecha)}</td>
                   <td><span className={'tag tone-' + (m.tipo === 'ingreso' ? 'ganado' : m.tipo === 'gasto' ? 'cierre' : 'captacion')}>{label(TIPOS, m.tipo)}</span></td>
-                  <td>{label(TODAS_CAT, m.categoria)}{(m.tipo === 'gasto' || m.tipo === 'ingreso') && <span className="muted num" style={{ marginLeft: 6, fontSize: 12 }}>{cuentaDe(m.categoria, m.tipo).codigo}</span>}</td>
+                  <td>{label(TODAS_CAT, m.categoria)}<span className="muted num" style={{ marginLeft: 6, fontSize: 12 }}>{m.tipo === 'aporte' ? '3105' : m.tipo === 'reembolso' ? '2355' : cuentaDe(m.categoria, m.tipo).codigo}</span></td>
                   <td>{m.descripcion}</td>
                   <td className={'r num' + (m.tipo === 'ingreso' ? ' pos' : m.tipo === 'gasto' ? ' neg' : '')}>{m.tipo === 'gasto' ? '-' : ''}{cop(Number(m.monto))}</td>
                   <td><span className={'tag plain ' + (m.pagado_por === 'felipe' ? 'tone-p1' : m.pagado_por === 'alejandro' ? 'tone-p2' : 'tone-nuevo')}>{quien(m.pagado_por)}</span></td>
@@ -261,9 +261,8 @@ function Flujo({ movs }: { movs: Mov[] }) {
     { l: 'Actividades de inversión', v: [], t: 0, k: 'grupo' },
     { l: 'Efectivo neto de actividades de inversión', v: f.op.map(() => 0), t: 0, k: 'tot' },
     { l: 'Actividades de financiación', v: [], t: 0, k: 'grupo' },
-    { c: '3105', l: 'Aportes de capital pagado', v: f.capital, t: sum(f.capital) },
-    { l: 'Préstamos recibidos de socios', v: f.recibidoSocios, t: sum(f.recibidoSocios) },
-    { l: 'Pagos a socios', v: f.pagadoSocios, t: sum(f.pagadoSocios) },
+    { c: '3105', l: 'Aportes de capital', v: f.capital, t: sum(f.capital) },
+    { c: '2355', l: 'Reembolsos a socios', v: f.pagadoSocios, t: sum(f.pagadoSocios) },
     { l: 'Efectivo neto de actividades de financiación', v: f.fin, t: sum(f.fin), k: 'tot' },
     { l: 'Aumento (disminución) neto del efectivo', v: f.neto, t: sum(f.neto), k: 'resultado' },
     { l: 'Efectivo al inicio del periodo', v: f.inicio, t: 0 },
@@ -273,7 +272,7 @@ function Flujo({ movs }: { movs: Mov[] }) {
     <>
       <Kpis items={[['Efectivo neto de operación', sum(f.op)], ['Financiación de socios', sum(f.fin)], ['Efectivo al final', f.final[f.final.length - 1] ?? 0]]} />
       <Reporte titulo="Estado de flujos de efectivo" descargar="relevo_flujo_efectivo" meses={f.meses} filas={filas}
-        nota="Método directo, sobre la cuenta bancaria de Relevo (1110). Los gastos que pagan los socios de su bolsillo no mueven el efectivo de Relevo: aumentan la deuda con ellos (2355)." />
+        nota="Método directo, sobre el efectivo de Relevo (1105 Caja y 1110 Bancos). Los aportes a la cuenta de Relevo son capital. Los gastos que pagan los socios de su bolsillo no mueven el efectivo de Relevo: aumentan la deuda con ellos (2355)." />
       {(f.sinCaja.gastosSocios > 0 || f.sinCaja.ingresosSocios > 0) && (
         <p className="muted" style={{ fontSize: 12.5, marginTop: 10 }}>Transacciones que no movieron efectivo: gastos pagados por los socios {cop(f.sinCaja.gastosSocios)}{f.sinCaja.ingresosSocios ? ` · ingresos cobrados por los socios ${cop(f.sinCaja.ingresosSocios)}` : ''}.</p>
       )}
@@ -283,26 +282,28 @@ function Flujo({ movs }: { movs: Mov[] }) {
 
 function Balance({ movs }: { movs: Mov[] }) {
   const [corte, setCorte] = useState(hoy());
-  const b = useMemo(() => balance(movs, corte, 'deuda'), [movs, corte]);
+  const b = useMemo(() => balance(movs, corte), [movs, corte]);
   const L = ({ c, l, v, k }: { c?: string; l: string; v?: number; k?: string }) => (
     <tr className={k ?? ''}><td className="puc-c num">{c}</td><td>{l}</td><td className={'r num' + (k === 'resultado' ? (Number(v) < 0 ? ' neg' : '') : '')}>{v == null ? '' : cop(v)}</td></tr>
   );
-  const socios = b.cuenta.felipe + b.cuenta.alejandro;
-  const filas: [string, string, number | ''][] = [['1110', 'Bancos', b.caja], ['', 'Total activo', b.caja], ['2355', 'Deudas con accionistas o socios', socios], ['', 'Total pasivo', b.pasivo], ['3105', 'Capital suscrito y pagado', b.pagado], ['310505', 'Capital autorizado', b.pagado ? CAPITAL.autorizado : 0], ['310510', 'Capital por suscribir', b.pagado ? -(CAPITAL.autorizado - CAPITAL.suscrito) : 0], ['310515', 'Capital suscrito por cobrar', b.pagado ? -(CAPITAL.suscrito - CAPITAL.pagado) : 0], [b.resultado >= 0 ? '3605' : '3610', b.resultado >= 0 ? 'Utilidad del ejercicio' : 'Pérdida del ejercicio', b.resultado], ['', 'Total patrimonio', b.patrimonio], ['', 'Total pasivo y patrimonio', b.pasivo + b.patrimonio]];
+  const socios = b.pasivo;
+  const filas: [string, string, number | ''][] = [['1105', 'Caja', b.caja], ['1110', 'Bancos', b.bancos], ['', 'Total activo', b.efectivo], ['2355', 'Deudas con accionistas o socios', socios], ['', 'Total pasivo', b.pasivo], ['3105', 'Capital suscrito y pagado', b.pagado], ['310505', 'Capital autorizado', b.pagado ? CAPITAL.autorizado : 0], ['310510', 'Capital por suscribir', b.pagado ? -(CAPITAL.autorizado - CAPITAL.suscrito) : 0], ['310515', 'Capital suscrito por cobrar', b.pagado ? -b.porCobrar : 0], [b.resultado >= 0 ? '3605' : '3610', b.resultado >= 0 ? 'Utilidad del ejercicio' : 'Pérdida del ejercicio', b.resultado], ['', 'Total patrimonio', b.patrimonio], ['', 'Total pasivo y patrimonio', b.pasivo + b.patrimonio]];
   return (
     <>
       <div className="toolbar no-print">
         <label className="who">Corte<input className="in" type="date" value={corte} onChange={(e) => setCorte(e.target.value)} style={{ width: 160 }} /></label>
         <button className="btn ghost" style={{ marginLeft: 'auto' }} onClick={() => csv('relevo_situacion_financiera_' + corte, [['Código', 'Cuenta', 'Valor'], ...filas])}><DownloadSimple className="ic" />CSV</button>
       </div>
-      <p className="muted" style={{ fontSize: 12.5, marginBottom: 12 }}>Estado de situación financiera de Relevo Brokers S.A.S. al {fechaCorta(corte)}. Lo que los socios pagan de su bolsillo queda como deuda de la sociedad con ellos (2355). Capital: autorizado {cop(CAPITAL.autorizado)}, suscrito {cop(CAPITAL.suscrito)}, pagado {cop(CAPITAL.pagado)}.</p>
+      <p className="muted" style={{ fontSize: 12.5, marginBottom: 12 }}>Estado de situación financiera de Relevo Brokers S.A.S. al {fechaCorta(corte)}. Lo que los socios pagan de su bolsillo queda como deuda de la sociedad con ellos (2355). Los aportes a la cuenta de Relevo son capital pagado (3105). Capital autorizado {cop(CAPITAL.autorizado)}, suscrito {cop(CAPITAL.suscrito)}, pagado {cop(b.pagado)}.</p>
+      {b.excedeSuscrito && <p className="err-text" style={{ marginBottom: 12 }}>Los aportes ya superan el capital suscrito ({cop(CAPITAL.suscrito)}). Para registrar más capital hay que reformar estatutos; mientras tanto el exceso debería ir como préstamo de socio.</p>}
       <div className="grid2">
         <section className="panel report"><header><h2>Activo</h2></header>
           <table className="t fin-t"><tbody>
             <L c="1" l="Activo" k="grupo" /><L c="11" l="Efectivo y equivalentes al efectivo" k="grupo" />
-            <L c="1110" l="Bancos (cuenta de Relevo)" v={b.caja} />
-            <L l="Total activo corriente" v={b.caja} k="tot" />
-            <L l="Total activo" v={b.caja} k="tot" />
+            <L c="1105" l="Caja" v={b.caja} />
+            <L c="1110" l="Bancos (cuenta de Relevo)" v={b.bancos} />
+            <L l="Total activo corriente" v={b.efectivo} k="tot" />
+            <L l="Total activo" v={b.efectivo} k="tot" />
           </tbody></table>
         </section>
         <section className="panel report"><header><h2>Pasivo y patrimonio</h2></header>
@@ -317,7 +318,7 @@ function Balance({ movs }: { movs: Mov[] }) {
             {b.pagado > 0 && <>
               <L c="310505" l="Capital autorizado" v={CAPITAL.autorizado} k="subcta" />
               <L c="310510" l="Capital por suscribir" v={-(CAPITAL.autorizado - CAPITAL.suscrito)} k="subcta" />
-              <L c="310515" l="Capital suscrito por cobrar" v={-(CAPITAL.suscrito - CAPITAL.pagado)} k="subcta" />
+              <L c="310515" l="Capital suscrito por cobrar" v={-b.porCobrar} k="subcta" />
             </>}
             <L c={b.resultado >= 0 ? '3605' : '3610'} l={b.resultado >= 0 ? 'Utilidad del ejercicio' : 'Pérdida del ejercicio'} v={b.resultado} k="resultado" />
             <L l="Total patrimonio" v={b.patrimonio} k="tot" />
