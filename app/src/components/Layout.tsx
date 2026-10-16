@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useEffect, useState, type ReactNode } from 'react';
-import { House, Tray, AddressBook, UserCircle, ChartBar, SignOut, Wallet, CaretDown, FileText, ShieldStar, CalendarBlank } from '@phosphor-icons/react';
+import { House, Tray, AddressBook, UserCircle, ChartBar, SignOut, Wallet, CaretDown, FileText, ShieldStar, CalendarBlank, Buildings } from '@phosphor-icons/react';
 import { supabase } from '../lib/supabase';
 import { useCatalogo } from '../lib/data';
 
@@ -41,6 +41,7 @@ export default function Layout({ email }: { email: string }) {
           </Grupo>
           <NavLink to="/documentos"><FileText className="ic" />Documentos</NavLink>
           <NavLink to="/stats"><ChartBar className="ic" />Embudo</NavLink>
+          <NavLink to="/empresa"><Buildings className="ic" />Empresa</NavLink>
           <Grupo icono={<Wallet className="ic" />} titulo="Finanzas" rutas={['/finanzas']}>
             <NavLink to="/finanzas/movimientos">Movimientos</NavLink>
             <NavLink to="/finanzas/estados">Estados financieros</NavLink>

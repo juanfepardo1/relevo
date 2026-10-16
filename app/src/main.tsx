@@ -19,6 +19,7 @@ import Suscripciones from './pages/Suscripciones';
 import Documentos from './pages/Documentos';
 import Perfil from './pages/Perfil';
 import Admin from './pages/Admin';
+import Empresa from './pages/Empresa';
 import Calendario from './pages/Calendario';
 import './styles.css';
 
@@ -54,6 +55,7 @@ function App() {
           <Route path="stats" element={<Stats />} />
           <Route path="bandeja" element={<Bandeja />} />
           <Route path="documentos" element={<Documentos email={session.user.email ?? ''} />} />
+          <Route path="empresa" element={<Empresa />} />
           <Route path="admin" element={<Admin />} />
           <Route path="calendario" element={<Calendario />} />
           <Route path="perfil" element={<Perfil email={session.user.email ?? ''} />} />
