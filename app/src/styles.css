@@ -236,6 +236,27 @@ dialog.m footer{display:flex;justify-content:flex-end;gap:8px;padding-top:6px}
 .meta-chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;color:var(--ink);background:#fff;border:1px solid var(--line-2);border-radius:999px;padding:3px 10px}
 .meta-chip .ic{width:14px;height:14px;color:var(--orange)}
 
+/* documentos */
+.grid-doc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px;align-items:start}
+.opcion{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line-2);border-radius:10px;cursor:pointer}
+.opcion.on{border-color:var(--orange);background:var(--orange-tint)}
+.opcion input{margin-top:3px;accent-color:var(--orange)}
+.doc-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.doc-form label{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--ink-3)}
+.doc-form .wide{grid-column:1/-1}
+.doc-form label.check{flex-direction:row;align-items:center;gap:8px;color:var(--ink-2);font-size:13px}
+.doc-form input[type=checkbox]{accent-color:var(--orange)}
+.doc-out{position:sticky;top:20px}
+.doc-prev{width:100%;height:72vh;border:1px solid var(--line-2);border-radius:10px;background:#fff}
+.aviso{display:flex;gap:10px;padding:12px;border-radius:10px;background:var(--warn-tint);color:var(--warn);margin-bottom:12px;font-size:13px}
+.aviso ul{margin:4px 0 0;padding-left:18px}
+.firma-prev{background:repeating-conic-gradient(#f2f5f9 0 25%,#fff 0 50%) 0 0/16px 16px;border:1px solid var(--line-2);border-radius:10px;padding:16px;display:inline-block}
+.firma-prev img{max-width:320px;max-height:120px;display:block}
+.side .me-link{display:flex;flex-direction:column;color:#fff;padding:2px 0;border-radius:6px}
+.side .me-link span{font-size:12px;color:#a9b8d0}
+.side .me-link:hover span{color:var(--orange)}
+@media (max-width:1100px){.grid-doc{grid-template-columns:1fr}.doc-out{position:static}}
+
 /* finanzas */
 .mov-form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:14px 16px;margin-bottom:16px}
 .mov-form label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--ink-3);min-width:130px}

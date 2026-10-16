@@ -6,6 +6,7 @@ import { fecha } from '../lib/format';
 import { supabase, type Row } from '../lib/supabase';
 import { useQuery } from '../lib/data';
 import { Skeleton, ErrorBox } from '../components/ui';
+import { BotonNota } from '../components/Nota';
 
 const TIPO: Record<string, { t: string; I: any }> = {
   doc_atrasado: { t: 'Documentos atrasados', I: FileArrowDown },
@@ -32,7 +33,7 @@ export default function Inicio() {
 
   return (
     <div className="page">
-      <div className="head"><div><h1>Inicio</h1><p>Lo que hay que mover hoy.</p></div></div>
+      <div className="head"><div><h1>Inicio</h1><p>Lo que hay que mover hoy.</p></div><BotonNota /></div>
       <dl className="kpis">
         <div><dt>Vendedores activos</dt><dd className="num">{v.loading ? '·' : activos.length}</dd></div>
         <div><dt>En valoración</dt><dd className="num">{v.loading ? '·' : enValoracion}</dd></div>

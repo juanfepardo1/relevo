@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { ArrowDown, ArrowUp, ChatCircle, Envelope, FileText, Note, Phone, Plus, Users, Paperclip, Check, ArrowSquareOut } from '@phosphor-icons/react';
+import { Link } from 'react-router-dom';
+import { ArrowDown, ArrowUp, ChatCircle, Envelope, FileText, Note, Phone, Plus, Users, Paperclip, Check, ArrowSquareOut, FilePlus } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
 import { useQuery, useCatalogo } from '../lib/data';
 import { TIPO_DOC, ESTADO_DOC, TIPO_ACTIVIDAD, label } from '../lib/catalogos';
@@ -76,7 +77,7 @@ export function DocumentosPanel({ entidad, id }: { entidad: Ent; id: string }) {
 
   return (
     <section className="panel">
-      <header><h2>Documentos</h2><button className="btn" onClick={() => setOpen(true)}><Plus className="ic" />Registrar</button></header>
+      <header><h2>Documentos</h2><div style={{ display: 'flex', gap: 6 }}>{entidad === 'vendedor' && <Link className="btn" to={`/documentos?tipo=nda&vendedor=${id}`}><FilePlus className="ic" />Generar NDA</Link>}<button className="btn" onClick={() => setOpen(true)}><Plus className="ic" />Registrar</button></div></header>
       {q.loading ? <Skeleton rows={3} /> : !q.data?.length ? (
         <p className="empty-state">Sin documentos. Registra lo que pides, recibes o envías para que el sistema avise cuando algo se atrase.</p>
       ) : (
