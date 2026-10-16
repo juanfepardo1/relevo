@@ -10,7 +10,7 @@ import { TIPO_NOTA } from '../components/Nota';
 
 const ESTADO_NOTA: [string, string][] = [['nueva', 'Nueva'], ['en_curso', 'En curso'], ['resuelta', 'Resuelta'], ['descartada', 'Descartada']];
 const TONO_TIPO: Record<string, string> = { falla: 'tone-perdido', falta: 'tone-captacion', sobra: 'tone-nuevo', idea: 'tone-valoracion' };
-type Vista = 'notas' | 'equipo' | 'datos';
+type Vista = 'notas' | 'equipo' | 'datos' | 'metas';
 
 export default function Admin() {
   const { yo } = useCatalogo();
@@ -20,10 +20,10 @@ export default function Admin() {
     <div className="page">
       <div className="head"><div><h1>Admin</h1><p>Solo lo ves tú.</p></div></div>
       <div className="seg" role="tablist" style={{ marginBottom: 16 }}>
-        {([['notas', 'Notas de la app'], ['equipo', 'Equipo'], ['datos', 'Calidad de datos']] as [Vista, string][]).map(([k, l]) =>
+        {([['notas', 'Notas de la app'], ['equipo', 'Equipo'], ['datos', 'Calidad de datos'], ['metas', 'Metas del embudo']] as [Vista, string][]).map(([k, l]) =>
           <button key={k} role="tab" aria-selected={vista === k} className={vista === k ? 'on' : ''} onClick={() => setVista(k)}>{l}</button>)}
       </div>
-      {vista === 'notas' ? <Notas /> : vista === 'equipo' ? <Equipo /> : <Datos />}
+      {vista === 'notas' ? <Notas /> : vista === 'equipo' ? <Equipo /> : vista === 'metas' ? <Metas /> : <Datos />}
     </div>
   );
 }
@@ -137,6 +137,49 @@ function Datos() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function Metas() {
+  const q = useQuery(() => supabase.from('etapas').select('*').eq('pipeline', 'vendedor').order('orden'));
+  const aj = useQuery(() => supabase.from('ajustes').select('valor').eq('clave', 'dias_sin_actividad').maybeSingle());
+  const toast = useToast();
+  const guardar = async (codigo: string, v: string) => {
+    const n = v.trim() === '' ? null : Math.max(0, Math.round(Number(v)));
+    if (n !== null && Number.isNaN(n)) return;
+    const { data, error } = await supabase.from('etapas').update({ sla_dias: n }).eq('pipeline', 'vendedor').eq('codigo', codigo).select();
+    if (error || !data?.length) toast('No se guardó: ' + (error?.message ?? 'falta correr el SQL de metas'), true); else { toast('Meta guardada'); q.reload(); }
+  };
+  const guardarN = async (v: string) => {
+    const n = Math.max(1, Math.round(Number(v)));
+    if (!n) return;
+    try { await must(supabase.from('ajustes').upsert({ clave: 'dias_sin_actividad', valor: String(n), updated_at: new Date().toISOString() })); toast('Guardado'); aj.reload(); }
+    catch (e: any) { toast(e.message, true); }
+  };
+  if (q.loading) return <div className="panel"><Skeleton rows={6} /></div>;
+  return (
+    <div className="grid2">
+      <section className="panel">
+        <header><h2>Días meta por etapa</h2><span className="muted" style={{ fontSize: 12.5 }}>En el orden del proceso</span></header>
+        <div className="list">
+          {((q.data || []) as Row[]).filter((e) => !e.terminal).map((e) => (
+            <div className="li" key={e.codigo} style={{ gridTemplateColumns: 'minmax(0,1fr) 110px', alignItems: 'center' }}>
+              <div><b>{e.nombre}</b><div className="meta">{e.fase}</div></div>
+              <label className="who" style={{ justifySelf: 'end' }}><input className="in num" style={{ width: 64, textAlign: 'right' }} inputMode="numeric" defaultValue={e.sla_dias ?? ''} placeholder="·" onBlur={(ev) => { if (ev.target.value !== String(e.sla_dias ?? '')) guardar(e.codigo, ev.target.value); }} />días</label>
+            </div>
+          ))}
+        </div>
+      </section>
+      <section className="panel">
+        <header><h2>Quieto por inactividad</h2></header>
+        <div className="body">
+          <label className="who">Un vendedor activo cuenta como quieto si lleva
+            <input key={(aj.data as Row | null)?.valor ?? '7'} className="in num" style={{ width: 64, textAlign: 'right' }} inputMode="numeric" defaultValue={(aj.data as Row | null)?.valor ?? '7'} onBlur={(e) => guardarN(e.target.value)} />
+            días sin actividad.</label>
+          <p className="muted" style={{ fontSize: 12.5, marginTop: 10 }}>Cuenta como actividad: una llamada, reunión o nota registrada, o un cambio de etapa. Deja una meta vacía si esa etapa no debe tener límite.</p>
+        </div>
+      </section>
     </div>
   );
 }
