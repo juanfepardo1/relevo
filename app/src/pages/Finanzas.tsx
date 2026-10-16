@@ -280,21 +280,46 @@ function Flujo({ movs }: { movs: Mov[] }) {
   );
 }
 
+type Presentacion = 'activo' | 'patrimonio';
 function Balance({ movs }: { movs: Mov[] }) {
+  const toast = useToast();
   const [corte, setCorte] = useState(hoy());
+  const aj = useQuery(() => supabase.from('ajustes').select('valor').eq('clave', 'capital_por_cobrar').maybeSingle());
+  const modo: Presentacion = (aj.data as Row | null)?.valor === 'patrimonio' ? 'patrimonio' : 'activo';
+  const cambiar = async (m: Presentacion) => {
+    try { await must(supabase.from('ajustes').upsert({ clave: 'capital_por_cobrar', valor: m, updated_at: new Date().toISOString() })); aj.reload(); }
+    catch (e: any) { toast(e.message, true); }
+  };
   const b = useMemo(() => balance(movs, corte), [movs, corte]);
   const L = ({ c, l, v, k }: { c?: string; l: string; v?: number; k?: string }) => (
     <tr className={k ?? ''}><td className="puc-c num">{c}</td><td>{l}</td><td className={'r num' + (k === 'resultado' ? (Number(v) < 0 ? ' neg' : '') : '')}>{v == null ? '' : cop(v)}</td></tr>
   );
-  const socios = b.pasivo;
-  const filas: [string, string, number | ''][] = [['1105', 'Caja', b.caja], ['1110', 'Bancos', b.bancos], ['', 'Total activo', b.efectivo], ['2355', 'Deudas con accionistas o socios', socios], ['', 'Total pasivo', b.pasivo], ['3105', 'Capital suscrito y pagado', b.pagado], ['310505', 'Capital autorizado', b.pagado ? CAPITAL.autorizado : 0], ['310510', 'Capital por suscribir', b.pagado ? -(CAPITAL.autorizado - CAPITAL.suscrito) : 0], ['310515', 'Capital suscrito por cobrar', b.pagado ? -b.porCobrar : 0], [b.resultado >= 0 ? '3605' : '3610', b.resultado >= 0 ? 'Utilidad del ejercicio' : 'Pérdida del ejercicio', b.resultado], ['', 'Total patrimonio', b.patrimonio], ['', 'Total pasivo y patrimonio', b.pasivo + b.patrimonio]];
+  const constituida = corte >= CAPITAL.fecha;
+  // Capital suscrito no pagado: como activo (1325) o restando en el patrimonio (310515).
+  const cxc = modo === 'activo' ? b.porCobrar : 0;
+  const capital = modo === 'activo' ? b.pagado + b.porCobrar : b.pagado;
+  const activo = b.efectivo + cxc;
+  const patrimonio = capital + b.resultado;
+  const filas: [string, string, number | ''][] = [
+    ['1105', 'Caja', b.caja], ['1110', 'Bancos', b.bancos], ...(modo === 'activo' ? [['1325', 'Cuentas por cobrar a socios y accionistas', cxc] as [string, string, number]] : []), ['', 'Total activo', activo],
+    ['2355', 'Deudas con accionistas o socios', b.pasivo], ['', 'Total pasivo', b.pasivo],
+    ['3105', modo === 'activo' ? 'Capital suscrito' : 'Capital suscrito y pagado', capital], ['310505', 'Capital autorizado', constituida ? CAPITAL.autorizado : 0], ['310510', 'Capital por suscribir', constituida ? -(CAPITAL.autorizado - CAPITAL.suscrito) : 0],
+    ...(modo === 'patrimonio' ? [['310515', 'Capital suscrito por cobrar', constituida ? -b.porCobrar : 0] as [string, string, number]] : []),
+    [b.resultado >= 0 ? '3605' : '3610', b.resultado >= 0 ? 'Utilidad del ejercicio' : 'Pérdida del ejercicio', b.resultado], ['', 'Total patrimonio', patrimonio], ['', 'Total pasivo y patrimonio', b.pasivo + patrimonio],
+  ];
   return (
     <>
       <div className="toolbar no-print">
         <label className="who">Corte<input className="in" type="date" value={corte} onChange={(e) => setCorte(e.target.value)} style={{ width: 160 }} /></label>
+        <label className="who" style={{ marginLeft: 12 }}>Capital por pagar
+          <select className="sel" style={{ width: 'auto' }} value={modo} onChange={(e) => cambiar(e.target.value as Presentacion)}>
+            <option value="activo">Como activo (1325), igual al RUES</option>
+            <option value="patrimonio">Restando del patrimonio (NIIF Pymes 22.7)</option>
+          </select>
+        </label>
         <button className="btn ghost" style={{ marginLeft: 'auto' }} onClick={() => csv('relevo_situacion_financiera_' + corte, [['Código', 'Cuenta', 'Valor'], ...filas])}><DownloadSimple className="ic" />CSV</button>
       </div>
-      <p className="muted" style={{ fontSize: 12.5, marginBottom: 12 }}>Estado de situación financiera de Relevo Brokers S.A.S. al {fechaCorta(corte)}. Lo que los socios pagan de su bolsillo queda como deuda de la sociedad con ellos (2355). Los aportes a la cuenta de Relevo son capital pagado (3105). Capital autorizado {cop(CAPITAL.autorizado)}, suscrito {cop(CAPITAL.suscrito)}, pagado {cop(b.pagado)}.</p>
+      <p className="muted" style={{ fontSize: 12.5, marginBottom: 12 }}>Estado de situación financiera de Relevo Brokers S.A.S. al {fechaCorta(corte)}. Lo que los socios pagan de su bolsillo queda como deuda de la sociedad con ellos (2355). Los aportes a la cuenta de Relevo son capital pagado. Capital autorizado {cop(CAPITAL.autorizado)}, suscrito {cop(CAPITAL.suscrito)}, pagado {cop(b.pagado)}.</p>
       {b.excedeSuscrito && <p className="err-text" style={{ marginBottom: 12 }}>Los aportes ya superan el capital suscrito ({cop(CAPITAL.suscrito)}). Para registrar más capital hay que reformar estatutos; mientras tanto el exceso debería ir como préstamo de socio.</p>}
       <div className="grid2">
         <section className="panel report"><header><h2>Activo</h2></header>
@@ -302,31 +327,32 @@ function Balance({ movs }: { movs: Mov[] }) {
             <L c="1" l="Activo" k="grupo" /><L c="11" l="Efectivo y equivalentes al efectivo" k="grupo" />
             <L c="1105" l="Caja" v={b.caja} />
             <L c="1110" l="Bancos (cuenta de Relevo)" v={b.bancos} />
-            <L l="Total activo corriente" v={b.efectivo} k="tot" />
-            <L l="Total activo" v={b.efectivo} k="tot" />
+            {modo === 'activo' && constituida && <><L c="13" l="Deudores" k="grupo" /><L c="1325" l="Cuentas por cobrar a socios y accionistas" v={cxc} /><L l="Capital suscrito pendiente de pago" v={undefined} k="subcta" /></>}
+            <L l="Total activo corriente" v={activo} k="tot" />
+            <L l="Total activo" v={activo} k="tot" />
           </tbody></table>
         </section>
         <section className="panel report"><header><h2>Pasivo y patrimonio</h2></header>
           <table className="t fin-t"><tbody>
             <L c="2" l="Pasivo" k="grupo" /><L c="23" l="Cuentas por pagar" k="grupo" />
-            <L c="2355" l="Deudas con accionistas o socios" v={socios} />
+            <L c="2355" l="Deudas con accionistas o socios" v={b.pasivo} />
             <L l="Juan Felipe Pardo (Pardo)" v={b.cuenta.felipe} k="subcta" />
             <L l="Alejandro González (Alejo)" v={b.cuenta.alejandro} k="subcta" />
             <L l="Total pasivo" v={b.pasivo} k="tot" />
             <L c="3" l="Patrimonio" k="grupo" />
-            <L c="3105" l="Capital suscrito y pagado" v={b.pagado} />
-            {b.pagado > 0 && <>
+            <L c="3105" l={modo === 'activo' ? 'Capital suscrito' : 'Capital suscrito y pagado'} v={capital} />
+            {constituida && <>
               <L c="310505" l="Capital autorizado" v={CAPITAL.autorizado} k="subcta" />
               <L c="310510" l="Capital por suscribir" v={-(CAPITAL.autorizado - CAPITAL.suscrito)} k="subcta" />
-              <L c="310515" l="Capital suscrito por cobrar" v={-b.porCobrar} k="subcta" />
+              {modo === 'patrimonio' && <L c="310515" l="Capital suscrito por cobrar" v={-b.porCobrar} k="subcta" />}
             </>}
             <L c={b.resultado >= 0 ? '3605' : '3610'} l={b.resultado >= 0 ? 'Utilidad del ejercicio' : 'Pérdida del ejercicio'} v={b.resultado} k="resultado" />
-            <L l="Total patrimonio" v={b.patrimonio} k="tot" />
-            <L l="Total pasivo y patrimonio" v={b.pasivo + b.patrimonio} k="tot" />
+            <L l="Total patrimonio" v={patrimonio} k="tot" />
+            <L l="Total pasivo y patrimonio" v={b.pasivo + patrimonio} k="tot" />
           </tbody></table>
         </section>
       </div>
-      {!b.cuadra && <p className="err-text" style={{ marginTop: 12 }}>El balance no cuadra. Revisa movimientos de aporte o reembolso marcados como Cuenta de Relevo.</p>}
+      {Math.round(activo) !== Math.round(b.pasivo + patrimonio) && <p className="err-text" style={{ marginTop: 12 }}>El balance no cuadra. Revisa movimientos de aporte o reembolso.</p>}
     </>
   );
 }
