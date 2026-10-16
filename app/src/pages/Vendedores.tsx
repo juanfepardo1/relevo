@@ -30,7 +30,7 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
   const rows = useMemo(() => {
     const s = buscar.trim().toLowerCase();
     let r = (q.data || []).filter((v: Row) =>
-      (etapa === 'todos' || (etapa === 'activos' ? !['cerrado', 'perdido'].includes(v.etapa) : v.etapa === etapa)) &&
+      (etapa === 'todos' || (etapa === 'activos' ? !['cerrado', 'perdido', 'en_reserva'].includes(v.etapa) : v.etapa === etapa)) &&
       (mios ? v.responsable === yo?.email : (!resp || (resp === 'sin' ? !v.responsable : v.responsable === resp))) &&
       (!sector || v.sector === sector) && (!bucket || v.bucket === bucket) &&
       (!s || [v.nombre, v.empresa, v.ciudad, v.correo, v.celular].some((x) => String(x || '').toLowerCase().includes(s))));

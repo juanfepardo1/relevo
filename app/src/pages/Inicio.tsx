@@ -23,7 +23,7 @@ export default function Inicio() {
   const subs = useQuery(() => supabase.from('suscripciones').select('id,nombre,monto,proxima_renovacion').eq('estado', 'activa').order('proxima_renovacion'));
   const renuevan = ((subs.data || []) as Row[]).filter((s) => faltan(s.proxima_renovacion) <= 7);
 
-  const activos = (v.data || []).filter((x: Row) => !['cerrado', 'perdido'].includes(x.etapa));
+  const activos = (v.data || []).filter((x: Row) => !['cerrado', 'perdido', 'en_reserva'].includes(x.etapa));
   const enValoracion = activos.filter((x: Row) => x.fase === 'Valoración').length;
   const hace7 = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
   const nuevos = (v.data || []).filter((x: Row) => x.fecha_ingreso >= hace7).length;
