@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Plus, Eye, DownloadSimple, UploadSimple, Trash, CheckCircle, Circle } from '@phosphor-icons/react';
+import { Plus, Copy, Eye, DownloadSimple, UploadSimple, Trash, CheckCircle, Circle } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
 import { useQuery, useCatalogo } from '../lib/data';
 import { fecha, hoy } from '../lib/format';
@@ -13,6 +13,8 @@ const TIPOS: { k: string; l: string; d: string }[] = [
   { k: 'cedula_rl', l: 'Cédula del representante legal', d: 'Copia por ambas caras' },
   { k: 'cert_bancaria', l: 'Certificación bancaria', d: 'Cuenta de Relevo' },
 ];
+
+const DATOS: [string, string][] = [['Razón social', 'Relevo Brokers S.A.S'], ['NIT', '902117149-4']];
 
 const limpio = (n: string) => n.replace(/[^\w.\-]+/g, '_');
 
@@ -62,6 +64,13 @@ export default function Empresa() {
       <div className="head">
         <div><h1>Empresa</h1><p>Documentos legales de Relevo para consultarlos y descargarlos cuando los pidan.</p></div>
         <button className="btn primary" onClick={() => setSubir({ tipo: 'otro' })}><Plus className="ic" />Otro documento</button>
+      </div>
+      <div className="emp-datos">
+        {DATOS.map(([l, v]) => (
+          <button key={l} type="button" className="emp-dato" title="Copiar" onClick={() => navigator.clipboard.writeText(v).then(() => toast(l + ' copiado'))}>
+            <span>{l}</span><b className={l === 'NIT' ? 'num' : ''}>{v}</b><Copy className="ic" />
+          </button>
+        ))}
       </div>
       {q.error ? <ErrorBox msg={q.error} retry={q.reload} /> : q.loading ? <div className="panel"><Skeleton rows={6} /></div> : (
         <>
