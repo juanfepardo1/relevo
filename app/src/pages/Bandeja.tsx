@@ -56,10 +56,10 @@ export default function Bandeja() {
                       {l.otros_envios > 0 && <span className="b warn" style={{ marginRight: 4 }}>Envió {l.otros_envios + 1} veces</span>}
                       {l.sales_range === 'lt1000' && <span className="b err">Muy pequeña</span>}
                     </td>
-                    <td className="r" style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                    <td className="r"><div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                       <button className="btn" disabled={busy === l.id} onClick={() => descartar(l)}><X className="ic" />Descartar</button>
                       <button className="btn primary" disabled={busy === l.id} onClick={() => aprobar(l)}><Check className="ic" />Aprobar</button>
-                    </td>
+                    </div></td>
                   </tr>
                 );
               })}

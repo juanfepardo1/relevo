@@ -207,6 +207,29 @@ dialog.m footer{display:flex;justify-content:flex-end;gap:8px;padding-top:6px}
 .col>header .tag{background:none;padding-left:0}
 .card{border-left:3px solid var(--t-dot,var(--line))}
 
+
+/* ficha meta */
+.ficha-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.meta-chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;color:var(--ink);background:#fff;border:1px solid var(--line-2);border-radius:999px;padding:3px 10px}
+.meta-chip .ic{width:14px;height:14px;color:var(--orange)}
+
+/* finanzas */
+.mov-form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:14px 16px;margin-bottom:16px}
+.mov-form label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--ink-3);min-width:130px}
+.mov-form label.grow{flex:1 1 220px}
+.mov-form .btn{min-height:34px}
+.num.pos,.pos{color:var(--ok)}.num.neg,.neg{color:var(--err)}
+.fin-t td,.fin-t th{white-space:nowrap}
+.fin-t tbody tr{cursor:default}
+.fin-t tr.tot td{font-weight:600;border-top:1px solid var(--line-2);background:var(--raise)}
+.fin-t tr.resultado td{font-weight:700;font-size:14.5px;border-top:2px solid var(--line-3)}
+.report>header p{margin:0}
+@media print{
+  .side,.no-print,.toast,.head .btn{display:none!important}
+  .shell{display:block}.main{overflow:visible}.page{padding:0;max-width:none}
+  body{background:#fff}.panel,.tablewrap,.kpis{border-color:#ccd;break-inside:avoid}
+}
+
 @media (max-width:1100px){.grid-ficha{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:800px){
   .shell{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;padding:10px}

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CaretLeft, WhatsappLogo, Envelope } from '@phosphor-icons/react';
+import { CaretLeft, WhatsappLogo, Envelope, MapPin } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
 import { useQuery, useCatalogo, guardar } from '../lib/data';
-import { SECTORES, VENTAS, HORIZONTE, MOTIVO_VENTA, MOTIVO_PERDIDA, VALORACION, CANAL } from '../lib/catalogos';
+import { SECTORES, VENTAS, HORIZONTE, MOTIVO_VENTA, MOTIVO_PERDIDA, VALORACION, CANAL, label } from '../lib/catalogos';
 import { millones, fecha, waLink } from '../lib/format';
 import { tonoBucket } from '../lib/colores';
 import { Field, Skeleton, ErrorBox, Dias, useToast } from '../components/ui';
@@ -27,7 +27,12 @@ export default function VendedorFicha() {
       <div className="head">
         <div>
           <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}>{v.empresa || v.nombre}{v.bucket && <span className={'tag plain ' + tonoBucket(v.bucket)}>Bucket {v.bucket}</span>}</h1>
-          <p>{[v.empresa ? v.nombre : null, v.ciudad, `ingresó ${fecha(v.fecha_ingreso, true)}`].filter(Boolean).join(' · ')}</p>
+          <p>{[v.empresa ? v.nombre : null, `ingresó ${fecha(v.fecha_ingreso, true)}`].filter(Boolean).join(' · ')}</p>
+          <div className="ficha-meta">
+            <span className="meta-chip"><MapPin className="ic" weight="fill" />{v.ciudad || 'Ciudad sin dato'}</span>
+            {v.sector && <span className="meta-chip">{label(SECTORES, v.sector)}</span>}
+            {v.ventas_rango && <span className="meta-chip">Ventas {label(VENTAS, v.ventas_rango)}</span>}
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <Stepper pipeline="vendedor" actual={v.etapa} onChange={save('etapa')} />

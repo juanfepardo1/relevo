@@ -14,6 +14,8 @@ import Compradores from './pages/Compradores';
 import CompradorFicha from './pages/CompradorFicha';
 import Stats from './pages/Stats';
 import Bandeja from './pages/Bandeja';
+import Finanzas from './pages/Finanzas';
+import Suscripciones from './pages/Suscripciones';
 import './styles.css';
 
 function App() {
@@ -46,6 +48,8 @@ function App() {
           <Route path="compradores/:id" element={<CompradorFicha />} />
           <Route path="stats" element={<Stats />} />
           <Route path="bandeja" element={<Bandeja />} />
+          <Route path="finanzas" element={<Finanzas />} />
+          <Route path="suscripciones" element={<Suscripciones />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

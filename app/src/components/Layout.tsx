@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { House, Tray, Storefront, MagnifyingGlass, ChartBar, SignOut } from '@phosphor-icons/react';
+import { House, Tray, Storefront, MagnifyingGlass, ChartBar, SignOut, Wallet, CreditCard } from '@phosphor-icons/react';
 import { supabase } from '../lib/supabase';
 import { useCatalogo } from '../lib/data';
 
@@ -19,6 +19,8 @@ export default function Layout({ email }: { email: string }) {
           <NavLink to="/vendedores"><Storefront className="ic" />Vendedores</NavLink>
           <NavLink to="/compradores"><MagnifyingGlass className="ic" />Compradores</NavLink>
           <NavLink to="/stats"><ChartBar className="ic" />Embudo</NavLink>
+          <NavLink to="/finanzas"><Wallet className="ic" />Finanzas</NavLink>
+          <NavLink to="/suscripciones"><CreditCard className="ic" />Suscripciones</NavLink>
         </nav>
         <div className="me">
           <span>{yo}</span>
