@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowDown, ArrowUp, ChatCircle, Envelope, FileText, Note, Phone, Plus, Users, Paperclip, Check, ArrowSquareOut, FilePlus, UploadSimple, CaretRight } from '@phosphor-icons/react';
+import { ArrowDown, ArrowUp, ChatCircle, Envelope, FileText, Note, Phone, Plus, Users, Paperclip, Check, ArrowSquareOut, FilePlus, UploadSimple, CaretRight, DownloadSimple } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
 import { useQuery, useCatalogo } from '../lib/data';
 import { TIPO_DOC, ESTADO_DOC, TIPO_ACTIVIDAD, label } from '../lib/catalogos';
@@ -78,6 +78,13 @@ export function DocumentosPanel({ entidad, id }: { entidad: Ent; id: string }) {
     window.open(data.signedUrl, '_blank', 'noopener');
   };
 
+  const descargar = async (d: Row) => {
+    const nombre = String(d.archivo_path).split('/').pop()?.replace(/^\d+-/, '') || 'documento';
+    const { data, error } = await supabase.storage.from('documentos').createSignedUrl(d.archivo_path, 120, { download: nombre });
+    if (error) return toast('No se pudo descargar: ' + error.message, true);
+    window.location.assign(data.signedUrl);
+  };
+
   const fila = (d: Row) => {
     const atraso = d.estado === 'solicitado' ? diasDesde(d.solicitado_en) : null;
     const pend = d.estado === 'solicitado' || d.estado === 'pendiente';
@@ -97,6 +104,7 @@ export function DocumentosPanel({ entidad, id }: { entidad: Ent; id: string }) {
             {label(ESTADO_DOC, d.estado)}{atraso != null ? ` · ${atraso} d` : ''}
           </span>
           {(d.archivo_path || d.url) && <button className="btn ghost" title="Abrir" onClick={() => abrir(d)}><ArrowSquareOut className="ic" /></button>}
+          {d.archivo_path && <button className="btn ghost" title="Descargar" aria-label="Descargar" onClick={() => descargar(d)}><DownloadSimple className="ic" /></button>}
           {pend && <button className="btn ghost" title={d.direccion === 'recibir' ? 'Marcar recibido' : 'Marcar enviado'} onClick={() => marcar(d)}><Check className="ic" /></button>}
         </div>
       </div>
