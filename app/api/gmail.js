@@ -91,7 +91,10 @@ export default async function handler(req, res) {
 
   const raw = process.env.GOOGLE_SERVICE_ACCOUNT;
   const federado = !!(process.env.GCP_PROJECT_NUMBER && process.env.GCP_SERVICE_ACCOUNT_EMAIL);
-  if (!raw && !federado) return res.status(200).json({ configurado: false, error: 'Falta conectar Gmail (variables GCP_PROJECT_NUMBER y GCP_SERVICE_ACCOUNT_EMAIL en Vercel).' });
+  // Diagnóstico sin valores: qué variables ve esta versión publicada
+  const diag = { vars: Object.keys(process.env).filter((k) => /^(GCP_|GOOGLE_)/.test(k)).sort(), ambiente: process.env.VERCEL_ENV, version: (process.env.VERCEL_GIT_COMMIT_SHA || '').slice(0, 7), oidc: !!(req.headers['x-vercel-oidc-token'] || process.env.VERCEL_OIDC_TOKEN) };
+  console.log('gmail diag', JSON.stringify(diag));
+  if (!raw && !federado) return res.status(200).json({ configurado: false, diag, error: `Falta conectar Gmail. Esta versión (${diag.version}, ${diag.ambiente}) ve estas variables: ${diag.vars.join(', ') || 'ninguna GCP_ ni GOOGLE_'}.` });
   let sa = null;
   if (raw) { try { sa = JSON.parse(raw); } catch { return res.status(500).json({ configurado: false, error: 'La variable GOOGLE_SERVICE_ACCOUNT no es el JSON de la llave.' }); } }
 
