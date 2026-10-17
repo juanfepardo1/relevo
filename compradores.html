@@ -62,14 +62,14 @@ nav{display:flex;align-items:center;gap:32px;height:68px}
 .hero{position:relative;isolation:isolate;overflow:hidden}
 .hero{background:radial-gradient(1200px 520px at 78% 18%,#3a649d 0%,rgba(58,100,157,0) 60%),linear-gradient(180deg,#2c5186 0%,var(--bg) 100%)}
 .skyline-box{overflow:hidden;display:flex;justify-content:center;pointer-events:none;user-select:none}
-.skyline{width:min(1640px,100%);margin:-30px auto -2px;position:relative;z-index:0}
+.skyline{width:min(1640px,100%);margin:-70px auto -2px;position:relative;z-index:0}
 .skyline img{display:block;width:100%;height:auto}
 @media (max-width:620px){.skyline{width:900px;flex:none}}
 @media (prefers-reduced-motion:no-preference){
   .js .skyline img{clip-path:inset(0 100% 0 0);transition:clip-path 2.6s cubic-bezier(.65,0,.35,1) .2s}
   .js .skyline.in img{clip-path:inset(0 0 0 0)}
 }
-.hero-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:64px;align-items:center;padding-block:96px 24px;position:relative;z-index:1}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:64px;align-items:center;padding-block:56px 0;position:relative;z-index:1}
 .hero h1{font-size:clamp(36px,3.6vw,50px);line-height:1.04;letter-spacing:-.04em}
 .hero h1 span{color:var(--ink-3);display:block}
 .hero h1 .l1{font-weight:inherit;white-space:nowrap}
@@ -330,7 +330,7 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
         <figcaption class="t-foot"><svg class="ic"><use href="#i-lock-key"/></svg><span>Razón social <span class="redact" aria-hidden="true"></span> visible tras la firma</span></figcaption>
       </figure>
     </div>
-    <div class="skyline-box" aria-hidden="true"><div class="skyline" id="skyline"><img src="/img/linea-puerto.webp" srcset="/img/linea-puerto-900.webp 900w, /img/linea-puerto.webp 1774w" sizes="100vw" width="1774" height="505" alt=""></div></div>
+    <div class="skyline-box" aria-hidden="true"><div class="skyline" id="skyline"><img src="/img/distrito-financiero.svg" width="1774" height="505" alt=""></div></div>
   </section>
 
   <section class="s" id="como">
