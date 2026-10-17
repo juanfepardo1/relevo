@@ -19,7 +19,7 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
   const q = useQuery(() => supabase.from('v_vendedores').select('*').order('fecha_ingreso', { ascending: false }));
   const [vista, setVista] = useState<'tabla' | 'pipeline'>(() => (localStorage.getItem('v-vista') as any) || 'tabla');
   const [buscar, setBuscar] = useState('');
-  const [etapa, setEtapa] = useState('activos');
+  const [etapa, setEtapa] = useState('todos');
   const [resp, setResp] = useState('');
   const [sector, setSector] = useState('');
   const [bucket, setBucket] = useState('');
@@ -30,7 +30,7 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
   const rows = useMemo(() => {
     const s = buscar.trim().toLowerCase();
     let r = (q.data || []).filter((v: Row) =>
-      (etapa === 'todos' || (etapa === 'activos' ? !['cerrado', 'perdido', 'en_reserva'].includes(v.etapa) : v.etapa === etapa)) &&
+      (etapa === 'todos' || v.etapa === etapa) &&
       (mios ? v.responsable === yo?.email : (!resp || (resp === 'sin' ? !v.responsable : v.responsable === resp))) &&
       (!sector || v.sector === sector) && (!bucket || v.bucket === bucket) &&
       (!s || [v.nombre, v.empresa, v.ciudad, v.correo, v.celular].some((x) => String(x || '').toLowerCase().includes(s))));
@@ -66,7 +66,7 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
       <div className="toolbar">
         <input className="in" type="search" placeholder="Buscar nombre, empresa, ciudad" value={buscar} onChange={(e) => setBuscar(e.target.value)} />
         <select className="sel" value={etapa} onChange={(e) => setEtapa(e.target.value)} aria-label="Etapa">
-          <option value="activos">Activos</option><option value="todos">Todos</option>
+          <option value="todos">Todas las etapas</option>
           {etapas.map((e) => <option key={e.codigo} value={e.codigo}>{e.nombre}</option>)}
         </select>
         {!mios && <select className="sel" value={resp} onChange={(e) => setResp(e.target.value)} aria-label="Responsable">
@@ -104,7 +104,7 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
           </table>
         </div>
       ) : (
-        <Pipeline rows={rows} etapas={etapas.filter((e) => etapa !== 'activos' || !e.terminal)} onOpen={(id) => nav(`/vendedores/${id}`)} onMove={mover} />
+        <Pipeline rows={rows} etapas={etapas} onOpen={(id) => nav(`/vendedores/${id}`)} onMove={mover} />
       )}
 
       <Modal open={nuevo} onClose={() => setNuevo(false)} title="Nuevo vendedor">

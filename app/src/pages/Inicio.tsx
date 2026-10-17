@@ -22,7 +22,7 @@ export default function Inicio() {
   const subs = useQuery(() => supabase.from('suscripciones').select('id,nombre,monto,proxima_renovacion').eq('estado', 'activa').order('proxima_renovacion'));
   const renuevan = ((subs.data || []) as Row[]).filter((s) => faltan(s.proxima_renovacion) <= 7);
 
-  const activos = (v.data || []).filter((x: Row) => !['cerrado', 'perdido', 'en_reserva'].includes(x.etapa));
+  const activos = (v.data || []) as Row[];
   const enValoracion = activos.filter((x: Row) => x.fase === 'Valoración').length;
   const hace7 = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
   const nuevos = (v.data || []).filter((x: Row) => x.fecha_ingreso >= hace7).length;
@@ -34,7 +34,7 @@ export default function Inicio() {
     <div className="page">
       <div className="head"><div><h1>Inicio</h1><p>Lo que hay que mover hoy.</p></div><BotonNota /></div>
       <dl className="kpis">
-        <div><dt>Vendedores activos</dt><dd className="num">{v.loading ? '·' : activos.length}</dd></div>
+        <div><dt>Vendedores</dt><dd className="num">{v.loading ? '·' : activos.length}</dd></div>
         <div><dt>En valoración</dt><dd className="num">{v.loading ? '·' : enValoracion}</dd></div>
         <div><dt>Compradores registrados</dt><dd className="num">{c.loading ? '·' : registrados}</dd></div>
         <div><dt>Vendedores nuevos, 7 días</dt><dd className="num">{v.loading ? '·' : nuevos}</dd></div>

@@ -114,10 +114,10 @@ function Datos() {
   const m = useQuery(() => supabase.from('movimientos').select('id,tipo,soporte_path'));
   const b = useQuery(() => supabase.from('v_bandeja').select('id'));
   const items = useMemo(() => {
-    const V = ((v.data || []) as Row[]).filter((x) => !['cerrado', 'perdido', 'en_reserva'].includes(x.etapa));
+    const V = (v.data || []) as Row[];
     const M = (m.data || []) as Row[];
     return [
-      { t: 'Vendedores activos sin responsable', n: V.filter((x) => !x.responsable).length, ir: '/vendedores' },
+      { t: 'Vendedores sin responsable', n: V.filter((x) => !x.responsable).length, ir: '/vendedores' },
       { t: 'Vendedores sin bucket (sin ventas)', n: V.filter((x) => !x.bucket).length, ir: '/vendedores' },
       { t: 'Vendedores sin correo ni celular', n: V.filter((x) => !x.correo && !x.celular).length, ir: '/vendedores' },
       { t: 'Vendedores sin sector o ciudad', n: V.filter((x) => !x.sector || !x.ciudad).length, ir: '/vendedores' },
