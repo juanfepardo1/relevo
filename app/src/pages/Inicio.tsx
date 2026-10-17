@@ -149,7 +149,7 @@ export default function Inicio() {
 
       <div className="grid-inicio">
         <section className="panel dia">
-          <div className="dia-nueva"><NuevaTarea onCreada={recargar} /></div>
+          <header className="dia-cab"><h2>Tu día</h2><NuevaTarea onCreada={recargar} /></header>
           {mias.error || av.error ? <ErrorBox msg={(mias.error || av.error)!} retry={recargar} /> : cargando ? <Skeleton rows={5} /> : (
             <div className="dia-cuerpo">
               {nada && !hechas.length && <p className="vacio">Nada pendiente. Escribe arriba lo próximo que tienes que hacer.</p>}
