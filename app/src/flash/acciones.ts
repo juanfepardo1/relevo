@@ -9,6 +9,10 @@ type Draft = { made: boolean; url?: string; skip?: string; error?: string };
 const blobToBase64 = (blob: Blob) => new Promise<string>((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = rej; fr.readAsDataURL(blob); });
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 
+async function yo() { const { data } = await supabase.auth.getSession(); return data.session?.user.email?.toLowerCase() ?? null; }
+/** Quien usa la herramienta de valoración con un lead queda como su responsable. */
+async function tomar(id: string) { const e = await yo(); if (e) await supabase.from('vendedores').update({ responsable: e }).eq('id', id); }
+
 async function token() { const { data } = await supabase.auth.getSession(); return data.session?.access_token ?? ''; }
 
 /** Estado de la conexión con Gmail: prueba la autorización sin crear nada. */
@@ -41,6 +45,7 @@ export async function crearBorrador(L: Lead, asunto: string, cuerpo: string, de:
   });
   const j = await r.json().catch(() => ({}));
   if (!j.ok) return { made: false, error: j.error || `Error ${r.status}` };
+  await tomar(L.id);
   return { made: true, url: j.url };
 }
 
@@ -76,6 +81,7 @@ export async function valorarYGuardar(A: Supuestos, L: Lead, op: Opciones): Prom
 
   op.say('actualizando la ficha…');
   await must(supabase.from('vendedores').update({
+    responsable: (await yo()) ?? undefined,
     etapa: 'en_reserva', valoracion_tipo: 'flash', valoracion_min: r.lo * 1e6, valoracion_max: r.hi * 1e6, valoracion_fecha: hoy(),
     flash_enviado_en: null,
     flash_subsector: L.subsector || null, flash_subtipo: L.subtipo || 0, flash_mult: L.multManual ? Number(L.multManual.replace(',', '.')) : null,
@@ -98,6 +104,7 @@ export async function borradorDeValorado(A: Supuestos, L: Lead, de: Remitente, a
 /** Marca como enviada la valoración (o el mensaje de "empresa muy pequeña"). */
 export async function marcarEnviado(L: Lead, tipo: 'flash' | 'fuera') {
   const d = hoy();
+  await tomar(L.id);
   if (tipo === 'fuera') {
     await must(supabase.from('vendedores').update({ etapa: 'perdido', motivo_perdida: 'muy_pequena', ultimo_contacto: d }).eq('id', L.id));
     await supabase.from('actividades').insert({ vendedor_id: L.id, tipo: L.canal === 'Correo' ? 'correo' : 'whatsapp', resumen: 'Se envió el mensaje de empresa muy pequeña (ventas bajo el piso).' });
