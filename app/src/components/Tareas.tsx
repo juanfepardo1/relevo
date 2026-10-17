@@ -5,6 +5,7 @@ import { supabase, must, type Row } from '../lib/supabase';
 import { useCatalogo, useQuery } from '../lib/data';
 import { fecha, hoy } from '../lib/format';
 import { useToast, Skeleton } from './ui';
+import { tonoPersona } from '../lib/colores';
 
 /** Tareas y recordatorios (tabla `tareas`). Una tarea con fecha funciona como recordatorio. */
 
@@ -29,33 +30,54 @@ export function cuando(f: string | null): { txt: string; tono: '' | 'err' | 'war
   return { txt: fecha(f), tono: '' };
 }
 
+const enDias = (n: number) => new Date(Date.now() + n * 864e5).toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+
 export function NuevaTarea({ vendedorId, onCreada, compacta }: { vendedorId?: string; onCreada: () => void; compacta?: boolean }) {
   const { yo } = useCatalogo();
   const asignables = useAsignables();
   const toast = useToast();
   const [titulo, setTitulo] = useState('');
+  const [cuandoSel, setCuandoSel] = useState<'' | 'hoy' | 'manana' | 'otra'>('');
   const [f, setF] = useState('');
   const [para, setPara] = useState('');
   const [busy, setBusy] = useState(false);
   const asignado = para || yo?.email || '';
+  const fecha = cuandoSel === 'hoy' ? hoy() : cuandoSel === 'manana' ? enDias(1) : cuandoSel === 'otra' ? f : '';
 
   const crear = async (e: FormEvent) => {
     e.preventDefault(); if (!titulo.trim()) return; setBusy(true);
     try {
-      await must(supabase.from('tareas').insert({ titulo: titulo.trim(), fecha: f || null, asignado, vendedor_id: vendedorId ?? null }));
-      setTitulo(''); setF(''); setPara(''); onCreada();
+      await must(supabase.from('tareas').insert({ titulo: titulo.trim(), fecha: fecha || null, asignado, vendedor_id: vendedorId ?? null }));
+      setTitulo(''); setCuandoSel(''); setF(''); setPara(''); onCreada();
     } catch (err: any) { toast(err.message, true); }
     setBusy(false);
   };
+  const chip = (v: typeof cuandoSel, t: string) => <button type="button" className={'chip' + (cuandoSel === v ? ' on' : '')} onClick={() => setCuandoSel(v)}>{t}</button>;
 
   return (
     <form onSubmit={crear} className={'tarea-nueva' + (compacta ? ' compacta' : '')}>
-      <input className="in" value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder={vendedorId ? 'Qué hay que hacer con este cliente' : 'Agregar tarea o recordatorio'} aria-label="Tarea" />
-      <input className="in" type="date" value={f} onChange={(e) => setF(e.target.value)} aria-label="Fecha" title="Fecha (opcional). Con fecha, aparece como recordatorio ese día." />
-      <select className="sel" value={asignado} onChange={(e) => setPara(e.target.value)} aria-label="Para quién">
-        {asignables.map((m) => <option key={m.email} value={m.email}>{m.email === yo?.email ? 'Para mí' : `Para ${m.apodo || m.nombre.split(' ')[0]}`}</option>)}
-      </select>
-      <button className="btn primary" disabled={busy || !titulo.trim()} aria-label="Agregar"><Plus className="ic" /></button>
+      <div className="tn-fila">
+        <Plus className="ic tn-ic" />
+        <input className="tn-in" value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder={vendedorId ? 'Qué hay que hacer con este cliente' : 'Agrega una tarea o recordatorio'} aria-label="Tarea" />
+        <button className="btn primary tn-ok" disabled={busy || !titulo.trim()}>Agregar</button>
+      </div>
+      {(titulo || compacta) && (
+        <div className="tn-opciones">
+          <span className="chips" role="group" aria-label="Cuándo">
+            {chip('', 'Sin fecha')}{chip('hoy', 'Hoy')}{chip('manana', 'Mañana')}{chip('otra', 'Otro día')}
+            {cuandoSel === 'otra' && <input className="in tn-fecha" type="date" value={f} min={hoy()} onChange={(e) => setF(e.target.value)} aria-label="Fecha" autoFocus />}
+          </span>
+          {asignables.length > 1 && (
+            <span className="chips" role="group" aria-label="Para quién">
+              {asignables.map((m) => (
+                <button type="button" key={m.email} className={'chip persona ' + tonoPersona(m.email) + (asignado === m.email ? ' on' : '')} onClick={() => setPara(m.email)}>
+                  {m.email === yo?.email ? 'Para mí' : `Para ${m.apodo || m.nombre.split(' ')[0]}`}
+                </button>
+              ))}
+            </span>
+          )}
+        </div>
+      )}
     </form>
   );
 }
@@ -81,17 +103,17 @@ export function TareaFila({ t, onCambio, mostrarCliente = true }: { t: Row; onCa
   };
 
   return (
-    <div className={'tarea' + (hecha ? ' hecha' : '')}>
+    <div className={'tarea' + (hecha ? ' hecha' : '') + (!hecha && c.tono === 'err' ? ' nivel-urgente' : !hecha && c.tono === 'warn' ? ' nivel-hoy' : '')}>
       <button className="check" onClick={marcar} disabled={busy} aria-label={hecha ? 'Marcar pendiente' : 'Marcar hecha'}>{hecha && <Check weight="bold" />}</button>
       <div className="tarea-txt">
         <span>{t.titulo}</span>
         <span className="meta">
           {mostrarCliente && t.vendedor && <Link to={`/vendedores/${t.vendedor_id}`}>{t.vendedor.empresa || t.vendedor.nombre}</Link>}
-          {deOtro && <span className="b or">De {apodo(equipo, t.creador)}</span>}
-          {paraOtro && <span className="b bl">Para {apodo(equipo, t.asignado)}</span>}
+          {deOtro && <span className={'tag ' + tonoPersona(t.creador)}>De {apodo(equipo, t.creador)}</span>}
+          {paraOtro && <span className={'tag ' + tonoPersona(t.asignado)}>Para {apodo(equipo, t.asignado)}</span>}
         </span>
       </div>
-      {c.txt && !hecha && <span className={'b ' + c.tono}>{c.txt}</span>}
+      {c.txt && !hecha ? <span className={'cifra ' + (c.tono === 'err' ? 'urgente' : c.tono === 'warn' ? 'hoy' : '')}>{c.txt}</span> : <span />}
       <button className="btn ghost borrar" onClick={borrar} aria-label="Borrar"><Trash className="ic" /></button>
     </div>
   );

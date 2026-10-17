@@ -10,7 +10,7 @@ export type TipoAviso = 'no_contactado' | 'contactado' | 'reunion_fecha' | 'reun
 export type Aviso = {
   key: string; tipo: TipoAviso; accion: boolean; vendedorId?: string; reunionId?: string;
   titulo: string; detalle: string; tono: '' | 'warn' | 'err'; para: string | null; // null = todo el equipo
-  peso: number; n?: number;
+  peso: number; n?: number; etapa?: string; cifra?: string;
 };
 
 export const ETAPAS_CON_AVISO = ['no_contactado', 'contactado', 'reunion_agendada', 'reunion_hecha', 'nda_docs', 'val_profunda', 'val_completa'];
@@ -51,41 +51,42 @@ export async function cargarAvisos(): Promise<{ avisos: Aviso[]; noContactados: 
   for (const v of vend) {
     const d = desde.get(v.id);
     if (!d) continue;
-    const base = { vendedorId: v.id, titulo: nombre(v), para: v.responsable as string | null };
+    const base = { vendedorId: v.id, titulo: nombre(v), para: v.responsable as string | null, etapa: v.etapa as string };
     const hab = habilesDesde(d);
     switch (v.etapa) {
       case 'no_contactado':
         if (v.bucket === 'B') break; // los B los atiende Valoraciones por correo
         noContactados++;
-        if (hab >= 3) avisos.push({ ...base, key: 'nc' + v.id, tipo: 'no_contactado', accion: false, para: v.responsable ?? null, detalle: `Lleva ${plural(hab, 'día hábil', 'días hábiles')} sin contactar`, tono: hab >= 5 ? 'err' : 'warn', peso: 60 + hab });
+        if (hab >= 3) avisos.push({ ...base, key: 'nc' + v.id, tipo: 'no_contactado', accion: false, para: v.responsable ?? null, detalle: 'Nadie lo ha contactado', cifra: plural(hab, 'día hábil', 'días hábiles'), tono: hab >= 5 ? 'err' : 'warn', peso: 60 + hab });
         break;
       case 'contactado':
-        if (hab >= 3) avisos.push({ ...base, key: 'ct' + v.id, tipo: 'contactado', accion: false, detalle: `${plural(hab, 'día hábil', 'días hábiles')} en Contactado sin agendar reunión`, tono: hab >= 5 ? 'err' : 'warn', peso: 50 + hab });
+        if (hab >= 3) avisos.push({ ...base, key: 'ct' + v.id, tipo: 'contactado', accion: false, detalle: 'Contactado y sin reunión agendada', cifra: plural(hab, 'día hábil', 'días hábiles'), tono: hab >= 5 ? 'err' : 'warn', peso: 50 + hab });
         break;
       case 'reunion_agendada':
-        if (!v.reunion_en) avisos.push({ ...base, key: 'rf' + v.id, tipo: 'reunion_fecha', accion: true, detalle: '¿Para cuándo quedó la reunión?', tono: '', peso: 40 });
-        else if (new Date(v.reunion_en).getTime() < ahora) avisos.push({ ...base, key: 'rp' + v.id, tipo: 'reunion_paso', accion: true, detalle: 'Ya pasó la hora de la reunión. ¿Se hizo?', tono: 'warn', peso: 90 });
+        if (!v.reunion_en) avisos.push({ ...base, key: 'rf' + v.id, tipo: 'reunion_fecha', accion: true, detalle: '¿Para cuándo quedó la reunión?', cifra: 'Falta fecha', tono: 'warn', peso: 40 });
+        else if (new Date(v.reunion_en).getTime() < ahora) avisos.push({ ...base, key: 'rp' + v.id, tipo: 'reunion_paso', accion: true, detalle: 'Ya pasó la hora de la reunión. ¿Se hizo?', cifra: 'Confirmar', tono: 'warn', peso: 90 });
         break;
       case 'reunion_hecha': {
         const horas = (ahora - new Date(d).getTime()) / 36e5;
-        if (horas >= 48) avisos.push({ ...base, key: 'rh' + v.id, tipo: 'reunion_hecha', accion: false, detalle: `Reunión hecha hace ${plural(Math.floor(horas / 24), 'día')} sin enviar NDA y lista de documentos`, tono: 'err', peso: 85 });
+        if (horas >= 48) avisos.push({ ...base, key: 'rh' + v.id, tipo: 'reunion_hecha', accion: false, detalle: 'Falta enviar el NDA y la lista de documentos', cifra: `Hace ${plural(Math.floor(horas / 24), 'día')}`, tono: 'err', peso: 85 });
         break;
       }
       case 'nda_docs': {
         const hechos = recs.filter((r) => r.vendedor_id === v.id && r.fecha >= d).length;
         const e = estadoRecordatorios(hab, hechos);
-        if (e.reserva) avisos.push({ ...base, key: 'rs' + v.id, tipo: 'reserva', accion: true, detalle: `${plural(hab, 'día hábil', 'días hábiles')} y 3 recordatorios sin documentos. Pásalo a En reserva`, tono: 'err', peso: 70 });
-        else if (e.pendiente) avisos.push({ ...base, key: 'rd' + v.id + e.tocan, tipo: 'recordar_docs', accion: true, n: hechos + 1, detalle: `Recuérdale enviar los documentos (${hechos + 1} de 3). Lleva ${plural(hab, 'día hábil', 'días hábiles')}`, tono: hechos + 1 === 3 ? 'err' : 'warn', peso: 75 });
+        if (e.reserva) avisos.push({ ...base, key: 'rs' + v.id, tipo: 'reserva', accion: true, detalle: 'Tres recordatorios y no mandó documentos. Pásalo a En reserva', cifra: plural(hab, 'día hábil', 'días hábiles'), tono: 'err', peso: 70 });
+        else if (e.pendiente) avisos.push({ ...base, key: 'rd' + v.id + e.tocan, tipo: 'recordar_docs', accion: true, n: hechos + 1, detalle: `Recuérdale enviar los documentos. Lleva ${plural(hab, 'día hábil', 'días hábiles')}`, cifra: `Recordatorio ${hechos + 1} de 3`, tono: hechos + 1 === 3 ? 'err' : 'warn', peso: 75 });
         break;
       }
       case 'val_profunda': {
-        const s = escalonValoracion(diasDesde(d));
-        if (s) avisos.push({ ...base, key: 'vp' + v.id, tipo: 'valoracion', accion: false, detalle: `Valoración: ${s.texto}`, tono: s.tono, peso: s.tono === 'err' ? 95 : s.tono === 'warn' ? 65 : 30 });
+        const dias = diasDesde(d);
+        const s = escalonValoracion(dias);
+        if (s) avisos.push({ ...base, key: 'vp' + v.id, tipo: 'valoracion', accion: false, detalle: s.texto, cifra: dias > PLAZO_VALORACION ? 'Vencida' : `Día ${dias} de ${PLAZO_VALORACION}`, tono: s.tono, peso: s.tono === 'err' ? 95 : s.tono === 'warn' ? 65 : 30 });
         break;
       }
       case 'val_completa': {
         const dias = diasDesde(d);
-        if (dias > 7) avisos.push({ ...base, key: 'vc' + v.id, tipo: 'val_completa', accion: false, detalle: `Valoración completa hace ${dias} días y sin presentar`, tono: 'err', peso: 80 });
+        if (dias > 7) avisos.push({ ...base, key: 'vc' + v.id, tipo: 'val_completa', accion: false, detalle: 'Valoración lista y sin presentar al cliente', cifra: `Hace ${dias} días`, tono: 'err', peso: 80 });
         break;
       }
     }
@@ -93,7 +94,7 @@ export async function cargarAvisos(): Promise<{ avisos: Aviso[]; noContactados: 
 
   for (const r of sueltas) {
     avisos.push({ key: 'rv' + r.id, tipo: 'reunion_sin_vincular', accion: true, reunionId: r.id, titulo: r.invitado_nombre || r.invitado_email || 'Reunión de Calendly', para: r.organizador,
-      detalle: `Agendó por Calendly con un correo que no está en ningún vendedor (${r.invitado_email ?? 'sin correo'}). ¿De quién es?`, tono: 'warn', peso: 45 });
+      detalle: `Agendó por Calendly con ${r.invitado_email ?? 'un correo'}, que no está en ningún vendedor. ¿De quién es?`, cifra: 'Sin vincular', tono: 'warn', peso: 45 });
   }
 
   avisos.sort((a, b) => b.peso - a.peso);
