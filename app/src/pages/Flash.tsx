@@ -142,7 +142,7 @@ export default function Flash() {
         <div className="flash-grid">
           <div className="flash-trays">
             {GRUPOS.map(({ k, t, tono }) => (
-              <details key={k} className="panel flash-tray" open={k !== 'enviados' && k !== 'fuera' ? true : grupos[k].length > 0 && k === 'fuera'}>
+              <details key={k} className="panel flash-tray">
                 <summary><span className={'dot ' + tono} />{t}<span className="muted num">{grupos[k].length}</span><CaretDown className="ic caret" /></summary>
                 {!grupos[k].length ? <p className="empty-state">{k === 'flash' ? 'Nada listo por ahora.' : 'Nada aquí.'}</p> : (
                   <ul>
@@ -160,7 +160,6 @@ export default function Flash() {
                 )}
               </details>
             ))}
-            <Supuestos A={A} onSaved={aq.reload} />
           </div>
 
           {sel ? <Ficha key={sel.id} L={sel} setL={setSel} A={A} grupo={grupoDe(sel.id)} de={de} gmailOk={gmail.estado === 'ok'} envioOk={!!gmail.envio} ocupado={lote.corriendo} onDone={recargar} toast={toast} reboto={rebotes.get(sel.id) ?? null} />
@@ -342,7 +341,7 @@ function Ficha({ L, setL, A, grupo, de, gmailOk, envioOk, ocupado, onDone, toast
   );
 }
 
-function Supuestos({ A, onSaved }: { A: Supuestos; onSaved: () => void }) {
+export function Supuestos({ A, onSaved }: { A: Supuestos; onSaved: () => void }) {
   const toast = useToast();
   const [draft, setDraft] = useState<Supuestos>(A);
   useEffect(() => setDraft(A), [A]);
@@ -356,7 +355,7 @@ function Supuestos({ A, onSaved }: { A: Supuestos; onSaved: () => void }) {
   };
   const campo = (v: number, on: (x: number) => void, d = 1) => <input className="in num" defaultValue={dec(v, d)} key={v} onBlur={(e) => { const x = num(e.target.value); if (isFinite(x) && x !== v) on(x); }} />;
   return (
-    <details className="panel flash-tray flash-sup">
+    <details className="panel flash-tray flash-sup" open>
       <summary><span className="dot tone-nuevo" />Supuestos (iguales para los dos)<CaretDown className="ic caret" /></summary>
       <div className="body">
         <h3>Múltiplo por tamaño de EBITDA (M)</h3>

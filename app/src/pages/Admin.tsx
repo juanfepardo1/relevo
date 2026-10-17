@@ -7,23 +7,28 @@ import { label } from '../lib/catalogos';
 import { fechaHora } from '../lib/format';
 import { Skeleton, ErrorBox, useToast } from '../components/ui';
 import { TIPO_NOTA } from '../components/Nota';
+import { Supuestos } from './Flash';
+import { mezclar } from '../flash/motor';
 
 const ESTADO_NOTA: [string, string][] = [['nueva', 'Nueva'], ['en_curso', 'En curso'], ['resuelta', 'Resuelta'], ['descartada', 'Descartada']];
 const TONO_TIPO: Record<string, string> = { falla: 'tone-perdido', falta: 'tone-captacion', sobra: 'tone-nuevo', idea: 'tone-valoracion' };
-type Vista = 'notas' | 'equipo' | 'datos' | 'metas';
+type Vista = 'notas' | 'equipo' | 'datos' | 'metas' | 'valoracion';
 
 export default function Admin() {
   const { yo } = useCatalogo();
-  const [vista, setVista] = useState<Vista>('notas');
-  if (yo && !yo.es_admin) return <Navigate to="/" replace />;
+  const admin = !!yo?.es_admin;
+  const [vista, setVista] = useState<Vista>(admin ? 'notas' : 'valoracion');
+  // Los socios (Alejo es dueño de la metodología flash) entran solo a los supuestos de valoración
+  if (yo && !admin && !yo.socio) return <Navigate to="/" replace />;
+  const tabs = ([['notas', 'Notas de la app'], ['equipo', 'Equipo'], ['datos', 'Calidad de datos'], ['metas', 'Metas del embudo'], ['valoracion', 'Supuestos de valoración']] as [Vista, string][]).filter(([k]) => admin || k === 'valoracion');
   return (
     <div className="page">
-      <div className="head"><div><h1>Admin</h1><p>Solo lo ves tú.</p></div></div>
+      <div className="head"><div><h1>Admin</h1><p>{admin ? 'Configuración de la app.' : 'Supuestos de la valoración flash.'}</p></div></div>
       <div className="seg" role="tablist" style={{ marginBottom: 16 }}>
-        {([['notas', 'Notas de la app'], ['equipo', 'Equipo'], ['datos', 'Calidad de datos'], ['metas', 'Metas del embudo']] as [Vista, string][]).map(([k, l]) =>
+        {tabs.map(([k, l]) =>
           <button key={k} role="tab" aria-selected={vista === k} className={vista === k ? 'on' : ''} onClick={() => setVista(k)}>{l}</button>)}
       </div>
-      {vista === 'notas' ? <Notas /> : vista === 'equipo' ? <Equipo /> : vista === 'metas' ? <Metas /> : <Datos />}
+      {vista === 'valoracion' || !admin ? <SupuestosValoracion /> : vista === 'notas' ? <Notas /> : vista === 'equipo' ? <Equipo /> : vista === 'metas' ? <Metas /> : <Datos />}
     </div>
   );
 }
@@ -181,4 +186,13 @@ function Metas() {
       </section>
     </div>
   );
+}
+
+/** Supuestos de la valoración flash (múltiplos, márgenes por sector, ventas por tramo). Iguales para todo el equipo. */
+function SupuestosValoracion() {
+  const aq = useQuery(() => supabase.from('ajustes').select('valor').eq('clave', 'flash_supuestos').maybeSingle());
+  const A = useMemo(() => { try { return mezclar(JSON.parse((aq.data as Row | null)?.valor || '{}')); } catch { return mezclar(null); } }, [aq.data]);
+  if (aq.loading) return <div className="panel"><Skeleton rows={6} /></div>;
+  if (aq.error) return <ErrorBox msg={aq.error} retry={aq.reload} />;
+  return <div style={{ maxWidth: 820 }}><Supuestos A={A} onSaved={aq.reload} /></div>;
 }

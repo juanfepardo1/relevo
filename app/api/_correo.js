@@ -147,6 +147,7 @@ export function nombrePila(n) {
 
 /** Nombre de empresa presentable (sin S.A.S, sin mayúsculas sostenidas), o '' si no se ve confiable. */
 export function empresaLimpia(e){
+  if (String(e ?? '').includes('*')) return ''; // con * se dedujo del correo: no se usa frente al cliente
   let t = String(e ?? '').replace(/^[^\p{L}\p{N}]+/u, '').replace(/^PRUEBA\s+/i, '').replace(/\(.*?\)/g, '').replace(/[*]+/g, '').split(/[,;|]/)[0].trim();
   t = t.replace(/\s+(s\.?\s?a\.?\s?s\.?|s\.?\s?a\.?|ltda\.?|e\.?\s?u\.?|s\.?\s?en\s?c\.?|bic)\.?$/i, '').replace(/\s+(s\.?\s?a\.?\s?s\.?)$/i, '').trim();
   if (t.length < 3 || t.length > 60 || NO_EMPRESA.test(t) || /@|https?:|www\./i.test(t) || !/\p{L}/u.test(t)) return '';

@@ -27,7 +27,7 @@ Naranja #F47B3D, azul #2C5186, tinta #14243D, fondo claro #EAF1FA. App en fondo 
 - **CRM vendedores** (`Vendedores`, `VendedorFicha`): etapas en tabla `etapas` (pipeline vendedor). Filtro Activos/Todos (Activo = todo menos En reserva) y filtros de selección múltiple (`components/Multi.tsx`). "Próxima acción" se eliminó a propósito. La ficha tiene Otros contactos (tabla `personas`), documentos con descarga, NIT editable.
 - **Bandeja**: leads de la web (`v_bandeja`). Los de ventas < $1.000M no entran (les llega correo automático de rechazo desde hablaconrelevo.com, en `api/notify-lead.js` del proyecto web). Aprobar un B lo deja a cargo de Valoraciones.
 - **Buckets**: A 5.000 a 20.000M, B 1.000 a 5.000M, C < 1.000M, D > 20.000M.
-- **Valoración flash** (`pages/Flash.tsx`, `src/flash/`): solo bucket B, motor de Alejo (`motor.ts`). Alejo es dueño de la metodología: respetar lo que él decida.
+- **Valoración flash** (`pages/Flash.tsx`, `src/flash/`): solo bucket B, motor de Alejo (`motor.ts`). Alejo es dueño de la metodología: respetar lo que él decida. Los supuestos se editan en Admin → Supuestos de valoración (los socios entran a esa pestaña; el resto de Admin es solo para Felipe). Empresas con * (deducidas del correo) nunca se nombran frente al cliente: correo, PDF y formulario dicen "tu empresa".
   - Responsable de todos los B: el usuario "Valoraciones" (valoraciones@relevobrokers.com). Cuando alguien toma un caso ("Lo tomo" en Pidieron llamada) queda como responsable y el lead pasa a Contactado.
   - Etapas B: No contactado, luego "Val. flash enviada" (código `val_preliminar`), luego Contactado si toman el caso, o En reserva.
   - Los B se atienden solo por correo, desde valoraciones@, firmado "Equipo Relevo" (nunca con nombre personal).

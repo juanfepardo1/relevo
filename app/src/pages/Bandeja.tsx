@@ -7,6 +7,7 @@ import { VENTAS, HORIZONTE, label } from '../lib/catalogos';
 import { fechaHora } from '../lib/format';
 import { Skeleton, ErrorBox, useToast } from '../components/ui';
 import { tonoBucket } from '../lib/colores';
+import { revisarCorreo } from '../../api/_correo.js';
 
 const HORIZ: Record<string, string> = { 'En los próximos 6 meses': '6m', 'Entre 6 y 24 meses': '6_24m', 'Solo quiero saber cuánto vale': 'solo_valor' };
 const BUCKET: Record<string, string> = { '5000_10000': 'A', '10000_20000': 'A', '1000_2000': 'B', '2000_5000': 'B', '2000_3000': 'B', '3000_5000': 'B', lt1000: 'C', gt20000: 'D' };
@@ -44,6 +45,10 @@ export default function Bandeja() {
             <tbody>
               {!rows.length ? <tr><td colSpan={9}><p className="empty-state">Bandeja vacía. Los leads nuevos aparecen aquí.</p></td></tr> : rows.map((l) => {
                 const b = BUCKET[l.sales_range];
+                const rc = revisarCorreo(l.email);
+                const corregir = async (nuevo: string) => {
+                  try { await must(supabase.from('leads').update({ email: nuevo }).eq('id', l.id)); toast(`Correo corregido a ${nuevo}`); q.reload(); } catch (e: any) { toast(e.message, true); }
+                };
                 return (
                   <tr key={l.id} style={{ cursor: 'default' }}>
                     <td className="num soft">{fechaHora(l.created_at)}</td>
@@ -57,6 +62,8 @@ export default function Bandeja() {
                       {l.posible_duplicado && <span className="b warn" style={{ marginRight: 4 }}>Ya existe</span>}
                       {l.otros_envios > 0 && <span className="b warn" style={{ marginRight: 4 }}>Envió {l.otros_envios + 1} veces</span>}
                       {l.sales_range === 'lt1000' && <span className="b err">Muy pequeña</span>}
+                      {!rc.ok && <span className="b err" style={{ marginRight: 4 }} title={rc.motivo}>{l.email ? 'Correo mal escrito' : 'Sin correo'}</span>}
+                      {rc.sugerencia && <button className="linkish" style={{ fontSize: 12.5 }} onClick={() => corregir(rc.sugerencia!)}>Corregir a {rc.sugerencia}</button>}
                     </td>
                     <td className="r"><div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                       <button className="btn" disabled={busy === l.id} onClick={() => descartar(l)}><X className="ic" />Descartar</button>

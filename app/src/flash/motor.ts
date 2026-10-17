@@ -126,7 +126,9 @@ export function calcular(A: Supuestos, L: Lead) {
   const lo = roundLo(eLo * xLo), hi = Math.max(roundHi(eHi * xHi), roundLo(eLo * xLo) + (eHi * xHi < 2000 ? 50 : 100));
 
   const nombre = (L.empresa || '').trim();
-  const sinNombre = nombre === '' || BAD_NAMES.test(nombre) || DESCRIPTIVE.test(nombre);
+  // Con * la empresa se dedujo del correo: no se usa frente al cliente
+  const deducido = nombre.includes('*');
+  const sinNombre = nombre === '' || deducido || BAD_NAMES.test(nombre) || DESCRIPTIVE.test(nombre);
   const [bot, top] = TRAMO_TOPE[L.ventas] || [0, 0];
   const route: Ruta = top <= A.piso ? 'fuera' : bot >= A.umbral ? 'fuera_rango' : 'flash';
   const why = route === 'fuera' ? `Ventas menores a ${money(A.piso)} millones. Recibe solo el mensaje, sin valoración.`
@@ -134,7 +136,7 @@ export function calcular(A: Supuestos, L: Lead) {
     : `Ventas sobre ${money(A.umbral)} millones. No va por valoración flash.`;
 
   const flags: string[] = [];
-  if (route === 'flash' && sinNombre) flags.push(`El PDF va dirigido a "tu empresa" porque ${nombre === '' ? 'no dejó el nombre de la empresa' : 'el nombre no permite identificarla'}.`);
+  if (route === 'flash' && sinNombre) flags.push(`El PDF va dirigido a "tu empresa" porque ${nombre === '' ? 'no dejó el nombre de la empresa' : deducido ? 'el nombre se dedujo del correo (*)' : 'el nombre no permite identificarla'}.`);
   if (sec.alt && !L.subtipo && !L.subsector && L.sector !== 'Otro' && route === 'flash') flags.push(`El ajuste por sector supone "${sec.alt.base.toLowerCase()}". Si es ${sec.alt.label.toLowerCase()}, cámbialo en Tipo de negocio.`);
   const sectorGeneral = L.sector === 'Otro' && !L.subsector && !hasManual;
   const conservador: '' | 'sector' | 'ventas' = route === 'flash' && (sectorGeneral || lo < 300) ? (sectorGeneral ? 'sector' : 'ventas') : '';

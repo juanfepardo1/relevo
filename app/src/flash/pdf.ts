@@ -213,4 +213,8 @@ export async function generarPdf(pags: string[], calidad = 0.9): Promise<Blob> {
   } finally { fr.remove(); }
 }
 
-export const nombreArchivo = (L: Lead) => `Valoracion_flash_${(cleanName(L.empresa) || cleanName(L.nombre) || 'Lead').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 60) || 'Lead'}.pdf`;
+/** Nombre del PDF adjunto. Si la empresa tiene * (deducida del correo) se usa el nombre de la persona. */
+export const nombreArchivo = (L: Lead) => {
+  const base = ((L.empresa || '').includes('*') ? '' : cleanName(L.empresa)) || cleanName(L.nombre) || 'Lead';
+  return `Valoracion_flash_${base.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 60) || 'Lead'}.pdf`;
+};
