@@ -32,7 +32,7 @@ export function htmlCorreo(L: Lead, cuerpo: string, rango?: { lo: number; hi: nu
   const lo = rango?.lo ?? (L.min != null ? L.min / 1e6 : null), hi = rango?.hi ?? (L.max != null ? L.max / 1e6 : null);
   return correoDesdeTexto(cuerpo, {
     preheader: 'Tu valoración flash y el siguiente paso con Relevo.',
-    destacado: lo != null && hi != null ? { titulo: 'Tu valoración flash', valor: `$${money(lo)} a $${money(hi)} millones`, nota: 'El detalle está en el PDF adjunto.' } : undefined,
+    destacado: lo != null && hi != null ? { titulo: 'Tu valoración flash', valor: `${money(lo)} a ${money(hi)} millones`, nota: 'El detalle está en el PDF adjunto.' } : undefined,
     boton: 'Contar mi caso', notaBoton: '4 minutos · sin documentos · confidencial',
   });
 }
