@@ -79,7 +79,7 @@ export function correoFormulario(v, tipo) {
     invitacion: {
       asunto: 'Queremos darle continuidad a tu caso',
       pre: 'Más allá de tenerte en nuestra base, queremos acompañarte.',
-      p: [`Hace unos días te enviamos la valoración flash${de}. Queremos darle continuidad a tu caso: más allá de tenerte en nuestra base, queremos entender tu situación para acompañarte en lo que sigue.`],
+      p: [`Hace poco recibiste la valoración flash${de}. Queremos darle continuidad a tu caso: más allá de tenerte en nuestra base, queremos entender tu situación para acompañarte en lo que sigue.`],
       p2: ['Para eso necesitamos unas preguntas de 4 minutos, sin documentos.'],
       c: ['Con tus respuestas revisamos tu caso personalmente y te escribimos. Damos prioridad a quienes nos cuentan su situación. Todo es confidencial.'],
     },
