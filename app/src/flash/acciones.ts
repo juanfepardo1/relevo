@@ -31,7 +31,7 @@ export async function probarGmail(): Promise<{ estado: 'ok' | 'sin_configurar' |
 }
 
 function cuerpoHtml(cuerpo: string) {
-  const enlazar = (t: string) => t.replace(/https:\/\/[^\s<]+/g, (u) => `<a href="${u}" style="color:#1a55c4;font-weight:bold">Afinar mi valoración</a>`);
+  const enlazar = (t: string) => t.replace(/https:\/\/[^\s<]+/g, (u) => `<a href="${u}" style="color:#1a55c4;font-weight:bold">Contar mi caso</a>`);
   const paras = cuerpo.split(/\n{2,}/).map((p) => `<p style="margin:0 0 14px">${enlazar(esc(p)).replace(/\n/g, '<br>')}</p>`).join('');
   return `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.5;color:#222">${paras}</div>`;
 }
@@ -118,5 +118,5 @@ export async function marcarEnviado(L: Lead, tipo: 'flash' | 'fuera') {
   const conForm = await supabase.from('vendedores').update({ ...base, form_enviado_en: L.codigo ? d : null }).eq('id', L.id);
   if (conForm.error) await must(supabase.from('vendedores').update(base).eq('id', L.id));
   await supabase.from('documentos').update({ estado: 'enviado', completado_en: d }).eq('vendedor_id', L.id).eq('tipo', 'valoracion_preliminar').eq('estado', 'pendiente');
-  await supabase.from('actividades').insert({ vendedor_id: L.id, tipo: L.canal === 'Correo' ? 'correo' : 'whatsapp', resumen: 'Se envió la valoración flash con el formulario "Afina tu valoración".' });
+  await supabase.from('actividades').insert({ vendedor_id: L.id, tipo: L.canal === 'Correo' ? 'correo' : 'whatsapp', resumen: 'Se envió la valoración flash con el formulario "Cuéntanos tu caso".' });
 }

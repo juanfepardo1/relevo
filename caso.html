@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Afina tu valoración · Relevo</title>
+<title>Cuéntanos tu caso · Relevo</title>
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#fafaf8"><meta name="color-scheme" content="only light">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -41,7 +41,12 @@ p{margin:0 0 14px;color:var(--muted)}
 .opt:hover{border-color:var(--line-strong)}
 .opt:active{transform:scale(.995)}
 .opt .k{flex:none;width:26px;height:26px;border-radius:6px;border:1.5px solid var(--line-strong);display:grid;place-items:center;font:600 12px var(--body);color:var(--soft)}
+.opt .k{border-radius:50%}
 .opt.multi .k{border-radius:6px}
+.opt.multi[aria-pressed=true] .k::after{content:'';width:9px;height:5px;border:2.4px solid #fff;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.opt.multi[aria-pressed=true] .k{font-size:0}
+.multi-tag{display:inline-flex;align-items:center;gap:7px;font:600 13px var(--body);color:var(--navy);background:var(--navy-tint);border-radius:999px;padding:5px 11px;margin:2px 0 4px}
+.multi-tag svg{flex:none}
 .opt[aria-pressed=true]{border-color:var(--navy);background:var(--navy-tint)}
 .opt[aria-pressed=true] .k{background:var(--navy);border-color:var(--navy);color:#fff}
 .nav{display:flex;align-items:center;gap:14px;margin-top:26px}
@@ -80,19 +85,26 @@ const CFG={url:'https://zxjqixxpyxdyrqaweorn.supabase.co',key:'sb_publishable_zE
 const codigo=new URLSearchParams(location.search).get('c')||'';
 const DEMO=codigo==='demo';
 const $app=document.getElementById('app'), $bar=document.getElementById('bar');
+const TITULOS=new Set(['sr','sra','srta','don','dona','doña','dr','dra','ing','lic','arq']);
+const NO_NOMBRE=new Set(['gerencia','gerente','admin','administracion','administración','info','contacto','ventas','empresa','prueba','test','na','ninguno','usuario','cliente','propietario','dueno','dueño']);
+const NO_EMPRESA=/^((una|mi|la|nuestra) empresa.*|(una|mi) (compañía|compania|firma|sociedad|negocio).*|n\/?a|no|ninguna|ninguno|empresa|privad[ao]|confidencial|prueba|test|x+|\.+|-+|sin nombre|no aplica|reservad[ao]|educaci[oó]n|salud|comercio|transporte|construcci[oó]n|servicios|restaurante|alimentos|tecnolog[ií]a|agro|manufactura|log[ií]stica|turismo|retail)$/i;
+const titulo=w=>(w.length<=3&&w===w.toUpperCase()&&/[A-ZÁÉÍÓÚÑ]/.test(w)?w:w.charAt(0).toUpperCase()+w.slice(1).toLowerCase());
+// Si el nombre o la empresa no se ven confiables, el texto queda genérico (mismas reglas que la app).
+function nombrePila(n){const ws=String(n??'').replace(/^[^\p{L}]+/u,'').replace(/^PRUEBA\s+/i,'').trim().split(/\s+/).filter(Boolean);while(ws.length&&TITULOS.has(ws[0].replace(/\./g,'').toLowerCase()))ws.shift();const w=ws[0]||'';if(!/^[\p{L}'’]{2,20}$/u.test(w)||NO_NOMBRE.has(w.toLowerCase()))return '';return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();}
+function empresaLimpia(e){let t=String(e??'').replace(/^[^\p{L}\p{N}]+/u,'').replace(/^PRUEBA\s+/i,'').replace(/\(.*?\)/g,'').replace(/[*]+/g,'').split(/[,;|]/)[0].trim();t=t.replace(/\s+(s\.?\s?a\.?\s?s\.?|s\.?\s?a\.?|ltda\.?|e\.?\s?u\.?|s\.?\s?en\s?c\.?|bic)\.?$/i,'').replace(/\s+(s\.?\s?a\.?\s?s\.?)$/i,'').trim();if(t.length<3||t.length>60||NO_EMPRESA.test(t)||/@|https?:|www\./i.test(t)||!/\p{L}/u.test(t))return '';if(t===t.toUpperCase())t=t.split(/\s+/).map(titulo).join(' ');return t;}
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // Preguntas. "si" decide si se muestra según respuestas anteriores.
 const conOferta=r=>r.oferta&&r.oferta!=='no';
 const Q=[
   {k:'oferta',t:'En los últimos 12 meses, ¿alguien te propuso comprar tu empresa o una parte de ella?',o:[['concreta','Sí, con una oferta concreta'],['informal','Sí, pero de manera informal'],['no','No']]},
-  {k:'quien',t:'¿Quién era?',h:'Puedes marcar varias.',m:1,si:conOferta,o:[['empleado','Un empleado o el gerente'],['socio','Un socio'],['familiar','Un familiar'],['competidor','Un competidor'],['proveedor','Un proveedor'],['cliente','Un cliente'],['inversionista','Un inversionista o fondo'],['otro','Otra persona']]},
+  {k:'quien',t:'¿Quién era?',m:9,si:conOferta,o:[['empleado','Un empleado o el gerente'],['socio','Un socio'],['familiar','Un familiar'],['competidor','Un competidor'],['proveedor','Un proveedor'],['cliente','Un cliente'],['inversionista','Un inversionista o fondo'],['otro','Otra persona']]},
   {k:'avance',t:'¿Hasta dónde llegó esa conversación?',si:conOferta,o:[['mencion','Solo se mencionó'],['precio','Hablamos de precio'],['pago','Hablamos de cómo se pagaría'],['casi','Casi cerramos'],['cayo','Se cayó']]},
-  {k:'freno',t:'¿Qué ha impedido cerrarla?',h:'Puedes marcar varias.',m:1,si:conOferta,o:[['plata','El comprador no tenía toda la plata'],['precio','No nos pusimos de acuerdo en el precio'],['confianza','No me sentí seguro con el proceso'],['legal','No sé cómo hacerlo legalmente'],['impuestos','Los impuestos'],['no_listo','Todavía no estoy listo'],['otro','Otra razón']]},
+  {k:'freno',t:'¿Qué ha impedido cerrarla?',m:9,si:conOferta,o:[['plata','El comprador no tenía toda la plata'],['precio','No nos pusimos de acuerdo en el precio'],['confianza','No me sentí seguro con el proceso'],['legal','No sé cómo hacerlo legalmente'],['impuestos','Los impuestos'],['no_listo','Todavía no estoy listo'],['otro','Otra razón']]},
   {k:'precio_def',t:'¿Cómo definiste, o cómo definirías, el precio de tu empresa?',o:[['creo','Lo que yo creo que vale'],['contador','Lo que me dice mi contador'],['oferta','Lo que me ofrezcan'],['valoracion','Con una valoración profesional'],['no','Todavía no lo he pensado']]},
   {k:'cuotas',t:'¿Aceptarías recibir parte del precio en cuotas, pagadas con las utilidades de la empresa?',o:[['si','Sí'],['garantias','Sí, si hay garantías'],['no','No, lo quiero todo al cierre']]},
-  {k:'seguridad',t:'Si ya tuvieras comprador, ¿qué te haría sentir seguro para cerrar?',h:'Marca máximo dos.',m:2,o:[['precio_justo','Saber que el precio es justo'],['contrato','Un contrato bien hecho'],['pago_garantizado','Que el pago esté garantizado'],['negociador','Alguien que negocie por mí'],['impuestos','Que los impuestos queden bien manejados']]},
-  {k:'utilidad',sec:'Ahora, unas preguntas sobre la empresa para afinar tu rango.',t:'¿Cuánto deja la empresa al año, antes de impuestos?',h:'Un rango aproximado es suficiente.',o:[['perdida','Pierde o queda en cero'],['lt100','Menos de $100 millones'],['100_250','$100 a $250 millones'],['250_500','$250 a $500 millones'],['gt500','Más de $500 millones'],['nd','Prefiero no decir']]},
+  {k:'seguridad',t:'Si ya tuvieras comprador, ¿qué te haría sentir seguro para cerrar?',m:2,o:[['precio_justo','Saber que el precio es justo'],['contrato','Un contrato bien hecho'],['pago_garantizado','Que el pago esté garantizado'],['negociador','Alguien que negocie por mí'],['impuestos','Que los impuestos queden bien manejados']]},
+  {k:'utilidad',sec:'Ahora, sobre la empresa',t:'¿Cuánto deja la empresa al año, antes de impuestos?',h:'Un rango aproximado es suficiente.',o:[['perdida','Pierde o queda en cero'],['lt100','Menos de $100 millones'],['100_250','$100 a $250 millones'],['250_500','$250 a $500 millones'],['gt500','Más de $500 millones'],['nd','Prefiero no decir']]},
   {k:'tendencia',t:'En los últimos tres años, las ventas…',o:[['crece','Vienen creciendo'],['estable','Se mantienen'],['baja','Vienen bajando']]},
   {k:'deuda',t:'¿Cuánta deuda financiera tiene la empresa?',o:[['ninguna','Ninguna'],['lt200','Menos de $200 millones'],['200_500','$200 a $500 millones'],['gt500','Más de $500 millones'],['nd','Prefiero no decir']]},
   {k:'dependencia',t:'Si te ausentaras tres meses, ¿la empresa seguiría funcionando bien?',o:[['si','Sí, sin problema'],['parcial','Más o menos'],['no','No, depende mucho de mí']]},
@@ -110,18 +122,18 @@ const progreso=()=>{const v=visibles();const idx=i<0?0:v.indexOf(Q[i])+1;$bar.st
 function rpc(fn,body){return fetch(CFG.url+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:CFG.key,Authorization:'Bearer '+CFG.key,'Content-Type':'application/json'},body:JSON.stringify(body)}).then(x=>x.ok?x.json():Promise.reject(x.status));}
 
 function inicio(){
-  const n=datos.nombre?', '+esc(datos.nombre):'';
-  const emp=datos.empresa?esc(datos.empresa):'tu empresa';
+  const n=nombrePila(datos.nombre), emp=empresaLimpia(datos.empresa);
   $app.innerHTML=`<section class="step center">
-    <p class="kicker">Afina tu valoración</p>
-    <h1>Hola${n}. Afinemos el valor de ${emp}.</h1>
-    <p>Tu valoración flash es un primer rango. Con unas preguntas más lo ajustamos y te decimos qué miraría un comprador en tu empresa.</p>
+    <p class="kicker">Tu caso</p>
+    <h1>${n?'Hola, '+esc(n)+'. ':''}Queremos acompañarte en la venta${emp?' de '+esc(emp):' de tu empresa'}.</h1>
+    <p>Ya tienes tu valoración flash. Para atenderte bien necesitamos entender tu situación: con estas respuestas revisamos tu caso y definimos cómo te podemos ayudar.</p>
     <ul class="facts">
       <li><span class="dot"></span><span><b>4 minutos.</b> Casi todo se responde con un toque.</span></li>
       <li><span class="dot"></span><span><b>Rangos, no cifras exactas.</b> No te pedimos documentos.</span></li>
       <li><span class="dot"></span><span><b>Confidencial.</b> Solo lo ve el equipo de Relevo.</span></li>
     </ul>
-    <button class="btn btn-primary" id="go">Empezar <span aria-hidden="true">→</span></button>
+    <button class="btn btn-primary" id="go">Contar mi caso <span aria-hidden="true">→</span></button>
+    <p class="note">Damos prioridad a los casos de quienes nos cuentan su situación.</p>
   </section>`;
   document.getElementById('go').onclick=()=>ir(primero());
   i=-1;progreso();
@@ -139,12 +151,13 @@ function ir(idx){
   const letras='ABCDEFGHIJ';
   $app.innerHTML=`<section class="step">
     ${q.sec?`<p class="kicker">${esc(q.sec)}</p>`:''}
-    <h2 id="qt">${esc(q.t)}</h2>${q.h?`<p class="hint">${esc(q.h)}</p>`:''}
+    <h2 id="qt">${esc(q.t)}</h2>
+    ${multi?`<p class="multi-tag"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 12l3 3 5-6"/></svg>${q.m===2?'Elige hasta dos opciones':'Puedes elegir varias opciones'}</p>`:''}${q.h?`<p class="hint">${esc(q.h)}</p>`:''}
     <div class="opts" role="${multi?'group':'radiogroup'}" aria-labelledby="qt">
       ${q.o.map(([k,l],n)=>`<button type="button" class="opt${multi?' multi':''}" data-k="${k}" aria-pressed="${marcado(k)}"><span class="k">${letras[n]}</span>${esc(l)}</button>`).join('')}
     </div>
     <div class="nav">
-      ${multi?`<button class="btn btn-primary" id="next" ${(sel||[]).length?'':'disabled'}>Siguiente <span aria-hidden="true">→</span></button>`:''}
+      ${multi?`<button class="btn btn-primary" id="next" ${(sel||[]).length?'':'disabled'}>Continuar <span aria-hidden="true">→</span></button>`:''}
       <button class="back" id="back">← Atrás</button>
     </div>
   </section>`;
@@ -177,21 +190,22 @@ function enviar(){
     document.getElementById('re').onclick=enviar; });
 }
 function gracias(){
+  const n=nombrePila(datos.nombre), emp=empresaLimpia(datos.empresa);
   const llamar=r.llamada==='si';
   $app.innerHTML=`<section class="step">
-    <p class="kicker">Listo</p>
-    <h1>Gracias${datos.nombre?', '+esc(datos.nombre):''}.</h1>
-    <p>Con esto afinamos el rango de ${datos.empresa?esc(datos.empresa):'tu empresa'} y miramos qué buscaría un comprador.</p>
-    <p>${llamar?'Te escribimos en los próximos días para coordinar la llamada.':'Si más adelante quieres conversar, responde el correo o escríbenos por WhatsApp.'}</p>
+    <p class="kicker">Recibido</p>
+    <h1>Gracias${n?', '+esc(n):''}.</h1>
+    <p>Ya tenemos tu caso${emp?' y el de '+esc(emp):''}. Lo revisamos personalmente.</p>
+    <p>${llamar?'Te escribimos en los próximos días hábiles para coordinar la llamada.':'Te escribimos en los próximos días hábiles con lo que vemos para tu caso.'}</p>
     <p class="sig"><b>J. Felipe Pardo</b><br>Fundador, Relevo</p>
   </section>`;
 }
 function invalido(msg){$app.innerHTML=`<section class="step"><h2>${msg}</h2><p>Si recibiste este enlace de Relevo, respóndenos el correo y te ayudamos.</p></section>`;$bar.style.width='0';}
 
-if(DEMO){datos={nombre:'Mario',empresa:'Ecogreen'};inicio();}
+if(DEMO){const u=new URLSearchParams(location.search);datos={nombre:u.has('n')?u.get('n'):'Mario Ospina',empresa:u.has('e')?u.get('e'):'BIODEGRADABLES ECOGREEN SAS'};inicio();}
 else if(codigo.length<16) invalido('Este enlace no es válido.');
 else rpc('formulario_datos',{c:codigo}).then(d=>{ if(!d) return invalido('Este enlace no es válido o ya venció.');
-  datos=d; if(d.respondido){ $app.innerHTML=`<section class="step"><p class="kicker">Ya lo respondiste</p><h1>Gracias${d.nombre?', '+esc(d.nombre):''}.</h1><p>Ya tenemos tus respuestas. Si quieres corregir algo, puedes responder de nuevo.</p><div class="nav"><button class="btn btn-primary" id="go">Responder de nuevo</button></div></section>`; document.getElementById('go').onclick=inicio; } else inicio();
+  datos=d; if(d.respondido){ $app.innerHTML=`<section class="step"><p class="kicker">Ya lo respondiste</p><h1>Gracias${nombrePila(d.nombre)?', '+esc(nombrePila(d.nombre)):''}.</h1><p>Ya tenemos tu caso y lo estamos revisando. Si quieres corregir algo, puedes responder de nuevo.</p><div class="nav"><button class="btn btn-primary" id="go">Responder de nuevo</button></div></section>`; document.getElementById('go').onclick=inicio; } else inicio();
 }).catch(()=>invalido('No pudimos cargar el formulario.'));
 
 document.addEventListener('keydown',e=>{ if(i<0)return; const q=Q[i]; const n='abcdefghij'.indexOf(e.key.toLowerCase()); if(n>=0&&n<q.o.length) elegir(q,q.o[n][0]); if(e.key==='Enter'&&q.m&&(r[q.k]||[]).length) ir(siguienteDe(i)); });

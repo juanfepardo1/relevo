@@ -61,6 +61,8 @@ const SECTOR_APP: Record<string, [string, string?, number?]> = {
   educacion: ['Educación'], servicios_empresariales: ['Servicios a Empresas'], energia_mineria: ['Otro'], otros_servicios: ['Otro'],
 };
 
+import { nombrePila, empresaLimpia, LINK_FORM } from '../lib/formulario';
+
 export type Lead = {
   id: string; nombre: string; rol: string; empresa: string; ciudad: string; sector: string; sectorApp: string;
   subsector: string; subtipo: number; multManual: string; ventas: string; correo: string; celular: string; canal: string;
@@ -176,18 +178,19 @@ export function marcarRepetidos(pend: Lead[], todos: Row[]) {
 
 /** Mensaje para el lead (correo o WhatsApp), igual al del artefacto. */
 export function mensaje(A: Supuestos, L: Lead, r: Resultado, canal = L.canal): { asunto: string; cuerpo: string } {
-  const nombre = (L.nombre || '').replace(/^[^\p{L}]+/u, '').replace(/^PRUEBA\s+/i, '').trim().split(/\s+/)[0] || '';
+  // Nombres como los escribió el lead: si no se ven confiables, el texto queda genérico.
+  const nombre = nombrePila(L.nombre);
   const saludo = nombre ? `Hola ${nombre}` : 'Hola';
-  const emp = cleanName(L.empresa);
-  const de = emp && !r.sinNombre ? ` de ${emp}` : ' de tu empresa';
+  const emp = r.sinNombre ? '' : empresaLimpia(L.empresa);
+  const de = emp ? ` de ${emp}` : ' de tu empresa';
   void canal;
   if (r.route === 'fuera') return { asunto: `Gracias por contarnos${de}`, cuerpo: `${saludo}, gracias por contarnos${de}.\n\nHoy nuestro proceso está pensado para empresas de mayor tamaño, así que en este momento no podemos hacer una valoración de una empresa como la tuya. Te deseamos lo mejor con su crecimiento: cuando sus ventas pasen de ${money(A.piso)} millones al año, con gusto la miramos.` };
-  const link = L.codigo ? `https://relevobrokers.com/afinar?c=${L.codigo}` : '';
+  const link = L.codigo ? LINK_FORM(L.codigo) : '';
   return {
     asunto: `Una primera mirada al valor${de}`,
     cuerpo: `${saludo}, gracias por contarnos${de}. Te comparto una primera mirada a su valor, hecha con lo que nos contaste en el formulario.${r.conservador ? ' Es un rango conservador: con tus cifras reales el valor puede ser mayor.' : ''}\n\n`
       + (link
-        ? `Es un primer rango. Si respondes unas preguntas (4 minutos, sin documentos), lo afinamos y te decimos qué miraría un comprador en tu empresa:\n${link}\n\nTodo lo que nos cuentes es confidencial.`
-        : `Si quieres afinar este rango, responde este correo y te contamos cómo seguir. Todo lo que nos cuentes es confidencial.`),
+        ? `Queremos acompañarte en lo que sigue. Para atenderte bien necesitamos entender tu caso: son unas preguntas de 4 minutos, sin documentos.\n${link}\n\nCon tus respuestas revisamos tu caso personalmente y te escribimos. Damos prioridad a quienes nos cuentan su situación. Todo es confidencial.`
+        : `Queremos acompañarte en lo que sigue. Responde este correo y cuéntanos en qué punto estás con la venta. Todo es confidencial.`),
   };
 }

@@ -91,7 +91,7 @@ export default function Flash() {
   return (
     <div className="page">
       <div className="head">
-        <div><h1>Valoración flash</h1><p>Bucket B: valoración express en PDF y borrador en Gmail con el formulario "Afina tu valoración".</p></div>
+        <div><h1>Valoración flash</h1><p>Bucket B: valoración express en PDF y borrador en Gmail con el formulario "Cuéntanos tu caso".</p></div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <EstadoGmail g={gmail} />
           <button className="btn" onClick={recargar}><ArrowsClockwise className="ic" />Actualizar</button>
@@ -360,7 +360,7 @@ function ResultadosForm({ enviados }: { enviados: number }) {
   ];
   return (
     <section className="panel" style={{ marginBottom: 14 }}>
-      <header><h2>Formulario "Afina tu valoración"</h2><span className="muted" style={{ fontSize: 12.5 }}>¿Hay un mercado informal de ventas que necesita acompañamiento?</span></header>
+      <header><h2>Formulario "Cuéntanos tu caso"</h2><span className="muted" style={{ fontSize: 12.5 }}>¿Hay un mercado informal de ventas que necesita acompañamiento?</span></header>
       <dl className="kpis" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', margin: 0, padding: 14 }}>
         {items.map(([l, v, d]) => <div key={l}><dt>{l}</dt><dd className="num">{v}</dd><span className="muted" style={{ fontSize: 12 }}>{d}</span></div>)}
       </dl>
