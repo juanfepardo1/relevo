@@ -11,6 +11,8 @@ import { embudo, etiqueta, type Respuesta } from '../lib/formulario';
 import { valorarYGuardar, marcarEnviado, borradorDeValorado, crearBorrador, probarGmail, htmlCorreo, enviarFormulario, proximosRecordatorios, REMITENTE, type Remitente, type Modo } from '../flash/acciones';
 import { firmaRespaldo } from '../../api/_correo.js';
 import { Modal } from '../components/ui';
+import { AvisoCorreo, marcarRebote } from '../components/AvisoCorreo';
+import { revisarCorreo } from '../../api/_correo.js';
 
 type Grupo = 'flash' | 'revisar' | 'fuera' | 'porEnviar' | 'enviados';
 const GRUPOS: { k: Grupo; t: string; tono: string }[] = [
@@ -28,6 +30,9 @@ export default function Flash() {
   const toast = useToast();
   const { yo } = useCatalogo();
   const vq = useQuery(() => supabase.from('vendedores').select('*').order('fecha_ingreso', { ascending: false }));
+  // Correos que rebotaron (se registran como actividad "Rebotó el correo a ...")
+  const rbq = useQuery(() => supabase.from('actividades').select('vendedor_id, resumen').like('resumen', 'Rebotó el correo a %'));
+  const rebotes = useMemo(() => { const m = new Map<string, string>(); for (const a of (rbq.data || []) as Row[]) m.set(a.vendedor_id, String(a.resumen).replace('Rebotó el correo a ', '').trim()); return m; }, [rbq.data]);
   const aq = useQuery(() => supabase.from('ajustes').select('valor').eq('clave', 'flash_supuestos').maybeSingle());
   const A = useMemo(() => { try { return mezclar(JSON.parse((aq.data as Row | null)?.valor || '{}')); } catch { return mezclar(null); } }, [aq.data]);
   const [sel, setSel] = useState<Lead | null>(null);
@@ -62,7 +67,7 @@ export default function Flash() {
   // Mantiene la selección al recargar
   useEffect(() => { if (sel) { const f = (Object.values(grupos).flat().find((x) => x.L.id === sel.id)); if (f) setSel({ ...f.L, subsector: sel.subsector, subtipo: sel.subtipo, multManual: sel.multManual, sector: sel.sector }); } }, [grupos]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const recargar = () => { vq.reload(); };
+  const recargar = () => { vq.reload(); rbq.reload(); };
   const correrLote = async () => {
     const cola = grupos.flash.map((x) => x.L);
     if (!cola.length) return;
@@ -139,7 +144,7 @@ export default function Flash() {
                     {grupos[k].map(({ L, why }) => (
                       <li key={L.id}>
                         <button className={'flash-lead' + (sel?.id === L.id ? ' on' : '')} disabled={lote.corriendo} onClick={() => setSel({ ...L })}>
-                          <b>{L.nombre || 'Sin nombre'}</b>
+                          <b>{L.nombre || 'Sin nombre'}{(!revisarCorreo(L.correo).ok && L.correo) || (rebotes.get(L.id) && rebotes.get(L.id) === L.correo.toLowerCase()) ? <span className="tag tone-perdido" style={{ marginLeft: 6, fontSize: 11 }}>Revisar correo</span> : null}</b>
                           <em>{k === 'porEnviar' || k === 'enviados' ? (L.min && L.max ? `${money(L.min / 1e6)} a ${money(L.max / 1e6)} M` : 'Valorado') : (TRAMO_TEXTO[L.ventas] || '').replace(' millones', '')}</em>
                           <span>{L.empresa || 'Sin empresa'} · {k === 'enviados' ? 'enviado ' + fecha(L.enviado) : k === 'porEnviar' && L.fechaVal ? 'valorado ' + fecha(L.fechaVal) : L.sector}</span>
                           {why && why.length > 0 && <small className="why">{why.join(' · ')}</small>}
@@ -153,7 +158,7 @@ export default function Flash() {
             <Supuestos A={A} onSaved={aq.reload} />
           </div>
 
-          {sel ? <Ficha key={sel.id} L={sel} setL={setSel} A={A} grupo={grupoDe(sel.id)} de={de} gmailOk={gmail.estado === 'ok'} envioOk={!!gmail.envio} ocupado={lote.corriendo} onDone={recargar} toast={toast} />
+          {sel ? <Ficha key={sel.id} L={sel} setL={setSel} A={A} grupo={grupoDe(sel.id)} de={de} gmailOk={gmail.estado === 'ok'} envioOk={!!gmail.envio} ocupado={lote.corriendo} onDone={recargar} toast={toast} reboto={rebotes.get(sel.id) ?? null} />
             : <div className="panel flash-vacio"><Lightning className="ic" /><p>Escoge un lead de la izquierda para ver su valoración, el PDF y el mensaje.</p><p className="muted">O usa <b>Valorar todos</b> para los {nFlash} que están listos.</p></div>}
         </div>
       )}
@@ -191,7 +196,7 @@ function GuiaGmail({ g }: { g: { estado: string; msg?: string } }) {
   );
 }
 
-function Ficha({ L, setL, A, grupo, de, gmailOk, envioOk, ocupado, onDone, toast }: { L: Lead; setL: (l: Lead) => void; A: Supuestos; grupo: Grupo | null; de: Remitente; gmailOk: boolean; envioOk: boolean; ocupado: boolean; onDone: () => void; toast: (m: string, e?: boolean) => void }) {
+function Ficha({ L, setL, A, grupo, de, gmailOk, envioOk, ocupado, onDone, toast, reboto }: { reboto: string | null; L: Lead; setL: (l: Lead) => void; A: Supuestos; grupo: Grupo | null; de: Remitente; gmailOk: boolean; envioOk: boolean; ocupado: boolean; onDone: () => void; toast: (m: string, e?: boolean) => void }) {
   const r = calcular(A, L);
   const m = mensaje(A, L, r);
   const [asunto, setAsunto] = useState(m.asunto);
@@ -297,6 +302,7 @@ function Ficha({ L, setL, A, grupo, de, gmailOk, envioOk, ocupado, onDone, toast
       <section className="panel">
         <header><h2>Mensaje</h2><span className="muted">{L.correo ? `Correo a ${L.correo}` : 'Sin correo'}</span></header>
         <div className="body flash-msg">
+          <AvisoCorreo vendedorId={L.id} correo={L.correo} reboto={reboto} onCambio={onDone} />
           <label>Asunto<input className="in" value={asunto} onChange={(e) => { setAsunto(e.target.value); setEditado(true); }} /></label>
           <textarea className="in" rows={8} value={cuerpo} onChange={(e) => { setCuerpo(e.target.value); setEditado(true); }} />
           <div className="flash-acciones">
@@ -304,11 +310,13 @@ function Ficha({ L, setL, A, grupo, de, gmailOk, envioOk, ocupado, onDone, toast
               <button className="btn primary" disabled={!!busy || ocupado || r.excluido} onClick={valorar}><Lightning className="ic" />{busy || 'Valorar y guardar'}</button>
             ) : grupo === 'porEnviar' || grupo === 'fuera' ? (
               <>
-                {L.correo && gmailOk && envioOk && <button className="btn primary" disabled={!!busy || ocupado} onClick={enviarYa}><EnvelopeSimple className="ic" />{busy || 'Enviar correo'}</button>}
+                {L.correo && gmailOk && envioOk && <button className="btn primary" disabled={!!busy || ocupado || !revisarCorreo(L.correo).ok || (!!reboto && reboto === L.correo.toLowerCase())} onClick={enviarYa}><EnvelopeSimple className="ic" />{busy || 'Enviar correo'}</button>}
                 {L.correo && gmailOk && !envioOk && <button className="btn" disabled={!!busy || ocupado} onClick={soloBorrador}><EnvelopeSimple className="ic" />Crear borrador en Gmail</button>}
                 {!L.correo && <span className="muted" style={{ fontSize: 12.5 }}>Sin correo: los B se atienden solo por correo.</span>}
                 <button className={'btn' + (L.correo && envioOk ? ' ghost' : ' primary')} disabled={!!busy || ocupado} onClick={enviado}><Check className="ic" />{grupo === 'fuera' ? 'Marcar mensaje enviado' : 'Ya lo envié por otro lado'}</button>
               </>
+            ) : grupo === 'enviados' && L.correo ? (
+              <button className="btn ghost danger" disabled={!!busy} onClick={() => correr('Guardando…', async () => { if (!window.confirm(`¿El correo a ${L.correo} rebotó? El lead vuelve a "por enviar" para que corrijas la dirección.`)) return; await marcarRebote({ id: L.id, correo: L.correo }); toast('Marcado como rebotado. Corrige el correo y vuelve a enviarlo.'); onDone(); })}><Warning className="ic" />El correo rebotó</button>
             ) : null}
             {L.correo && <button className="btn ghost" onClick={() => setVista(true)}><ArrowSquareOut className="ic" />Ver correo</button>}
             <button className="btn ghost" onClick={() => navigator.clipboard.writeText(cuerpo).then(() => toast('Mensaje copiado'))}><Copy className="ic" />Copiar</button>

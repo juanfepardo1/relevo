@@ -3,7 +3,7 @@
 // Salen desde valoraciones@relevobrokers.com, firmados por Equipo Relevo. Los B se manejan solo por correo.
 // Necesita en Vercel: CRON_SECRET y SUPABASE_SERVICE_ROLE_KEY (nunca en el código ni en el navegador).
 import { SB, KEY, ALIAS, SEND_SCOPE, credenciales, firmaGmail, mime, conFirma, entregar } from './_google.js';
-import { correoFormulario, firmaRespaldo } from './_correo.js';
+import { correoFormulario, firmaRespaldo, revisarCorreo } from './_correo.js';
 
 const REMITENTE = 'valoraciones@relevobrokers.com';
 const MAX_POR_CORRIDA = 30;
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
 
   const vr = await db('vendedores?select=id,nombre,empresa,correo,form_codigo,form_enviado_en&etapa=eq.val_preliminar&form_enviado_en=not.is.null&form_respondido_en=is.null&correo=not.is.null');
   if (!vr.ok) return res.status(500).json({ error: 'No se pudo leer vendedores: ' + vr.status });
-  const vendedores = (await vr.json()).filter((v) => v.form_codigo && /@/.test(v.correo || ''));
+  const vendedores = (await vr.json()).filter((v) => v.form_codigo && revisarCorreo(v.correo).ok);
   if (!vendedores.length) return res.status(200).json({ ok: true, prueba, cronListo, enviados: 0, revisados: 0, pendientes: [] });
 
   const ar = await db(`actividades?select=vendedor_id,resumen&resumen=like.${encodeURIComponent(MARCA + '*')}&vendedor_id=in.(${vendedores.map((v) => v.id).join(',')})`);

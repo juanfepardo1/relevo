@@ -9,6 +9,7 @@ import { tonoBucket } from '../lib/colores';
 import { BotonEliminar } from '../components/Eliminar';
 import { ContactosPanel } from '../components/Contactos';
 import { FormularioPanel } from '../components/FormularioPanel';
+import { AvisoCorreo } from '../components/AvisoCorreo';
 import { Field, Skeleton, ErrorBox, Dias, useToast } from '../components/ui';
 import { Stepper, DocumentosPanel, ActividadesPanel, HistorialPanel } from '../components/paneles';
 
@@ -92,6 +93,7 @@ export default function VendedorFicha() {
               <Field label="Celular" type="tel" value={v.celular} onSave={save('celular')} />
               <Field label="Teléfono" type="tel" value={v.telefono} onSave={save('telefono')} />
               <Field label="Correo" type="email" value={v.correo} onSave={save('correo')} wide />
+              <div style={{ gridColumn: '1 / -1' }}><AvisoCorreo vendedorId={v.id} correo={v.correo} onCambio={q.reload} /></div>
               <Field label="Canal preferido" type="select" options={CANAL} value={v.canal} onSave={save('canal')} />
             </div>
           </section>

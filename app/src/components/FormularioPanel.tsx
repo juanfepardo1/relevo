@@ -1,6 +1,8 @@
 import { Copy, EnvelopeSimple, ArrowSquareOut } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { enviarFormulario } from '../flash/acciones';
+import { marcarRebote } from './AvisoCorreo';
+import { revisarCorreo } from '../../api/_correo.js';
 import { supabase, type Row } from '../lib/supabase';
 import { useQuery } from '../lib/data';
 import { fecha } from '../lib/format';
@@ -52,7 +54,8 @@ export function FormularioPanel({ v, onCambio }: { v: Row; onCambio: () => void 
           <p className="muted" style={{ fontSize: 13.5, marginBottom: 12 }}>Link personal de este vendedor. Sus respuestas llegan aquí solas.</p>
         )}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: r ? 14 : 0 }}>
-          {!f.form_respondido_en && v.correo && <button className="btn" disabled={enviando} onClick={enviar}><EnvelopeSimple className="ic" />{enviando ? 'Enviando…' : f.form_enviado_en ? 'Reenviar por correo' : 'Enviar por correo'}</button>}
+          {f.form_enviado_en && !f.form_respondido_en && v.correo && <button className="btn ghost danger" onClick={async () => { if (!window.confirm(`¿El correo a ${v.correo} rebotó?`)) return; try { await marcarRebote(v); toast('Marcado como rebotado. Corrige el correo en Contacto.'); q.reload(); onCambio(); } catch (e: any) { toast(e.message, true); } }}>El correo rebotó</button>}
+          {!f.form_respondido_en && v.correo && <button className="btn" disabled={enviando || !revisarCorreo(v.correo).ok} onClick={enviar}><EnvelopeSimple className="ic" />{enviando ? 'Enviando…' : f.form_enviado_en ? 'Reenviar por correo' : 'Enviar por correo'}</button>}
           {!v.correo && <span className="muted" style={{ fontSize: 12.5, alignSelf: 'center' }}>Sin correo: los B se atienden solo por correo.</span>}
           <button className="btn ghost" onClick={() => copiar(link, 'Link copiado')}><Copy className="ic" />Copiar link</button>
           <a className="btn ghost" href={link} target="_blank" rel="noopener"><ArrowSquareOut className="ic" />Ver formulario</a>

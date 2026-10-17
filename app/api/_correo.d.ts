@@ -10,3 +10,4 @@ export function correoFormulario(v: { nombre?: string | null; empresa?: string |
 export function correoDesdeTexto(texto: string, extra?: { preheader?: string; destacado?: Correo['destacado']; boton?: string; notaBoton?: string }): string;
 export function nombrePila(n: unknown): string;
 export function empresaLimpia(e: unknown): string;
+export function revisarCorreo(correo: unknown): { ok: boolean; motivo?: string; sugerencia?: string; comun?: boolean };

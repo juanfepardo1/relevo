@@ -153,3 +153,25 @@ export function empresaLimpia(e){
   if (t === t.toUpperCase()) t = t.split(/\s+/).map(titulo).join(' ');
   return t;
 }
+
+/* Correos mal escritos: errores típicos de dominio. Se avisa antes de enviar para no rebotar. */
+const DOMINIOS_BIEN = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'yahoo.es', 'icloud.com', 'live.com', 'msn.com', 'hotmail.es', 'outlook.es'];
+const TYPOS = {
+  'gmial.com': 'gmail.com', 'gmai.com': 'gmail.com', 'gmal.com': 'gmail.com', 'gamil.com': 'gmail.com', 'gnail.com': 'gmail.com', 'gmail.co': 'gmail.com', 'gmail.con': 'gmail.com', 'gmail.cm': 'gmail.com', 'gmail.om': 'gmail.com', 'gmail.comm': 'gmail.com', 'gmaill.com': 'gmail.com', 'gmail.es': 'gmail.com', 'gmail.com.co': 'gmail.com',
+  'hotmial.com': 'hotmail.com', 'hotmal.com': 'hotmail.com', 'hotmai.com': 'hotmail.com', 'hotmail.co': 'hotmail.com', 'hotmail.con': 'hotmail.com', 'hormail.com': 'hotmail.com', 'hotmil.com': 'hotmail.com', 'homail.com': 'hotmail.com', 'hotamil.com': 'hotmail.com',
+  'outlok.com': 'outlook.com', 'outloo.com': 'outlook.com', 'outlook.co': 'outlook.com', 'outlook.con': 'outlook.com',
+  'yaho.com': 'yahoo.com', 'yahooo.com': 'yahoo.com', 'yahoo.co': 'yahoo.com', 'yahoo.con': 'yahoo.com', 'yhoo.com': 'yahoo.com', 'yahho.com': 'yahoo.com', 'yaoo.com': 'yahoo.com',
+  'icloud.co': 'icloud.com', 'iclod.com': 'icloud.com',
+};
+/** { ok, motivo?, sugerencia? } — ok=false bloquea el envío; sugerencia es el correo probablemente correcto. */
+export function revisarCorreo(correo) {
+  const c = String(correo || '').trim().toLowerCase();
+  if (!c) return { ok: false, motivo: 'No tiene correo' };
+  if (/\s/.test(c) || !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/.test(c) || c.includes('..') || c.endsWith('.')) return { ok: false, motivo: 'El correo está mal escrito' };
+  const [u, d] = c.split('@');
+  if (TYPOS[d]) return { ok: false, motivo: `El dominio "${d}" parece mal escrito`, sugerencia: `${u}@${TYPOS[d]}` };
+  const doble = d.match(/^(.+)\.(com|co|net|org)\.\2$/);
+  if (doble) return { ok: false, motivo: `El dominio "${d}" tiene la terminación repetida`, sugerencia: `${u}@${doble[1]}.${doble[2]}` };
+  if (/\.(con|cpm|vom|comm|cm|om)$/.test(d)) return { ok: false, motivo: `El dominio "${d}" parece mal escrito`, sugerencia: `${u}@${d.replace(/\.(con|cpm|vom|comm|cm|om)$/, '.com')}` };
+  return { ok: true, comun: DOMINIOS_BIEN.includes(d) };
+}
