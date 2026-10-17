@@ -15,6 +15,7 @@ export function tonoPersona(email: string | null | undefined) {
   if (!email) return '';
   if (email.startsWith('felipe@')) return 'tone-p1';
   if (email.startsWith('alejandro@')) return 'tone-p2';
+  if (email.startsWith('valoraciones@')) return 'tone-valoraciones';
   let h = 0; for (const ch of email) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return PERSONAS[h % PERSONAS.length];
 }
