@@ -3,6 +3,8 @@ import { hoy } from '../lib/format';
 import { type Lead, type Supuestos, type Resultado, calcular, mensaje, money, dec } from './motor';
 import { paginas, generarPdf, nombreArchivo } from './pdf';
 
+/** Las valoraciones salen desde una dirección de Relevo, no desde el correo personal. */
+export const REMITENTE = 'valoraciones@relevobrokers.com';
 export type Remitente = { email: string; nombre: string };
 type Draft = { made: boolean; url?: string; skip?: string; error?: string };
 
@@ -16,12 +18,12 @@ async function tomar(id: string) { const e = await yo(); if (e) await supabase.f
 async function token() { const { data } = await supabase.auth.getSession(); return data.session?.access_token ?? ''; }
 
 /** Estado de la conexión con Gmail: prueba la autorización sin crear nada. */
-export async function probarGmail(): Promise<{ estado: 'ok' | 'sin_configurar' | 'pendiente' | 'error'; msg?: string; firma?: boolean }> {
+export async function probarGmail(): Promise<{ estado: 'ok' | 'sin_configurar' | 'pendiente' | 'error'; msg?: string; firma?: boolean; alias?: boolean }> {
   try {
     const r = await fetch('/api/gmail', { method: 'POST', headers: { Authorization: `Bearer ${await token()}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ probar: true }) });
     if (r.status === 404) return { estado: 'sin_configurar', msg: 'La función de Gmail todavía no está publicada.' };
     const j = await r.json().catch(() => ({}));
-    if (j.ok) return { estado: 'ok', firma: !!j.firmaGmail };
+    if (j.ok) return { estado: 'ok', firma: !!j.firmaGmail, alias: !!j.aliasListo };
     if (j.configurado === false) return { estado: 'sin_configurar', msg: j.error };
     if (j.configurado === 'pendiente') return { estado: 'pendiente', msg: j.error };
     return { estado: 'error', msg: j.error || `Error ${r.status}` };
@@ -29,7 +31,8 @@ export async function probarGmail(): Promise<{ estado: 'ok' | 'sin_configurar' |
 }
 
 function cuerpoHtml(cuerpo: string) {
-  const paras = cuerpo.split(/\n{2,}/).map((p) => `<p style="margin:0 0 14px">${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
+  const enlazar = (t: string) => t.replace(/https:\/\/[^\s<]+/g, (u) => `<a href="${u}" style="color:#1a55c4;font-weight:bold">Afinar mi valoración</a>`);
+  const paras = cuerpo.split(/\n{2,}/).map((p) => `<p style="margin:0 0 14px">${enlazar(esc(p)).replace(/\n/g, '<br>')}</p>`).join('');
   return `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.5;color:#222">${paras}</div>`;
 }
 /** Firma de respaldo si Gmail no deja leer la firma configurada. */
@@ -41,7 +44,7 @@ export async function crearBorrador(L: Lead, asunto: string, cuerpo: string, de:
   if (!L.correo) return { made: false, skip: 'el lead no dejó correo' };
   const r = await fetch('/api/gmail', {
     method: 'POST', headers: { Authorization: `Bearer ${await token()}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ para: L.correo, asunto, texto: `${cuerpo}\n\n--\n${de.nombre}\nEquipo Relevo\nrelevobrokers.com`, html: cuerpoHtml(cuerpo), firmaHtml: firmaRespaldo(de), nombreDe: de.nombre, pdfBase64: pdf ? await blobToBase64(pdf) : undefined, pdfNombre: nombreArchivo(L) }),
+    body: JSON.stringify({ para: L.correo, asunto, texto: `${cuerpo}\n\n--\n${de.nombre}\nEquipo Relevo\nrelevobrokers.com`, html: cuerpoHtml(cuerpo), firmaHtml: firmaRespaldo(de), alias: REMITENTE, nombreDe: de.nombre, pdfBase64: pdf ? await blobToBase64(pdf) : undefined, pdfNombre: nombreArchivo(L) }),
   });
   const j = await r.json().catch(() => ({}));
   if (!j.ok) return { made: false, error: j.error || `Error ${r.status}` };
@@ -56,7 +59,7 @@ async function sigueePendiente(id: string) {
 
 export type Opciones = { borrador: boolean; soloCorreo: boolean; de: Remitente; say: (t: string) => void; asunto?: string; cuerpo?: string };
 
-/** Valora un lead: PDF a la ficha, borrador en Gmail (si aplica) y queda En reserva con su rango. */
+/** Valora un lead: PDF a la ficha, guarda el rango y crea el borrador en Gmail (si aplica). Sigue en No contactado hasta que se envíe. */
 export async function valorarYGuardar(A: Supuestos, L: Lead, op: Opciones): Promise<{ r: Resultado; draft: Draft }> {
   op.say('revisando que siga pendiente…');
   if (!(await sigueePendiente(L.id))) throw new Error('Este lead ya no está pendiente. Recarga la bandeja');
@@ -82,7 +85,7 @@ export async function valorarYGuardar(A: Supuestos, L: Lead, op: Opciones): Prom
   op.say('actualizando la ficha…');
   await must(supabase.from('vendedores').update({
     responsable: (await yo()) ?? undefined,
-    etapa: 'en_reserva', valoracion_tipo: 'flash', valoracion_min: r.lo * 1e6, valoracion_max: r.hi * 1e6, valoracion_fecha: hoy(),
+    valoracion_tipo: 'flash', valoracion_min: r.lo * 1e6, valoracion_max: r.hi * 1e6, valoracion_fecha: hoy(),
     flash_enviado_en: null,
     flash_subsector: L.subsector || null, flash_subtipo: L.subtipo || 0, flash_mult: L.multManual ? Number(L.multManual.replace(',', '.')) : null,
   }).eq('id', L.id));
@@ -110,7 +113,7 @@ export async function marcarEnviado(L: Lead, tipo: 'flash' | 'fuera') {
     await supabase.from('actividades').insert({ vendedor_id: L.id, tipo: L.canal === 'Correo' ? 'correo' : 'whatsapp', resumen: 'Se envió el mensaje de empresa muy pequeña (ventas bajo el piso).' });
     return;
   }
-  await must(supabase.from('vendedores').update({ etapa: 'en_reserva', valoracion_tipo: 'flash', flash_enviado_en: d, ultimo_contacto: d }).eq('id', L.id));
+  await must(supabase.from('vendedores').update({ etapa: 'val_preliminar', valoracion_tipo: 'flash', flash_enviado_en: d, form_enviado_en: d, ultimo_contacto: d }).eq('id', L.id));
   await supabase.from('documentos').update({ estado: 'enviado', completado_en: d }).eq('vendedor_id', L.id).eq('tipo', 'valoracion_preliminar').eq('estado', 'pendiente');
-  await supabase.from('actividades').insert({ vendedor_id: L.id, tipo: L.canal === 'Correo' ? 'correo' : 'whatsapp', resumen: 'Se envió la valoración flash. Queda en reserva para cruzar con compradores.' });
+  await supabase.from('actividades').insert({ vendedor_id: L.id, tipo: L.canal === 'Correo' ? 'correo' : 'whatsapp', resumen: 'Se envió la valoración flash con el formulario "Afina tu valoración".' });
 }

@@ -65,7 +65,7 @@ export type Lead = {
   id: string; nombre: string; rol: string; empresa: string; ciudad: string; sector: string; sectorApp: string;
   subsector: string; subtipo: number; multManual: string; ventas: string; correo: string; celular: string; canal: string;
   horizonte: string; ingreso: string; etapa: string; valoracion: string; min: number | null; max: number | null; fechaVal: string | null; enviado: string | null;
-  responsable: string | null; dup?: string;
+  responsable: string | null; codigo: string | null; dup?: string;
 };
 
 export function leadDe(v: Row): Lead {
@@ -77,7 +77,7 @@ export function leadDe(v: Row): Lead {
     multManual: v.flash_mult != null ? String(v.flash_mult) : '', ventas: v.ventas_rango || '', correo: (v.correo || '').trim(), celular: v.celular || v.telefono || '',
     canal: v.canal === 'correo' ? 'Correo' : 'WhatsApp', horizonte: v.horizonte || '', ingreso: v.fecha_ingreso || '', etapa: v.etapa, valoracion: v.valoracion_tipo || '',
     min: v.valoracion_min != null ? Number(v.valoracion_min) : null, max: v.valoracion_max != null ? Number(v.valoracion_max) : null,
-    fechaVal: v.valoracion_fecha, enviado: v.flash_enviado_en, responsable: v.responsable,
+    fechaVal: v.valoracion_fecha, enviado: v.flash_enviado_en, responsable: v.responsable, codigo: v.form_codigo ?? null,
   };
 }
 
@@ -182,8 +182,12 @@ export function mensaje(A: Supuestos, L: Lead, r: Resultado, canal = L.canal): {
   const de = emp && !r.sinNombre ? ` de ${emp}` : ' de tu empresa';
   void canal;
   if (r.route === 'fuera') return { asunto: `Gracias por contarnos${de}`, cuerpo: `${saludo}, gracias por contarnos${de}.\n\nHoy nuestro proceso está pensado para empresas de mayor tamaño, así que en este momento no podemos hacer una valoración de una empresa como la tuya. Te deseamos lo mejor con su crecimiento: cuando sus ventas pasen de ${money(A.piso)} millones al año, con gusto la miramos.` };
+  const link = L.codigo ? `https://relevobrokers.com/afinar?c=${L.codigo}` : '';
   return {
     asunto: `Una primera mirada al valor${de}`,
-    cuerpo: `${saludo}, gracias por contarnos${de}. Te comparto una primera mirada a su valor, hecha con lo que nos contaste en el formulario.${r.conservador ? ' Es un rango conservador: con tus cifras reales el valor puede ser mayor.' : ''}\n\nTu empresa ya quedó en nuestra base confidencial. Cuando un comprador busque una empresa con sus características, te escribimos para empezar la valoración completa y el proceso de venta.\n\nGracias por la confianza.`,
+    cuerpo: `${saludo}, gracias por contarnos${de}. Te comparto una primera mirada a su valor, hecha con lo que nos contaste en el formulario.${r.conservador ? ' Es un rango conservador: con tus cifras reales el valor puede ser mayor.' : ''}\n\n`
+      + (link
+        ? `Es un primer rango. Si respondes unas preguntas (4 minutos, sin documentos), lo afinamos y te decimos qué miraría un comprador en tu empresa:\n${link}\n\nTodo lo que nos cuentes es confidencial.`
+        : `Si quieres afinar este rango, responde este correo y te contamos cómo seguir. Todo lo que nos cuentes es confidencial.`),
   };
 }

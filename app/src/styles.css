@@ -432,3 +432,9 @@ dialog.m{width:min(680px,calc(100% - 32px))}
 .multi-pop .multi-clear{border-top:1px solid var(--line);border-radius:0 0 7px 7px;margin-top:4px;color:var(--ink-3);font-size:12.5px}
 .toolbar .in[type=search]{width:240px}
 @media (max-width:640px){.toolbar .in[type=search]{width:100%}}
+
+/* Respuestas del formulario "Afina tu valoración" */
+.form-resp{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px 18px;margin:0}
+.form-resp div{min-width:0}
+.form-resp dt{font-size:12px;color:var(--ink-3);margin-bottom:2px}
+.form-resp dd{margin:0;font-size:14px;color:var(--ink)}

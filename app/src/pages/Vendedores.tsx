@@ -11,6 +11,8 @@ import { Multi, pasa } from '../components/Multi';
 import { tonoEtapa, tonoBucket } from '../lib/colores';
 
 const VENTAS_ORD = VENTAS.map((v) => v[0]);
+const FORM_EST: [string, string][] = [['respondido', 'Respondido'], ['enviado', 'Enviado, sin respuesta'], ['sin_enviar', 'Sin enviar']];
+const estadoForm = (v: Row) => (v.form_respondido_en ? 'respondido' : v.form_enviado_en ? 'enviado' : 'sin_enviar');
 export const BUCKETS: [string, string][] = [['A', '5.000 a 20.000M'], ['B', '1.000 a 5.000M'], ['C', 'menos de 1.000M'], ['D', 'más de 20.000M']];
 
 export default function Vendedores({ mios = false }: { mios?: boolean }) {
@@ -25,8 +27,9 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
   const [sector, setSector] = useState<string[]>([]);
   const [bucket, setBucket] = useState<string[]>([]);
   const [horizonte, setHorizonte] = useState<string[]>([]);
-  const hayFiltro = etapa.length + resp.length + sector.length + bucket.length + horizonte.length > 0;
-  const limpiar = () => { setEtapa([]); setResp([]); setSector([]); setBucket([]); setHorizonte([]); };
+  const [form, setForm] = useState<string[]>([]);
+  const hayFiltro = etapa.length + resp.length + sector.length + bucket.length + horizonte.length + form.length > 0;
+  const limpiar = () => { setEtapa([]); setResp([]); setSector([]); setBucket([]); setHorizonte([]); setForm([]); };
   const [orden, setOrden] = useState<{ k: string; asc: boolean }>({ k: 'fecha_ingreso', asc: false });
   const [nuevo, setNuevo] = useState(false);
   const toast = useToast();
@@ -36,13 +39,13 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
     let r = (q.data || []).filter((v: Row) =>
       pasa(etapa, v.etapa) &&
       (mios ? v.responsable === yo?.email : pasa(resp, v.responsable)) &&
-      pasa(sector, v.sector) && pasa(bucket, v.bucket) && pasa(horizonte, v.horizonte) &&
+      pasa(sector, v.sector) && pasa(bucket, v.bucket) && pasa(horizonte, v.horizonte) && pasa(form, estadoForm(v)) &&
       (!s || [v.nombre, v.empresa, v.ciudad, v.correo, v.celular].some((x) => String(x || '').toLowerCase().includes(s))));
     const k = orden.k;
     const val = (v: Row) => (k === 'ventas_rango' ? VENTAS_ORD.indexOf(v[k]) : k === 'etapa' ? v.etapa_orden : v[k]);
     r = [...r].sort((a, b) => { const x = val(a), y = val(b); if (x == null) return 1; if (y == null) return -1; return (x > y ? 1 : x < y ? -1 : 0) * (orden.asc ? 1 : -1); });
     return r;
-  }, [q.data, buscar, etapa, resp, sector, bucket, horizonte, orden, mios, yo]);
+  }, [q.data, buscar, etapa, resp, sector, bucket, horizonte, form, orden, mios, yo]);
 
   const th = (k: string, t: string, cls = '') => (
     <th className={cls} onClick={() => setOrden((o) => ({ k, asc: o.k === k ? !o.asc : true }))} aria-sort={orden.k === k ? (orden.asc ? 'ascending' : 'descending') : 'none'}>
@@ -74,6 +77,7 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
         <Multi label="Sector" opciones={SECTORES} value={sector} onChange={setSector} />
         <Multi label="Bucket" opciones={BUCKETS.map(([k, l]) => [k, `${k} · ${l}`])} value={bucket} onChange={setBucket} />
         <Multi label="Horizonte" opciones={[...HORIZONTE, ['__sin', 'Sin dato']]} value={horizonte} onChange={setHorizonte} />
+        <Multi label="Formulario" opciones={FORM_EST} value={form} onChange={setForm} />
         {hayFiltro && <button className="linkish" style={{ fontSize: 13 }} onClick={limpiar}>Limpiar filtros</button>}
       </div>
 

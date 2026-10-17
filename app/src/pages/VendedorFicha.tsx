@@ -8,6 +8,7 @@ import { millones, fecha, waLink } from '../lib/format';
 import { tonoBucket } from '../lib/colores';
 import { BotonEliminar } from '../components/Eliminar';
 import { ContactosPanel } from '../components/Contactos';
+import { FormularioPanel } from '../components/FormularioPanel';
 import { Field, Skeleton, ErrorBox, Dias, useToast } from '../components/ui';
 import { Stepper, DocumentosPanel, ActividadesPanel, HistorialPanel } from '../components/paneles';
 
@@ -94,6 +95,7 @@ export default function VendedorFicha() {
               <Field label="Canal preferido" type="select" options={CANAL} value={v.canal} onSave={save('canal')} />
             </div>
           </section>
+          {(v.bucket === 'B' || v.form_enviado_en || v.form_respondido_en) && <FormularioPanel v={v} onCambio={q.reload} />}
           <ContactosPanel vendedorId={id} />
           <section className="panel">
             <header><h2>Origen</h2></header>

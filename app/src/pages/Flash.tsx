@@ -7,6 +7,7 @@ import { fecha } from '../lib/format';
 import { Skeleton, ErrorBox, useToast } from '../components/ui';
 import { type Lead, type Supuestos, DEFAULTS, SECTORS, SUBS, TRAMO_TEXTO, mezclar, leadDe, calcular, motivosRevision, marcarRepetidos, mensaje, money, dec, fmtAdj, subOf } from '../flash/motor';
 import { paginas, documento, generarPdf, nombreArchivo } from '../flash/pdf';
+import { embudo, type Respuesta } from '../lib/formulario';
 import { valorarYGuardar, marcarEnviado, borradorDeValorado, crearBorrador, probarGmail, type Remitente } from '../flash/acciones';
 
 type Grupo = 'flash' | 'revisar' | 'fuera' | 'porEnviar' | 'enviados';
@@ -14,7 +15,7 @@ const GRUPOS: { k: Grupo; t: string; tono: string }[] = [
   { k: 'flash', t: 'Listos para valorar', tono: 'tone-mercado' },
   { k: 'revisar', t: 'Para revisar', tono: 'tone-perdido' },
   { k: 'porEnviar', t: 'Valorados sin enviar', tono: 'tone-captacion' },
-  { k: 'enviados', t: 'Enviados, en reserva', tono: 'tone-ganado' },
+  { k: 'enviados', t: 'Enviados con formulario', tono: 'tone-ganado' },
 ];
 const leer = (k: string, d: string) => { try { return localStorage.getItem(k) ?? d; } catch { return d; } };
 const guardar = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* sin almacenamiento */ } };
@@ -26,7 +27,7 @@ export default function Flash() {
   const aq = useQuery(() => supabase.from('ajustes').select('valor').eq('clave', 'flash_supuestos').maybeSingle());
   const A = useMemo(() => { try { return mezclar(JSON.parse((aq.data as Row | null)?.valor || '{}')); } catch { return mezclar(null); } }, [aq.data]);
   const [sel, setSel] = useState<Lead | null>(null);
-  const [gmail, setGmail] = useState<{ estado: string; msg?: string; firma?: boolean }>({ estado: 'probando' });
+  const [gmail, setGmail] = useState<{ estado: string; msg?: string; firma?: boolean; alias?: boolean }>({ estado: 'probando' });
   const [borrador, setBorrador] = useState(leer('flash-borrador', '1') === '1');
   const [soloCorreo, setSoloCorreo] = useState(leer('flash-solo-correo', '0') === '1');
   const [lote, setLote] = useState<{ corriendo: boolean; pausa: boolean; i: number; n: number; estado: string; log: { t: string; k: string }[] }>({ corriendo: false, pausa: false, i: 0, n: 0, estado: '', log: [] });
@@ -90,7 +91,7 @@ export default function Flash() {
   return (
     <div className="page">
       <div className="head">
-        <div><h1>Valoración flash</h1><p>Bucket B: valoración express en PDF, borrador en Gmail y queda en reserva para cruzar con compradores.</p></div>
+        <div><h1>Valoración flash</h1><p>Bucket B: valoración express en PDF y borrador en Gmail con el formulario "Afina tu valoración".</p></div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <EstadoGmail g={gmail} />
           <button className="btn" onClick={recargar}><ArrowsClockwise className="ic" />Actualizar</button>
@@ -118,6 +119,7 @@ export default function Flash() {
         </div>
       )}
 
+      {!vq.loading && !vq.error && <ResultadosForm enviados={((vq.data || []) as Row[]).filter((v) => v.form_enviado_en).length} />}
       {vq.error ? <ErrorBox msg={vq.error} retry={vq.reload} /> : vq.loading ? <div className="panel"><Skeleton rows={8} /></div> : (
         <div className="flash-grid">
           <div className="flash-trays">
@@ -151,10 +153,15 @@ export default function Flash() {
   );
 }
 
-function EstadoGmail({ g }: { g: { estado: string; msg?: string; firma?: boolean } }) {
+function EstadoGmail({ g }: { g: { estado: string; msg?: string; firma?: boolean; alias?: boolean } }) {
   const t = g.estado === 'ok' ? ['tone-ganado', g.firma ? 'Gmail conectado · con tu firma' : 'Gmail conectado · firma básica'] : g.estado === 'probando' ? ['tone-nuevo', 'Revisando Gmail…'] : g.estado === 'error' ? ['tone-perdido', 'Gmail con error'] : ['tone-mercado', 'Gmail sin conectar'];
   const ayuda = g.estado === 'ok' && !g.firma ? 'Para usar tu firma de Gmail, agrega el permiso https://www.googleapis.com/auth/gmail.settings.basic al cliente de la app en admin.google.com > Seguridad > Controles de API > Delegación de todo el dominio.' : g.msg;
-  return <span className={'tag ' + t[0]} title={ayuda}>{t[1]}</span>;
+  return (
+    <>
+      <span className={'tag ' + t[0]} title={ayuda}>{t[1]}</span>
+      {g.estado === 'ok' && <span className={'tag ' + (g.alias ? 'tone-ganado' : 'tone-mercado')} title={g.alias ? 'Los borradores salen desde valoraciones@relevobrokers.com' : 'Agrega valoraciones@relevobrokers.com en Gmail > Configuración > Cuentas > Enviar como. Mientras tanto salen desde tu correo.'}>{g.alias ? 'Desde valoraciones@' : 'Desde tu correo'}</span>}
+    </>
+  );
 }
 
 function GuiaGmail({ g }: { g: { estado: string; msg?: string } }) {
@@ -203,7 +210,7 @@ function Ficha({ L, setL, A, grupo, de, gmailOk, ocupado, onDone, toast }: { L: 
   const valorar = () => correr('Valorando…', async () => {
     const { r: rr, draft } = await valorarYGuardar(A, L, { borrador: true, soloCorreo: false, de, say: setBusy, asunto, cuerpo });
     if (draft.url) setDraftUrl(draft.url);
-    toast(`Listo: en reserva, entre ${money(rr.lo)} y ${money(rr.hi)} M. ` + (draft.made ? 'Borrador en tu Gmail.' : draft.error ? 'El borrador falló: ' + draft.error : `Sin borrador: ${draft.skip}. Envíalo por ${L.correo ? L.canal : 'WhatsApp'}.`), !!draft.error);
+    toast(`Listo: valorado entre ${money(rr.lo)} y ${money(rr.hi)} M. ` + (draft.made ? 'Borrador en tu Gmail.' : draft.error ? 'El borrador falló: ' + draft.error : `Sin borrador: ${draft.skip}. Envíalo por ${L.correo ? L.canal : 'WhatsApp'}.`), !!draft.error);
     onDone();
   });
   const soloBorrador = () => correr('Creando borrador…', async () => {
@@ -211,7 +218,7 @@ function Ficha({ L, setL, A, grupo, de, gmailOk, ocupado, onDone, toast }: { L: 
     if (!d.made) throw new Error(d.skip ? 'No se creó: ' + d.skip : 'Gmail: ' + d.error);
     setDraftUrl(d.url || ''); toast('Borrador creado en tu Gmail. Revísalo, envíalo y luego marca Enviado.');
   });
-  const enviado = () => correr('Guardando…', async () => { await marcarEnviado(L, grupo === 'fuera' ? 'fuera' : 'flash'); toast(grupo === 'fuera' ? 'Listo: quedó en Perdido (empresa muy pequeña).' : 'Listo: enviado y en reserva.'); onDone(); });
+  const enviado = () => correr('Guardando…', async () => { await marcarEnviado(L, grupo === 'fuera' ? 'fuera' : 'flash'); toast(grupo === 'fuera' ? 'Listo: quedó en Perdido (empresa muy pequeña).' : 'Listo: enviado. Quedó en Val. preliminar esperando el formulario.'); onDone(); });
   const descargar = () => correr('Armando el PDF…', async () => {
     const blob = await generarPdf(pags, 0.9);
     const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = nombreArchivo(L); a.click(); setTimeout(() => URL.revokeObjectURL(url), 2000);
@@ -332,5 +339,31 @@ function Supuestos({ A, onSaved }: { A: Supuestos; onSaved: () => void }) {
         <button className="btn ghost" onClick={() => { if (confirm('¿Volver a los supuestos originales del artefacto?')) save({ ...DEFAULTS }); }}>Volver a los originales</button>
       </div>
     </details>
+  );
+}
+
+/** Resultados del formulario: los números de la hipótesis del mercado informal. */
+function ResultadosForm({ enviados }: { enviados: number }) {
+  const q = useQuery(() => supabase.from('formulario_respuestas').select('vendedor_id, respuestas, created_at').order('created_at', { ascending: false }));
+  if (q.error || q.loading) return null;
+  const ultimo = new Map<string, Respuesta>();
+  for (const x of (q.data || []) as Row[]) if (!ultimo.has(x.vendedor_id)) ultimo.set(x.vendedor_id, x.respuestas);
+  const e = embudo([...ultimo.values()]);
+  const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : '·');
+  const items: [string, string, string][] = [
+    ['Respondieron', `${e.n}`, `de ${enviados} enviados (${pct(e.n, enviados)})`],
+    ['Ya conversaron con un comprador', pct(e.conv, e.n), `${e.conv} de ${e.n}`],
+    ['Llegaron a precio o forma de pago', pct(e.avanz, e.conv), `${e.avanz} de ${e.conv} que conversaron`],
+    ['Frenados por plata', pct(e.plata, e.conv), `${e.plata} de ${e.conv} que conversaron`],
+    ['Precio sin valoración profesional', pct(e.sinBase, e.n), `${e.sinBase} de ${e.n}`],
+    ['Aceptan parte en cuotas', pct(e.cuotas, e.n), `${e.cuotas} de ${e.n} · ${e.llamar} aceptan llamada`],
+  ];
+  return (
+    <section className="panel" style={{ marginBottom: 14 }}>
+      <header><h2>Formulario "Afina tu valoración"</h2><span className="muted" style={{ fontSize: 12.5 }}>¿Hay un mercado informal de ventas que necesita acompañamiento?</span></header>
+      <dl className="kpis" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', margin: 0, padding: 14 }}>
+        {items.map(([l, v, d]) => <div key={l}><dt>{l}</dt><dd className="num">{v}</dd><span className="muted" style={{ fontSize: 12 }}>{d}</span></div>)}
+      </dl>
+    </section>
   );
 }

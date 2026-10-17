@@ -8,6 +8,8 @@ import crypto from 'node:crypto';
 const SB = 'https://zxjqixxpyxdyrqaweorn.supabase.co';
 const KEY = 'sb_publishable_zEwtzlpxk2cogjK0KCIMdg_xbPhTNPE';
 const DOMINIO = '@relevobrokers.com';
+// Direcciones compartidas desde las que se puede redactar (deben estar como "Enviar como" en el Gmail de quien usa la app).
+const ALIAS = ['valoraciones@relevobrokers.com'];
 
 
 const b64url = (b) => Buffer.from(b).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -58,15 +60,17 @@ async function sinLlave(req, usuario, scope) {
 }
 
 /** Firma que el usuario tiene configurada en Gmail. Necesita el permiso gmail.settings.basic en la delegación; si no está, null. */
-async function firmaGmail(obtener, email) {
+async function firmaGmail(obtener, email, preferida) {
   try {
     const token = await obtener(FIRMA_SCOPE);
     const r = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/settings/sendAs', { headers: { Authorization: `Bearer ${token}` } });
-    if (!r.ok) return null;
+    if (!r.ok) return { firma: null, aliasListo: false };
     const j = await r.json();
-    const sa = (j.sendAs || []).find((x) => x.sendAsEmail?.toLowerCase() === email) || (j.sendAs || []).find((x) => x.isDefault);
-    return sa?.signature?.trim() || null;
-  } catch { return null; }
+    const lista = j.sendAs || [];
+    const de = (x) => lista.find((s) => s.sendAsEmail?.toLowerCase() === x);
+    const sa = (preferida && de(preferida)?.signature ? de(preferida) : null) || de(email) || lista.find((x) => x.isDefault);
+    return { firma: sa?.signature?.trim() || null, aliasListo: !!(preferida && de(preferida)) };
+  } catch { return { firma: null, aliasListo: false }; }
 }
 
 // Encabezados con tildes y ñ en el asunto o el nombre del archivo
@@ -111,14 +115,17 @@ export default async function handler(req, res) {
   let sa = null;
   if (raw) { try { sa = JSON.parse(raw); } catch { return res.status(500).json({ configurado: false, error: 'La variable GOOGLE_SERVICE_ACCOUNT no es el JSON de la llave.' }); } }
 
-  const { para, asunto, texto, html, firmaHtml, nombreDe, pdfBase64, pdfNombre, probar } = req.body || {};
+  const { para, asunto, texto, html, firmaHtml, nombreDe, pdfBase64, pdfNombre, probar, alias } = req.body || {};
+  const pedido = ALIAS.includes(String(alias || '').toLowerCase()) ? String(alias).toLowerCase() : null;
   const obtener = (scope) => (sa ? conLlave(sa, email, scope) : sinLlave(req, email, scope));
   try {
     const token = await obtener(GMAIL_SCOPE);
-    const firma = await firmaGmail(obtener, email);
-    if (probar) return res.status(200).json({ configurado: true, ok: true, cuenta: email, firmaGmail: !!firma });
+    const { firma, aliasListo } = await firmaGmail(obtener, email, pedido || ALIAS[0]);
+    if (probar) return res.status(200).json({ configurado: true, ok: true, cuenta: email, firmaGmail: !!firma, alias: ALIAS[0], aliasListo });
+    // Si la dirección compartida no está configurada como "Enviar como", Gmail la cambiaría: usamos la propia.
+    const desde = pedido && aliasListo ? pedido : email;
     if (!para || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(para).trim())) return res.status(400).json({ error: 'Correo de destino inválido' });
-    const msg = mime({ de: email, nombreDe: nombreDe || email, para: String(para).trim(), asunto: asunto || 'Relevo', texto: texto || '', html: (html || '') + (firma ? `<br><div class="gmail_signature">${firma}</div>` : firmaHtml || ''), adjunto: pdfBase64 ? { base64: pdfBase64, nombre: pdfNombre || 'documento.pdf' } : null });
+    const msg = mime({ de: desde, nombreDe: nombreDe || email, para: String(para).trim(), asunto: asunto || 'Relevo', texto: texto || '', html: (html || '') + (firma ? `<br><div class="gmail_signature">${firma}</div>` : firmaHtml || ''), adjunto: pdfBase64 ? { base64: pdfBase64, nombre: pdfNombre || 'documento.pdf' } : null });
     const r = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/drafts', {
       method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: { raw: b64url(msg) } }),
