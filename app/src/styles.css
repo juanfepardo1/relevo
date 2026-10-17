@@ -482,3 +482,13 @@ dialog.m{width:min(680px,calc(100% - 32px))}
 .tarea .auto-ic{border:0;background:none;cursor:inherit}.tarea .auto-ic svg{width:18px;height:18px}
 .ver-hechas{padding:10px 16px;text-align:left;font-size:13px}
 .num.acento{color:var(--orange);font-weight:600}
+.tarea.aviso{grid-template-columns:auto minmax(0,1fr) auto;align-items:start}
+.tarea.aviso .auto-ic{margin-top:1px}
+.aviso-titulo{color:var(--ink);text-decoration:none;font-weight:500}
+a.aviso-titulo:hover{text-decoration:underline}
+.tono-err{color:var(--err)}.tono-warn{color:var(--warn)}.tono-n{color:var(--ink-3)}
+.acciones{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+.acciones .in{width:auto}.acciones .sel{width:auto;max-width:260px}
+.acciones .btn{padding-top:5px;padding-bottom:5px}
+.panel.siguiente{border-color:var(--orange);box-shadow:inset 3px 0 0 var(--orange)}
+.panel.siguiente .acciones{margin-top:0}

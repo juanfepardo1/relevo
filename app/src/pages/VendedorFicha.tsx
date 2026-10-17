@@ -9,6 +9,7 @@ import { tonoBucket } from '../lib/colores';
 import { BotonEliminar } from '../components/Eliminar';
 import { ContactosPanel } from '../components/Contactos';
 import { TareasFichaPanel } from '../components/Tareas';
+import { SiguientePaso } from '../components/Etapa';
 import { FormularioPanel } from '../components/FormularioPanel';
 import { AvisoCorreo } from '../components/AvisoCorreo';
 import { Field, Skeleton, ErrorBox, Dias, useToast } from '../components/ui';
@@ -51,6 +52,7 @@ export default function VendedorFicha() {
 
       <div className="grid-ficha">
         <div className="stack">
+          <SiguientePaso v={v} onCambio={q.reload} />
           <section className="panel">
             <header><h2>Seguimiento</h2></header>
             <div className="body fields">

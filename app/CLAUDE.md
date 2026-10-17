@@ -24,7 +24,17 @@ Contexto para cualquier sesión que edite esta app. Léelo completo antes de cam
 Naranja #F47B3D, azul #2C5186, tinta #14243D, fondo claro #EAF1FA. App en fondo claro. Logo de dos píldoras. Correos y PDFs siguen esa línea (ver `_correo.js`, `src/docs/estados.ts`, `src/docs/nda.ts`).
 
 ## Módulos
-- **Inicio** (`pages/Inicio.tsx`): personal, de quien está en la cuenta (decidido 17 oct 2026). Tus tareas (Para hoy: vencidas, de hoy y automáticas de mis vendedores desde `v_alertas`; Sin fecha; Hechas hoy), Recordatorios (tareas con fecha futura), Hoy (reuniones Calendly propias), Esperando a otros (lo que asigné a otro), Del equipo (Bandeja, Pidieron llamada, suscripciones por renovar). Los KPIs del equipo viven en Embudo/Stats.
+- **Inicio** (`pages/Inicio.tsx`): personal, de quien está en la cuenta (decidido 17 oct 2026). Tus tareas (Para hoy: avisos automáticos de mis vendedores, tareas vencidas y de hoy; Sin fecha; Hechas hoy), Recordatorios (tareas con fecha futura), Hoy (reuniones Calendly propias), Esperando a otros (lo que asigné a otro), Del equipo (Bandeja, Pidieron llamada, suscripciones por renovar). Los KPIs del equipo viven en Embudo/Stats.
+- **Avisos por etapa** (`lib/alertas.ts`, `components/Etapa.tsx`, días hábiles con festivos de Colombia en `lib/habiles.ts`), definidos con Felipe el 17 oct 2026. Le salen al responsable salvo No contactado (a todo el equipo):
+  - No contactado: entran sin responsable (menos los B); contador en Inicio y alerta a los 3 días hábiles. Quien lo saca de No contactado queda de responsable (trigger `vendedores_asignar`).
+  - Contactado: alerta a los 3 días hábiles sin agendar. Calendly mueve solo a Reunión agendada (cruza el correo; si no cruza, aviso "¿De quién es?" para vincular). Inicio sincroniza Calendly al cargar, máximo cada 10 min.
+  - Reunión agendada: `vendedores.reunion_en`. Si pasó la hora, acción Se hizo / No asistió (vuelve a Contactado) / Se reagendó (pide fecha).
+  - Reunión hecha: alerta a las 48 h. Ficha: Generar NDA, Ya los envié (pasa a NDA + docs), No quiere seguir (Perdido, motivo desistió).
+  - NDA + docs: recordatorios a los 5, 10 y 15 días hábiles (tarea para el equipo, se marcan con `actividades.clave = 'recordatorio_docs'`); a los 20 con 3 recordatorios, pasar a En reserva. Subir un documento recibido pasa solo a Docs recibidos (trigger `documentos_recibidos_auto`).
+  - Docs recibidos: sin aviso. Botón Valorar pasa a Valoración en curso (código `val_profunda`); el plazo de 14 días calendario corre desde ahí. Escalones día 7, 10, 13 y vencida.
+  - Valoración completa (`val_completa`): alerta a los 7 días. De ahí para abajo no hay avisos todavía (decisión de Felipe).
+  - "Próxima acción" sigue eliminada; no revivirla como aviso.
+  - Pendiente: lista de documentos a solicitar (Felipe la está definiendo); el botón de NDA hoy solo genera el NDA.
 - **Tareas** (tabla `tareas`, `components/Tareas.tsx`): título, fecha opcional (con fecha = recordatorio), asignado (se pueden asignar entre socios), creador, vendedor opcional. Panel de Tareas en la ficha del vendedor. Solo en la app, sin correo. Notion ya no se usa: no leer ni sincronizar sus to-dos.
 - **CRM vendedores** (`Vendedores`, `VendedorFicha`): etapas en tabla `etapas` (pipeline vendedor). Filtro Activos/Todos (Activo = todo menos En reserva) y filtros de selección múltiple (`components/Multi.tsx`). "Próxima acción" se eliminó a propósito. La ficha tiene Otros contactos (tabla `personas`), documentos con descarga, NIT editable.
 - **Bandeja**: leads de la web (`v_bandeja`). El contador del menú se actualiza al aprobar o descartar (evento `bandeja:cambio`). Alerta "Correo mal escrito" con corrección sugerida. Los de ventas < $1.000M no entran (les llega correo automático de rechazo desde hablaconrelevo.com, en `api/notify-lead.js` del proyecto web). Aprobar un B lo deja a cargo de Valoraciones.
@@ -52,8 +62,7 @@ Naranja #F47B3D, azul #2C5186, tinta #14243D, fondo claro #EAF1FA. App en fondo 
 - El formulario "Cuéntanos tu caso" es la herramienta para validar esto antes de invertir tiempo. Ojo: muestra pequeña y sesgada (llegaron por un anuncio de valoración); las llamadas con quien diga que tiene comprador valen más que los porcentajes.
 
 ## Estado al 17 oct 2026
-- Hasta ese día se enviaron 18 flash el 17 de octubre, más las anteriores. Quedan unos 23 B sin valorar (lote cortado por una recarga; se retoma con "Valorar todos").
-- 8 B que recibieron la flash antes del formulario están en "Recibieron la flash sin formulario" para invitarlos ("Queremos darle continuidad a tu caso").
+- Valoraciones flash de los B y formularios: hechos (confirmado por Felipe el 17 oct 2026).
 - Rebotes conocidos: Andres Valverde (gerencia@mansenlc.com, dominio sin correo; solo quería saber el valor; se sugirió mandarle el PDF por WhatsApp y marcar enviado). Claudia Pérez tiene `presinve.com.com` (corregir a presinve.com y reenviar con "El correo rebotó").
 - Las empresas con * Solucash, Presinve y Frlboxcol recibieron el correo con el nombre deducido antes de la regla nueva.
 - Notion dejó de usarse (confirmado por Felipe el 17 oct 2026): la app es la única fuente.
@@ -63,8 +72,6 @@ SQL en `supabase/` (sin datos personales). Desde las herramientas de Claude a ve
 
 ## Pendientes conocidos
 - Borrar el vendedor de prueba "PRUEBA Felipe Pardo" desde su ficha (Claude no pudo borrarlo; está en Perdido).
-- Retomar el lote de los ~23 B sin valorar y enviarlos repartidos en varios días (dominio nuevo, cuidar reputación). Revisar que SPF, DKIM y DMARC digan PASS en "Mostrar original".
-- Enviar el formulario a los 8 de "Recibieron la flash sin formulario".
 - Detección automática de rebotes: Felipe eligió la opción de leer su buzón (no crear cuenta propia para valoraciones@). Falta que agregue `https://www.googleapis.com/auth/gmail.readonly` a la delegación de dominio; luego construir la revisión (buscar from:mailer-daemon, marcar rebote) y, si se quiere, mostrar respuestas de clientes en la ficha.
 - Etapas "En pausa" y "No asistió" de Notion no existen en la app (Fabián Echeverri, Jorge Granados quedaron en etapas aproximadas).
 - Estados financieros: la línea de firma del contador sale en blanco hasta que haya contador.

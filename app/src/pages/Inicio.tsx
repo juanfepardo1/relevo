@@ -1,5 +1,6 @@
+import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FileArrowDown, WarningCircle, CreditCard, Tray, Phone, VideoCamera, ArrowRight } from '@phosphor-icons/react';
+import { WarningCircle, CreditCard, Tray, Phone, VideoCamera, ArrowRight, UserPlus } from '@phosphor-icons/react';
 import { faltan } from './Suscripciones';
 import { cop } from '../lib/finanzas';
 import { fecha, fechaHora, hoy } from '../lib/format';
@@ -9,13 +10,36 @@ import { REMITENTE } from '../flash/acciones';
 import { Skeleton, ErrorBox } from '../components/ui';
 import { BotonNota } from '../components/Nota';
 import { NuevaTarea, TareaFila } from '../components/Tareas';
+import { AvisoBotones } from '../components/Etapa';
+import { cargarAvisos, type Aviso } from '../lib/alertas';
 
 /** Inicio personal: lo de quien está en la cuenta. Lo del equipo completo vive en Embudo. */
 
-const AUTO: Record<string, { I: any; tono: string }> = {
-  doc_atrasado: { I: FileArrowDown, tono: 'var(--orange)' },
-  etapa_estancada: { I: WarningCircle, tono: 'var(--ink-3)' },
-};
+/** Trae las reuniones de Calendly para que agendar mueva la etapa sola. Máximo cada 10 minutos por pestaña. */
+async function sincronizarCalendly() {
+  try {
+    const k = 'calendly:sync'; const t = Number(sessionStorage.getItem(k) || 0);
+    if (Date.now() - t < 6e5) return false;
+    sessionStorage.setItem(k, String(Date.now()));
+    const { data } = await supabase.auth.getSession();
+    const r = await fetch('/api/calendly', { method: 'POST', headers: { Authorization: `Bearer ${data.session?.access_token}` } });
+    return r.ok;
+  } catch { return false; }
+}
+
+function AvisoFila({ a, onCambio }: { a: Aviso; onCambio: () => void }) {
+  return (
+    <div className={'tarea aviso' + (a.accion ? ' con-accion' : '')}>
+      <span className="check auto-ic"><WarningCircle className={'tono-' + (a.tono || 'n')} /></span>
+      <span className="tarea-txt">
+        {a.vendedorId ? <Link to={`/vendedores/${a.vendedorId}`} className="aviso-titulo">{a.titulo}</Link> : <span className="aviso-titulo">{a.titulo}</span>}
+        <span className="meta">{a.detalle}</span>
+        {a.accion && <AvisoBotones a={a} onCambio={onCambio} />}
+      </span>
+      {a.vendedorId && !a.accion ? <Link to={`/vendedores/${a.vendedorId}`} aria-label="Abrir ficha"><ArrowRight className="ic muted" /></Link> : <span />}
+    </div>
+  );
+}
 
 const fechaLarga = () => new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Bogota' }).format(new Date());
 const SEL_TAREA = '*, vendedor:vendedores(empresa,nombre)';
@@ -31,16 +55,18 @@ export default function Inicio() {
   const mias = useQuery(() => supabase.from('tareas').select(SEL_TAREA).eq('asignado', me).is('hecha_en', null).order('fecha', { nullsFirst: false }).order('created_at'), [me]);
   const hechasHoy = useQuery(() => supabase.from('tareas').select(SEL_TAREA).eq('asignado', me).gte('hecha_en', inicioDia).order('hecha_en', { ascending: false }), [me, h]);
   const esperando = useQuery(() => supabase.from('tareas').select(SEL_TAREA).eq('creador', me).neq('asignado', me).is('hecha_en', null).order('fecha', { nullsFirst: false }), [me]);
-  const misVend = useQuery(() => supabase.from('vendedores').select('id').eq('responsable', me), [me]);
-  const alertas = useQuery(() => supabase.from('v_alertas').select('*').eq('entidad', 'vendedor').in('tipo', Object.keys(AUTO)).order('dias', { ascending: false }));
+  const av = useQuery<{ avisos: Aviso[]; noContactados: number }>(() => cargarAvisos().then((data) => ({ data, error: null })));
   const reuniones = useQuery(() => supabase.from('reuniones').select('*').eq('organizador', me).neq('estado', 'cancelada').gte('inicio', inicioDia).lte('inicio', finDia).order('inicio'), [me, h]);
   const bandeja = useQuery<number>(() => supabase.from('v_bandeja').select('id', { count: 'exact', head: true }).then((r) => ({ data: r.count ?? 0, error: r.error })));
   const llamadas = useQuery(() => supabase.from('vendedores').select('id, formulario_respuestas(respuestas, created_at)').eq('responsable', REMITENTE).not('form_respondido_en', 'is', null));
   const subs = useQuery(() => supabase.from('suscripciones').select('id,nombre,monto,proxima_renovacion').eq('estado', 'activa').order('proxima_renovacion'));
 
-  const recargar = () => { mias.reload(); hechasHoy.reload(); esperando.reload(); };
-  const ids = new Set(((misVend.data || []) as Row[]).map((v) => v.id));
-  const auto = ((alertas.data || []) as Row[]).filter((a) => ids.has(a.entidad_id));
+  useEffect(() => { sincronizarCalendly().then((ok) => { if (ok) { av.reload(); reuniones.reload(); } }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const recargar = () => { mias.reload(); hechasHoy.reload(); esperando.reload(); av.reload(); };
+  const avisos = av.data?.avisos ?? [];
+  const noContactados = av.data?.noContactados ?? 0;
+  const auto = avisos.filter((a) => a.para === me);
+  const delEquipo = avisos.filter((a) => a.para === null);
   const pend = (mias.data || []) as Row[];
   const ahora = pend.filter((t) => t.fecha && t.fecha <= h);
   const sinFecha = pend.filter((t) => !t.fecha);
@@ -52,7 +78,7 @@ export default function Inicio() {
   }).length;
   const renuevan = ((subs.data || []) as Row[]).filter((s) => faltan(s.proxima_renovacion) <= 7);
   const nombre = yo ? yo.apodo || yo.nombre.split(' ')[0] : '';
-  const cargando = mias.loading || misVend.loading || alertas.loading;
+  const cargando = mias.loading || av.loading;
   const nAhora = ahora.length + auto.length;
 
   return (
@@ -73,17 +99,12 @@ export default function Inicio() {
           <section className="panel">
             <header><h2>Tus tareas</h2></header>
             <div className="body" style={{ paddingBottom: 8 }}><NuevaTarea onCreada={recargar} /></div>
-            {mias.error ? <ErrorBox msg={mias.error} retry={mias.reload} /> : cargando ? <Skeleton rows={4} /> : (
+            {mias.error || av.error ? <ErrorBox msg={(mias.error || av.error)!} retry={recargar} /> : cargando ? <Skeleton rows={4} /> : (
               <div className="tareas">
                 {!nAhora && !sinFecha.length && <p className="empty-state">Sin pendientes. Escribe arriba lo próximo que tienes que hacer.</p>}
                 {nAhora > 0 && <h3 className="grupo">Para hoy</h3>}
+                {auto.map((a) => <AvisoFila key={a.key} a={a} onCambio={recargar} />)}
                 {ahora.map((t) => <TareaFila key={t.id} t={t} onCambio={recargar} />)}
-                {auto.map((a, i) => { const { I, tono } = AUTO[a.tipo]; return (
-                  <Link key={i} to={`/vendedores/${a.entidad_id}`} className="tarea auto">
-                    <span className="check auto-ic"><I style={{ color: tono }} /></span>
-                    <span className="tarea-txt"><span>{a.titulo}</span><span className="meta">{a.detalle}</span></span>
-                    <ArrowRight className="ic muted" />
-                  </Link>); })}
                 {sinFecha.length > 0 && <h3 className="grupo">Sin fecha</h3>}
                 {sinFecha.map((t) => <TareaFila key={t.id} t={t} onCambio={recargar} />)}
                 {hechas.length > 0 && <h3 className="grupo">Hechas hoy</h3>}
@@ -128,6 +149,12 @@ export default function Inicio() {
           <section className="panel">
             <header><h2>Del equipo</h2></header>
             <div className="list">
+              <div className="li click" onClick={() => nav('/vendedores')}>
+                <UserPlus className="ic" />
+                <div><b>No contactados</b><p className="meta">Sin responsable. Quien lo contacte queda a cargo</p></div>
+                <span className={'num' + (delEquipo.length ? ' acento' : '')}>{av.loading ? '·' : noContactados}</span>
+              </div>
+              {delEquipo.length > 0 && <div className="tareas">{delEquipo.map((a) => <AvisoFila key={a.key} a={a} onCambio={recargar} />)}</div>}
               <div className="li click" onClick={() => nav('/bandeja')}>
                 <Tray className="ic" />
                 <div><b>Bandeja</b><p className="meta">Leads de la web por aprobar o descartar</p></div>
