@@ -7,8 +7,8 @@ import { fecha, hoy, waLink } from '../lib/format';
 import { Skeleton, ErrorBox, useToast } from '../components/ui';
 import { type Lead, type Supuestos, DEFAULTS, SECTORS, SUBS, TRAMO_TEXTO, mezclar, leadDe, calcular, motivosRevision, marcarRepetidos, mensaje, money, dec, fmtAdj, subOf } from '../flash/motor';
 import { paginas, documento, generarPdf, nombreArchivo } from '../flash/pdf';
-import { embudo, etiqueta, nombrePila, LINK_FORM, type Respuesta } from '../lib/formulario';
-import { valorarYGuardar, marcarEnviado, borradorDeValorado, crearBorrador, probarGmail, htmlCorreo, REMITENTE, type Remitente, type Modo } from '../flash/acciones';
+import { embudo, etiqueta, type Respuesta } from '../lib/formulario';
+import { valorarYGuardar, marcarEnviado, borradorDeValorado, crearBorrador, probarGmail, htmlCorreo, enviarFormulario, proximosRecordatorios, REMITENTE, type Remitente, type Modo } from '../flash/acciones';
 import { firmaRespaldo } from '../../api/_correo.js';
 import { Modal } from '../components/ui';
 
@@ -31,7 +31,6 @@ export default function Flash() {
   const [sel, setSel] = useState<Lead | null>(null);
   const [gmail, setGmail] = useState<{ estado: string; msg?: string; firma?: boolean; alias?: boolean; envio?: boolean }>({ estado: 'probando' });
   const [modo, setModo] = useState<Modo>(() => (['nada', 'borrador', 'enviar'].includes(leer('flash-modo', 'nada')) ? leer('flash-modo', 'nada') : 'nada') as Modo);
-  const [soloCorreo, setSoloCorreo] = useState(leer('flash-solo-correo', '0') === '1');
   const [lote, setLote] = useState<{ corriendo: boolean; pausa: boolean; i: number; n: number; estado: string; log: { t: string; k: string }[] }>({ corriendo: false, pausa: false, i: 0, n: 0, estado: '', log: [] });
   const pausaRef = useRef(false);
   const de: Remitente = { email: yo?.email ?? '', nombre: yo?.nombre ?? 'Equipo Relevo' };
@@ -75,7 +74,7 @@ export default function Flash() {
       const head = `${i + 1} de ${cola.length} · ${L.nombre || L.empresa}`;
       const say = (t: string) => setLote((s) => ({ ...s, i, estado: `${head}: ${t}` }));
       try {
-        const { r, draft } = await valorarYGuardar(A, L, { modo, soloCorreo, de, say });
+        const { r, draft } = await valorarYGuardar(A, L, { modo, soloCorreo: false, de, say });
         res.ok++; if (draft.made) res.drafts++;
         log.unshift({ t: `${L.nombre || L.empresa}: entre ${money(r.lo)} y ${money(r.hi)} M` + (draft.enviado ? ', enviado por correo' : draft.made ? ', borrador en Gmail' : draft.error ? `. El correo falló: ${draft.error}` : ` (${draft.skip})`), k: draft.error ? 'warn' : 'ok' });
       } catch (e: any) {
@@ -113,9 +112,6 @@ export default function Flash() {
             <option value="enviar">Enviar el correo de una vez</option>
           </select>
         </label>
-        <select className="sel" value={soloCorreo ? '1' : '0'} disabled={modo === 'nada'} onChange={(e) => { setSoloCorreo(e.target.value === '1'); guardar('flash-solo-correo', e.target.value); }}>
-          <option value="0">Para todos los que dejaron correo</option><option value="1">Solo para los que eligieron Correo</option>
-        </select>
         <span className="muted">{modo === 'enviar' ? 'Ojo: sale de inmediato desde valoraciones@relevobrokers.com.' : 'Desde cada lead puedes revisar el correo y enviarlo con un botón.'}</span>
       </div>
 
@@ -228,7 +224,6 @@ function Ficha({ L, setL, A, grupo, de, gmailOk, envioOk, ocupado, onDone, toast
     if (!d.made) throw new Error(d.skip ? 'No se envió: ' + d.skip : d.error);
     toast('Enviado desde valoraciones@. Quedó en Val. flash enviada.'); onDone();
   });
-  const porWhatsapp = async () => { const wa = waLink(L.celular); if (wa) window.open(`${wa}?text=${encodeURIComponent(cuerpo)}`, '_blank', 'noopener'); };
   const soloBorrador = () => correr('Creando borrador…', async () => {
     const d = grupo === 'fuera' ? await crearBorrador(L, asunto, cuerpo, de, null) : await borradorDeValorado(A, L, de, asunto, cuerpo);
     if (!d.made) throw new Error(d.skip ? 'No se creó: ' + d.skip : 'Gmail: ' + d.error);
@@ -245,9 +240,9 @@ function Ficha({ L, setL, A, grupo, de, gmailOk, envioOk, ocupado, onDone, toast
   return (
     <div className="flash-ficha">
       <Modal open={vista} onClose={() => setVista(false)} title={`Vista previa: ${asunto}`}>
-        <p className="muted" style={{ fontSize: 12.5, marginBottom: 8 }}>De {REMITENTE} para {L.correo || 'sin correo'}. Lleva el PDF adjunto. La firma final es la de Gmail de valoraciones@ si está configurada.</p>
+        <p className="muted" style={{ fontSize: 12.5, marginBottom: 8 }}>De {REMITENTE} para {L.correo || 'sin correo'}. Lleva el PDF adjunto. Firma: Equipo Relevo.</p>
         <iframe title="Vista previa del correo" style={{ width: '100%', height: '70vh', border: '1px solid var(--line)', borderRadius: 10, background: '#fff' }}
-          srcDoc={htmlCorreo(L, cuerpo, r.route === 'flash' ? { lo: L.min != null ? L.min / 1e6 : r.lo, hi: L.max != null ? L.max / 1e6 : r.hi } : null).replace('<!--FIRMA-->', firmaRespaldo(de.nombre))} />
+          srcDoc={htmlCorreo(L, cuerpo, r.route === 'flash' ? { lo: L.min != null ? L.min / 1e6 : r.lo, hi: L.max != null ? L.max / 1e6 : r.hi } : null).replace('<!--FIRMA-->', firmaRespaldo())} />
       </Modal>
       <section className="panel">
         <header>
@@ -296,7 +291,7 @@ function Ficha({ L, setL, A, grupo, de, gmailOk, envioOk, ocupado, onDone, toast
       </section>
 
       <section className="panel">
-        <header><h2>Mensaje</h2><span className="muted">{L.correo ? `Correo a ${L.correo}` : 'Sin correo: va por WhatsApp'}</span></header>
+        <header><h2>Mensaje</h2><span className="muted">{L.correo ? `Correo a ${L.correo}` : 'Sin correo'}</span></header>
         <div className="body flash-msg">
           <label>Asunto<input className="in" value={asunto} onChange={(e) => { setAsunto(e.target.value); setEditado(true); }} /></label>
           <textarea className="in" rows={8} value={cuerpo} onChange={(e) => { setCuerpo(e.target.value); setEditado(true); }} />
@@ -307,7 +302,7 @@ function Ficha({ L, setL, A, grupo, de, gmailOk, envioOk, ocupado, onDone, toast
               <>
                 {L.correo && gmailOk && envioOk && <button className="btn primary" disabled={!!busy || ocupado} onClick={enviarYa}><EnvelopeSimple className="ic" />{busy || 'Enviar correo'}</button>}
                 {L.correo && gmailOk && !envioOk && <button className="btn" disabled={!!busy || ocupado} onClick={soloBorrador}><EnvelopeSimple className="ic" />Crear borrador en Gmail</button>}
-                {L.celular && <button className="btn" disabled={!!busy || ocupado} onClick={porWhatsapp}><Copy className="ic" />Abrir WhatsApp con el mensaje</button>}
+                {!L.correo && <span className="muted" style={{ fontSize: 12.5 }}>Sin correo: los B se atienden solo por correo.</span>}
                 <button className={'btn' + (L.correo && envioOk ? ' ghost' : ' primary')} disabled={!!busy || ocupado} onClick={enviado}><Check className="ic" />{grupo === 'fuera' ? 'Marcar mensaje enviado' : 'Ya lo envié por otro lado'}</button>
               </>
             ) : null}
@@ -370,6 +365,9 @@ function Supuestos({ A, onSaved }: { A: Supuestos; onSaved: () => void }) {
 function ResultadosForm({ todos, yo, onCambio, toast }: { todos: Row[]; yo: Remitente; onCambio: () => void; toast: (m: string, e?: boolean) => void }) {
   const q = useQuery(() => supabase.from('formulario_respuestas').select('vendedor_id, respuestas, created_at').order('created_at', { ascending: false }));
   const [abierto, setAbierto] = useState(true);
+  const [prox, setProx] = useState<Awaited<ReturnType<typeof proximosRecordatorios>> | null>(null);
+  const [enviando, setEnviando] = useState('');
+  useEffect(() => { proximosRecordatorios().then(setProx); }, [todos.length]);
   if (q.error || q.loading) return null;
   const ultimo = new Map<string, Respuesta>();
   for (const x of (q.data || []) as Row[]) if (!ultimo.has(x.vendedor_id)) ultimo.set(x.vendedor_id, x.respuestas);
@@ -386,9 +384,17 @@ function ResultadosForm({ todos, yo, onCambio, toast }: { todos: Row[]; yo: Remi
   ];
   // Pidieron llamada y siguen a cargo de Valoraciones: alguien del equipo los toma
   const llamar = todos.filter((v) => ultimo.get(v.id)?.llamada === 'si' && v.responsable === REMITENTE);
-  // Por WhatsApp no hay recordatorio automático: los que llevan 2 días o más sin responder
-  const dias = (d: string) => Math.floor((Date.now() - new Date(d + 'T12:00:00').getTime()) / 864e5);
-  const recordar = todos.filter((v) => v.form_enviado_en && !v.form_respondido_en && v.etapa === 'val_preliminar' && (!v.correo || v.canal === 'whatsapp') && dias(v.form_enviado_en) >= 2);
+  // Recibieron su flash antes del formulario: hay que invitarlos por correo
+  const sinForm = todos.filter((v) => v.bucket === 'B' && v.flash_enviado_en && !v.form_enviado_en && !v.form_respondido_en && v.correo && v.etapa === 'en_reserva');
+  const invitar = async (lista: Row[]) => {
+    if (!window.confirm(lista.length > 1 ? `¿Enviar el formulario a ${lista.length} personas desde ${REMITENTE}?` : `¿Enviar el formulario a ${lista[0].correo}?`)) return;
+    let ok = 0;
+    for (const v of lista) {
+      setEnviando(v.id);
+      try { await enviarFormulario(v); ok++; } catch (err: any) { toast(`${v.empresa || v.nombre}: ${err.message}`, true); if (/permiso|autoriz/i.test(err.message)) break; }
+    }
+    setEnviando(''); toast(`Formulario enviado a ${ok} de ${lista.length}`); onCambio();
+  };
   const tomar = async (v: Row) => {
     try {
       await must(supabase.from('vendedores').update({ responsable: yo.email, etapa: 'contactado', ultimo_contacto: hoy() }).eq('id', v.id));
@@ -396,7 +402,6 @@ function ResultadosForm({ todos, yo, onCambio, toast }: { todos: Row[]; yo: Remi
       toast(`${v.nombre || v.empresa} quedó a tu nombre y en Contactado`); onCambio();
     } catch (err: any) { toast(err.message, true); }
   };
-  const textoRecordar = (v: Row) => `Hola${nombrePila(v.nombre) ? ' ' + nombrePila(v.nombre) : ''}, te escribo de Relevo. ¿Pudiste ver las preguntas sobre tu caso? Son 4 minutos y con eso te podemos atender:\n${LINK_FORM(v.form_codigo)}`;
   return (
     <section className="panel" style={{ marginBottom: 14 }}>
       <header><h2>Formulario "Cuéntanos tu caso"</h2><button className="btn ghost" onClick={() => setAbierto(!abierto)}>{abierto ? 'Ocultar' : 'Ver'}</button></header>
@@ -414,12 +419,20 @@ function ResultadosForm({ todos, yo, onCambio, toast }: { todos: Row[]; yo: Remi
             })}</ul>}
           </div>
           <div>
-            <h3>Recordar por WhatsApp <span className="muted num">{recordar.length}</span></h3>
-            {!recordar.length ? <p className="muted">Nada pendiente. A los de correo les llega el recordatorio solo.</p> : <ul>{recordar.map((v) => {
-              const wa = waLink(v.celular);
-              return <li key={v.id}><Link to={`/vendedores/${v.id}`}><b>{v.nombre || 'Sin nombre'}</b> · {v.empresa || 'Sin empresa'}</Link><span className="muted">Enviado hace {dias(v.form_enviado_en)} días</span>
-                <span className="acc">{wa ? <a className="btn" href={`${wa}?text=${encodeURIComponent(textoRecordar(v))}`} target="_blank" rel="noopener" onClick={() => supabase.from('actividades').insert({ vendedor_id: v.id, tipo: 'whatsapp', resumen: 'Recordatorio del formulario por WhatsApp.' })}>Recordar</a> : <span className="muted">Sin celular</span>}</span></li>;
-            })}</ul>}
+            <h3>Recibieron la flash sin formulario <span className="muted num">{sinForm.length}</span>{sinForm.length > 1 && <button className="btn ghost" style={{ marginLeft: 'auto', minHeight: 26 }} disabled={!!enviando} onClick={() => invitar(sinForm)}>Enviar a todos</button>}</h3>
+            {!sinForm.length ? <p className="muted">Nadie pendiente.</p> : <ul>{sinForm.map((v) => (
+              <li key={v.id}><Link to={`/vendedores/${v.id}`}><b>{v.nombre || 'Sin nombre'}</b> · {v.empresa || 'Sin empresa'}</Link><span className="muted">Flash enviada el {fecha(v.flash_enviado_en)}</span>
+                <span className="acc"><button className="btn" disabled={!!enviando} onClick={() => invitar([v])}>{enviando === v.id ? 'Enviando…' : 'Enviar formulario'}</button></span></li>
+            ))}</ul>}
+          </div>
+          <div>
+            <h3>Recordatorios automáticos <span className="muted num">{prox?.pendientes?.length ?? '·'}</span></h3>
+            {!prox ? <p className="muted">Revisando…</p> : !prox.ok ? <p className="err-text">{prox.error}</p> : (
+              <>
+                <p className="muted">{prox.cronListo ? 'Activos: salen de lunes a viernes a las 9 a. m. (a los 2 y a los 5 días sin respuesta).' : 'Falta CRON_SECRET en Vercel: no van a salir solos.'}</p>
+                {!!prox.pendientes?.length && <ul style={{ marginTop: 6 }}>{prox.pendientes.map((x) => <li key={x.id}><Link to={`/vendedores/${x.id}`}><b>{x.nombre || 'Sin nombre'}</b> · {x.empresa || 'Sin empresa'}</Link><span className="muted">Próximo: recordatorio {x.recordatorio} de 2</span></li>)}</ul>}
+              </>
+            )}
           </div>
         </div>
       </>}

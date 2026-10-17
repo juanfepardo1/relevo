@@ -70,7 +70,8 @@ export async function firmaGmail(obtener, email, preferida) {
     const j = await r.json();
     const lista = j.sendAs || [];
     const de = (x) => lista.find((s) => s.sendAsEmail?.toLowerCase() === x);
-    const sa = (preferida && de(preferida)?.signature ? de(preferida) : null) || de(email) || lista.find((x) => x.isDefault);
+    // Con dirección compartida solo vale su propia firma: nunca la personal del dueño del buzón.
+    const sa = preferida ? de(preferida) : de(email) || lista.find((x) => x.isDefault);
     return { firma: sa?.signature?.trim() || null, aliasListo: !!(preferida && de(preferida)) };
   } catch { return { firma: null, aliasListo: false }; }
 }

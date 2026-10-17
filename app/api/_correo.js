@@ -62,8 +62,44 @@ export function correoHtml(c) {
 }
 
 /** Firma de respaldo si Gmail no deja leer la configurada. */
-export function firmaRespaldo(nombre) {
-  return `<div style="font:700 14px/1.4 ${FUENTE};color:${C.tinta}">${esc(nombre)}</div><div style="font:400 13.5px/1.5 ${FUENTE};color:${C.suave}">Equipo Relevo &middot; <a href="https://relevobrokers.com" style="color:${C.azul}">relevobrokers.com</a></div>`;
+export function firmaRespaldo() {
+  // Siempre "Equipo Relevo": Felipe y Alejo responden indistintamente y el cliente no debe ver cambios de nombre.
+  return `<div style="font:700 14px/1.4 ${FUENTE};color:${C.tinta}">Equipo Relevo</div><div style="font:400 13.5px/1.5 ${FUENTE};color:${C.suave}"><a href="https://relevobrokers.com" style="color:${C.azul}">relevobrokers.com</a></div>`;
+}
+export const FIRMA_TEXTO = '--\nEquipo Relevo\nrelevobrokers.com';
+
+/** Correos del formulario "Cuéntanos tu caso": invitación (a quien ya tiene su flash) y los dos recordatorios. */
+export function correoFormulario(v, tipo) {
+  const nombre = nombrePila(v.nombre), emp = empresaLimpia(v.empresa);
+  const link = `https://relevobrokers.com/caso?c=${v.form_codigo}`;
+  const saludo = nombre ? `Hola ${nombre},` : 'Hola,';
+  const de = emp ? ' de ' + emp : ' de tu empresa';
+  const boton = { texto: 'Contar mi caso', url: link, nota: '4 minutos · sin documentos · confidencial' };
+  const C3 = {
+    invitacion: {
+      asunto: `El siguiente paso con la valoración${de}`,
+      pre: 'Queremos acompañarte en lo que sigue.',
+      p: [`Hace unos días te enviamos la valoración flash${de}. Queremos acompañarte en lo que sigue, y para atenderte bien necesitamos entender tu caso: son unas preguntas de 4 minutos, sin documentos.`],
+      c: ['Con tus respuestas revisamos tu caso personalmente y te escribimos. Damos prioridad a quienes nos cuentan su situación. Todo es confidencial.'],
+    },
+    r1: {
+      asunto: '¿Seguimos con tu caso?',
+      pre: 'Son 4 minutos y con eso podemos atenderte.',
+      p: [`Hace un par de días te escribimos sobre la valoración${de}. Para poder atenderte necesitamos entender tu caso: son unas preguntas de 4 minutos, sin documentos.`],
+      c: ['Si ya no estás pensando en vender, no hay problema: puedes ignorar este correo.'],
+    },
+    r2: {
+      asunto: 'Último recordatorio sobre tu caso',
+      pre: 'Damos prioridad a quienes nos cuentan su situación.',
+      p: [`Te escribimos una última vez sobre ${emp || 'tu empresa'}. Damos prioridad a los casos de quienes nos cuentan su situación, y para eso solo necesitamos estas preguntas.`],
+      c: ['Si más adelante quieres retomarlo, responde este correo y con gusto te atendemos.'],
+    },
+  }[tipo];
+  return {
+    asunto: C3.asunto,
+    texto: `${saludo}\n\n${C3.p.join('\n\n')}\n\n${link}\n\n${C3.c.join('\n\n')}\n\n${FIRMA_TEXTO}`,
+    html: correoHtml({ preheader: C3.pre, saludo, parrafos: C3.p, boton, cierre: C3.c }),
+  };
 }
 
 /** Convierte el texto editable de la app (párrafos separados por línea en blanco) en el correo con diseño.

@@ -2,7 +2,7 @@ import { supabase, must, type Row } from '../lib/supabase';
 import { hoy } from '../lib/format';
 import { type Lead, type Supuestos, type Resultado, calcular, mensaje, money, dec } from './motor';
 import { paginas, generarPdf, nombreArchivo } from './pdf';
-import { correoDesdeTexto, firmaRespaldo } from '../../api/_correo.js';
+import { correoDesdeTexto, correoFormulario, firmaRespaldo, FIRMA_TEXTO } from '../../api/_correo.js';
 
 /** Las valoraciones salen desde una dirección de Relevo, no desde el correo personal, y los B quedan a su nombre. */
 export const REMITENTE = 'valoraciones@relevobrokers.com';
@@ -42,7 +42,7 @@ export async function crearBorrador(L: Lead, asunto: string, cuerpo: string, de:
   if (!L.correo) return { made: false, skip: 'el lead no dejó correo' };
   const r = await fetch('/api/gmail', {
     method: 'POST', headers: { Authorization: `Bearer ${await token()}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ modo, para: L.correo, asunto, texto: `${cuerpo}\n\n--\n${de.nombre}\nEquipo Relevo\nrelevobrokers.com`, html: htmlCorreo(L, cuerpo, rango), firmaHtml: firmaRespaldo(de.nombre), alias: REMITENTE, nombreDe: `${de.nombre.split(' ')[0]} de Relevo`, pdfBase64: pdf ? await blobToBase64(pdf) : undefined, pdfNombre: nombreArchivo(L) }),
+    body: JSON.stringify({ modo, para: L.correo, asunto, texto: `${cuerpo}\n\n${FIRMA_TEXTO}`, html: htmlCorreo(L, cuerpo, rango), firmaHtml: firmaRespaldo(), alias: REMITENTE, nombreDe: 'Equipo Relevo', pdfBase64: pdf ? await blobToBase64(pdf) : undefined, pdfNombre: nombreArchivo(L) }),
   });
   const j = await r.json().catch(() => ({}));
   if (!j.ok) return { made: false, error: j.error || `Error ${r.status}` };
@@ -118,4 +118,29 @@ export async function marcarEnviado(L: Lead, tipo: 'flash' | 'fuera', via?: 'cor
   if (conForm.error) await must(supabase.from('vendedores').update(base).eq('id', L.id));
   await supabase.from('documentos').update({ estado: 'enviado', completado_en: d }).eq('vendedor_id', L.id).eq('tipo', 'valoracion_preliminar').eq('estado', 'pendiente');
   await supabase.from('actividades').insert({ vendedor_id: L.id, tipo: via ?? (L.canal === 'Correo' ? 'correo' : 'whatsapp'), resumen: 'Se envió la valoración flash con el formulario "Cuéntanos tu caso".' });
+}
+
+/** Invitación al formulario para quien ya recibió su flash (sale desde valoraciones@, firmado Equipo Relevo). */
+export async function enviarFormulario(v: Row): Promise<void> {
+  if (!v.correo) throw new Error('No tiene correo');
+  if (!v.form_codigo) throw new Error('No tiene código de formulario');
+  const c = correoFormulario(v as any, 'invitacion');
+  const r = await fetch('/api/gmail', {
+    method: 'POST', headers: { Authorization: `Bearer ${await token()}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ modo: 'enviar', para: v.correo, asunto: c.asunto, texto: c.texto, html: c.html, firmaHtml: firmaRespaldo(), alias: REMITENTE, nombreDe: 'Equipo Relevo' }),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!j.ok) throw new Error(j.error || `Error ${r.status}`);
+  const d = hoy();
+  await must(supabase.from('vendedores').update({ form_enviado_en: d, etapa: 'val_preliminar', ultimo_contacto: d }).eq('id', v.id));
+  await supabase.from('actividades').insert({ vendedor_id: v.id, tipo: 'correo', resumen: 'Se envió por correo el formulario "Cuéntanos tu caso".' });
+}
+
+/** Qué recordatorios automáticos saldrían en la próxima corrida (no envía nada). */
+export async function proximosRecordatorios(): Promise<{ ok: boolean; cronListo?: boolean; pendientes?: { id: string; nombre: string; empresa: string; recordatorio: number }[]; error?: string }> {
+  try {
+    const r = await fetch('/api/seguimientos?prueba=1', { headers: { Authorization: `Bearer ${await token()}` } });
+    const j = await r.json().catch(() => ({}));
+    return r.ok ? j : { ok: false, error: j.error || `Error ${r.status}` };
+  } catch (e: any) { return { ok: false, error: e.message }; }
 }
