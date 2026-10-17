@@ -33,7 +33,7 @@ export default async function handler(req, res) {
   try { obtener = credenciales(req); } catch (e) { return res.status(500).json({ configurado: false, error: e.message }); }
   if (!obtener) return res.status(200).json({ configurado: false, error: 'Falta conectar Gmail (variables GCP_ o GOOGLE_ en Vercel).' });
 
-  const { para, asunto, texto, html, firmaHtml, nombreDe, pdfBase64, pdfNombre, probar, alias, modo } = req.body || {};
+  const { para, asunto, texto, html, firmaHtml, nombreDe, pdfBase64, pdfNombre, adjuntos, probar, alias, modo } = req.body || {};
   const pedido = String(alias || '').toLowerCase();
   const dueno = ALIAS[pedido] || null;
   const buzon = dueno || email; // con dirección compartida, se redacta en el buzón que la tiene
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     if (!(await recibeCorreo(String(para).trim()))) return res.status(200).json({ configurado: true, correoMalo: true, error: `El dominio de ${String(para).trim()} no existe o no recibe correos. Corrige el correo en la ficha.` });
     if (dueno && !aliasListo) return res.status(200).json({ configurado: true, error: `${pedido} no está como "Enviar como" en el Gmail de ${dueno}.` });
     const desde = dueno ? pedido : email;
-    const msg = mime({ de: desde, nombreDe: nombreDe || desde, para: String(para).trim(), asunto: asunto || 'Relevo', texto: texto || '', html: conFirma(html, firma || firmaHtml), adjunto: pdfBase64 ? { base64: pdfBase64, nombre: pdfNombre || 'documento.pdf' } : null });
+    const msg = mime({ de: desde, nombreDe: nombreDe || desde, para: String(para).trim(), asunto: asunto || 'Relevo', texto: texto || '', html: conFirma(html, firma || firmaHtml), adjunto: pdfBase64 ? { base64: pdfBase64, nombre: pdfNombre || 'documento.pdf' } : null, adjuntos: Array.isArray(adjuntos) ? adjuntos.slice(0, 5) : [] });
     const token = await obtener(buzon, modo === 'enviar' ? SEND_SCOPE : GMAIL_SCOPE);
     const j = await entregar(token, msg, modo);
     return res.status(200).json({ configurado: true, ok: true, id: j.id, enviado: modo === 'enviar', desde, url: modo === 'enviar' ? null : `https://mail.google.com/mail/u/${encodeURIComponent(buzon)}/#drafts` });

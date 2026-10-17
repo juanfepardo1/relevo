@@ -26,15 +26,18 @@ function cargar() {
       Titulo: { normal: 'DejaVuSerif-Bold.ttf', bold: 'DejaVuSerif-Bold.ttf', italics: 'DejaVuSerif-Bold.ttf', bolditalics: 'DejaVuSerif-Bold.ttf' },
       Serif: { normal: 'LiberationSerif-Regular.ttf', bold: 'LiberationSerif-Regular.ttf', italics: 'LiberationSerif-Regular.ttf', bolditalics: 'LiberationSerif-Regular.ttf' },
     };
-    const [logo, brush] = await Promise.all([dataUrl('/docimg/logo.png'), dataUrl('/docimg/brush.png')]);
-    return { pdfMake, img: { logo, brush } };
+    const [logo, brush, ciudad] = await Promise.all([dataUrl('/docimg/logo.png'), dataUrl('/docimg/brush.png'), dataUrl('/docimg/ciudad.png')]);
+    return { pdfMake, img: { logo, brush, ciudad } };
   })();
   return listo;
 }
 
-export type Marca = { logo: string; brush: string };
+export type Marca = { logo: string; brush: string; ciudad: string };
 
 export async function generarPdf(build: (img: Marca) => TDocumentDefinitions): Promise<Blob> {
   const { pdfMake, img } = await cargar();
   return new Promise((ok) => pdfMake.createPdf(build(img)).getBlob((b: Blob) => ok(b)));
 }
+
+/** PDF en base64 (sin encabezado data:) para adjuntarlo a un correo. */
+export async function blobBase64(b: Blob) { return b64(await b.arrayBuffer()); }

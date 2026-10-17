@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Check, X, CalendarBlank, WhatsappLogo, Phone, FilePdf, PaperPlaneTilt, Calculator, Archive, UserMinus } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
 import { useQuery } from '../lib/data';
-import { fechaHora } from '../lib/format';
+import { fechaHora, hoy as hoyDia } from '../lib/format';
 import { habilesDesde, diasDesde } from '../lib/habiles';
 import { CLAVE_RECORDATORIO, estadoRecordatorios, escalonValoracion, PLAZO_VALORACION, type Aviso } from '../lib/alertas';
 import { useToast } from './ui';
@@ -138,7 +138,7 @@ export function SiguientePaso({ v, onCambio }: { v: Row; onCambio: () => void })
       else { texto = `Reunión el ${fechaHora(reunionEn)}.`; cuerpo = <FechaReunion valor={reunionEn} texto="Cambiar fecha" onGuardar={async (iso) => run(() => mover(v.id, null, `Se movió la reunión para el ${fechaHora(iso)}.`, { reunion_en: iso }), 'Fecha cambiada')()} />; }
       break;
     case 'reunion_hecha':
-      texto = 'Envía el NDA y la lista de documentos antes de 48 horas.';
+      texto = 'Envía el NDA y la lista de documentos antes de 48 horas. Prepáralos aquí: quedan guardados en la ficha y el correo sale como borrador.';
       cuerpo = noSigue ? (
         <span className="acciones">
           <span className="meta">¿No quiere seguir?</span>
@@ -147,8 +147,8 @@ export function SiguientePaso({ v, onCambio }: { v: Row; onCambio: () => void })
         </span>
       ) : (
         <span className="acciones">
-          <Link className="btn" to={`/documentos?tipo=nda&vendedor=${v.id}`}><FilePdf className="ic" />Generar NDA</Link>
-          <button className="btn primary" onClick={run(() => mover(v.id, 'nda_docs', 'Se enviaron el NDA y la lista de documentos.', {}, 'correo'), 'Pasó a NDA + docs solicitados')}><PaperPlaneTilt className="ic" />Ya los envié</button>
+          <Link className="btn primary" to={`/vendedores/${v.id}/enviar`}><FilePdf className="ic" />Preparar NDA y documentos</Link>
+          <button className="btn" onClick={run(async () => { await mover(v.id, 'nda_docs', 'Se enviaron el NDA y la lista de documentos.', {}, 'correo'); await supabase.from('documentos').update({ estado: 'enviado', completado_en: hoyDia() }).eq('vendedor_id', v.id).eq('direccion', 'enviar').eq('estado', 'pendiente').in('tipo', ['nda', 'lista_documentos']); }, 'Pasó a NDA + docs solicitados')}><PaperPlaneTilt className="ic" />Ya los envié</button>
           <button className="btn ghost" onClick={() => setNoSigue(true)}><UserMinus className="ic" />No quiere seguir</button>
         </span>
       );

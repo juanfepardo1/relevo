@@ -80,7 +80,7 @@ export async function firmaGmail(obtener, email, preferida) {
 const mimeWord = (s) => (/^[\x20-\x7e]*$/.test(s) ? s : `=?UTF-8?B?${Buffer.from(s).toString('base64')}?=`);
 const wrap76 = (s) => s.replace(/.{1,76}/g, '$&\r\n');
 
-export function mime({ de, nombreDe, para, asunto, texto, html, adjunto }) {
+export function mime({ de, nombreDe, para, asunto, texto, html, adjunto, adjuntos }) {
   const b1 = 'rlv_' + crypto.randomBytes(8).toString('hex'), b2 = 'rlv_' + crypto.randomBytes(8).toString('hex');
   const partes = [
     `From: ${mimeWord(nombreDe)} <${de}>`, `To: ${para}`, `Reply-To: ${de}`, `Subject: ${mimeWord(asunto)}`, 'MIME-Version: 1.0',
@@ -90,7 +90,10 @@ export function mime({ de, nombreDe, para, asunto, texto, html, adjunto }) {
     `--${b2}`, 'Content-Type: text/html; charset="UTF-8"', 'Content-Transfer-Encoding: base64', '', wrap76(Buffer.from(html).toString('base64')),
     `--${b2}--`,
   ];
-  if (adjunto) partes.push(`--${b1}`, `Content-Type: application/pdf; name="${mimeWord(adjunto.nombre)}"`, `Content-Disposition: attachment; filename="${mimeWord(adjunto.nombre)}"`, 'Content-Transfer-Encoding: base64', '', wrap76(adjunto.base64));
+  for (const a of [...(adjunto ? [adjunto] : []), ...(Array.isArray(adjuntos) ? adjuntos : [])]) {
+    if (!a?.base64) continue;
+    partes.push(`--${b1}`, `Content-Type: application/pdf; name="${mimeWord(a.nombre || 'documento.pdf')}"`, `Content-Disposition: attachment; filename="${mimeWord(a.nombre || 'documento.pdf')}"`, 'Content-Transfer-Encoding: base64', '', wrap76(a.base64));
+  }
   partes.push(`--${b1}--`, '');
   return partes.join('\r\n');
 }

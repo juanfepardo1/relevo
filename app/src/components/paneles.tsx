@@ -58,8 +58,9 @@ export function Persona({ email }: { email: string | null | undefined }) {
 }
 
 /* ---------- Documentos ---------- */
-export function DocumentosPanel({ entidad, id }: { entidad: Ent; id: string }) {
-  const q = useQuery(() => supabase.from('documentos').select('*').eq(fk(entidad), id).order('created_at', { ascending: false }), [id]);
+export function DocumentosPanel({ entidad, id, direccion }: { entidad: Ent; id: string; direccion?: 'recibir' | 'enviar' }) {
+  const q = useQuery(() => { let r = supabase.from('documentos').select('*').eq(fk(entidad), id); if (direccion) r = r.eq('direccion', direccion); return r.order('created_at', { ascending: false }); }, [id, direccion]);
+  const [subiendo, setSubiendo] = useState('');
   const [open, setOpen] = useState(false);
   const [lote, setLote] = useState<File[] | null>(null);
   const [arrastre, setArrastre] = useState(false);
@@ -85,6 +86,18 @@ export function DocumentosPanel({ entidad, id }: { entidad: Ent; id: string }) {
     window.location.assign(data.signedUrl);
   };
 
+  const subirA = async (d: Row, f: File) => {
+    setSubiendo(d.id);
+    try {
+      const path = `${entidad}/${id}/${Date.now()}-${f.name.replace(/[^\w.\-]+/g, '_')}`;
+      const up = await supabase.storage.from('documentos').upload(path, f);
+      if (up.error) throw new Error(up.error.message);
+      await must(supabase.from('documentos').update({ archivo_path: path, estado: 'recibido', completado_en: hoy() }).eq('id', d.id));
+      toast(`${d.nombre}: recibido`); q.reload();
+    } catch (e: any) { toast(e.message, true); }
+    setSubiendo('');
+  };
+
   const fila = (d: Row) => {
     const atraso = d.estado === 'solicitado' ? diasDesde(d.solicitado_en) : null;
     const pend = d.estado === 'solicitado' || d.estado === 'pendiente';
@@ -105,20 +118,36 @@ export function DocumentosPanel({ entidad, id }: { entidad: Ent; id: string }) {
           </span>
           {(d.archivo_path || d.url) && <button className="btn ghost" title="Abrir" onClick={() => abrir(d)}><ArrowSquareOut className="ic" /></button>}
           {d.archivo_path && <button className="btn ghost" title="Descargar" aria-label="Descargar" onClick={() => descargar(d)}><DownloadSimple className="ic" /></button>}
+          {pend && d.direccion === 'recibir' && <label className="btn ghost" title="Subir el archivo de este documento" style={{ cursor: 'pointer' }}><UploadSimple className="ic" />{subiendo === d.id ? '…' : ''}<input type="file" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) subirA(d, f); }} /></label>}
           {pend && <button className="btn ghost" title={d.direccion === 'recibir' ? 'Marcar recibido' : 'Marcar enviado'} onClick={() => marcar(d)}><Check className="ic" /></button>}
         </div>
       </div>
     );
   };
   const lista = (q.data || []) as Row[];
+  const pedidos = lista.filter((d) => d.direccion === 'recibir' && d.paquete_id && d.estado !== 'descartado');
+  const progreso = { total: pedidos.length, recibidos: pedidos.filter((d) => d.estado === 'recibido').length, faltan: pedidos.filter((d) => d.estado === 'solicitado').length };
   const pendientes = lista.filter((d) => d.estado === 'solicitado' || d.estado === 'pendiente');
   const resto = lista.filter((d) => !(d.estado === 'solicitado' || d.estado === 'pendiente'));
   const grupos = Object.entries(resto.reduce((m: Record<string, Row[]>, d) => { (m[d.tipo] ||= []).push(d); return m; }, {}));
   return (
     <section className={'panel' + (arrastre ? ' drop-on' : '')} onDragOver={(e) => { if (e.dataTransfer.types.includes('Files')) { e.preventDefault(); setArrastre(true); } }} onDragLeave={() => setArrastre(false)} onDrop={(e) => { e.preventDefault(); setArrastre(false); const f = Array.from(e.dataTransfer.files || []); if (f.length) setLote(f); }}>
-      <header><h2>Documentos</h2><div style={{ display: 'flex', gap: 6 }}>{entidad === 'vendedor' && <Link className="btn" to={`/documentos?tipo=nda&vendedor=${id}`}><FilePlus className="ic" />Generar NDA</Link>}<label className="btn" style={{ cursor: 'pointer' }} title="Sube varios archivos de una vez"><UploadSimple className="ic" />Subir varios<input type="file" multiple hidden onChange={(e) => { const f = Array.from(e.target.files || []); e.target.value = ''; if (f.length) setLote(f); }} /></label><button className="btn" onClick={() => setOpen(true)}><Plus className="ic" />Registrar</button></div></header>
+      <header>
+        <h2>{direccion === 'enviar' ? 'Enviados por Relevo' : direccion === 'recibir' ? 'Documentos del cliente' : 'Documentos'}</h2>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {entidad === 'vendedor' && direccion !== 'recibir' && <Link className="btn" to={`/vendedores/${id}/enviar`}><FilePlus className="ic" />Preparar NDA y documentos</Link>}
+          {direccion !== 'enviar' && <label className="btn" style={{ cursor: 'pointer' }} title="Sube varios archivos de una vez"><UploadSimple className="ic" />Subir varios<input type="file" multiple hidden onChange={(e) => { const f = Array.from(e.target.files || []); e.target.value = ''; if (f.length) setLote(f); }} /></label>}
+          <button className="btn" onClick={() => setOpen(true)}><Plus className="ic" />Registrar</button>
+        </div>
+      </header>
+      {direccion === 'recibir' && progreso.total > 0 && (
+        <div className="doc-progreso">
+          <div className="dp-txt"><b className="num">{progreso.recibidos} de {progreso.total}</b> documentos pedidos han llegado{progreso.faltan ? `. Faltan ${progreso.faltan}` : '. Están todos'}</div>
+          <div className="dp-barra"><span style={{ width: `${Math.round((progreso.recibidos / progreso.total) * 100)}%` }} /></div>
+        </div>
+      )}
       {q.loading ? <Skeleton rows={3} /> : !q.data?.length ? (
-        <p className="empty-state">Sin documentos. Registra lo que pides, recibes o envías para que el sistema avise cuando algo se atrase.</p>
+        <p className="empty-state">{direccion === 'enviar' ? 'Aún no le hemos enviado nada. El NDA y la lista de documentos quedan aquí al prepararlos.' : direccion === 'recibir' ? 'Aún no hay documentos del cliente. Lo que le pidamos aparece aquí como pendiente.' : 'Sin documentos. Registra lo que pides, recibes o envías para que el sistema avise cuando algo se atrase.'}</p>
       ) : (
         <>
           {pendientes.length > 0 && <div className="list">{pendientes.map(fila)}</div>}
@@ -147,17 +176,17 @@ export function DocumentosPanel({ entidad, id }: { entidad: Ent; id: string }) {
         {lote && <SubirVarios entidad={entidad} id={id} archivos={lote} pendientes={((q.data || []) as Row[]).filter((d) => d.direccion === 'recibir' && d.estado === 'solicitado')} onDone={() => { setLote(null); q.reload(); }} />}
       </Modal>
       <Modal open={open} onClose={() => setOpen(false)} title="Registrar documento">
-        <DocForm entidad={entidad} id={id} onDone={() => { setOpen(false); q.reload(); }} />
+        <DocForm entidad={entidad} id={id} direccionInicial={direccion} onDone={() => { setOpen(false); q.reload(); }} />
       </Modal>
     </section>
   );
 }
 
-function DocForm({ entidad, id, onDone }: { entidad: Ent; id: string; onDone: () => void }) {
+function DocForm({ entidad, id, onDone, direccionInicial }: { entidad: Ent; id: string; onDone: () => void; direccionInicial?: 'recibir' | 'enviar' }) {
   const [tipo, setTipo] = useState('estados_financieros');
   const [nombre, setNombre] = useState('');
-  const [direccion, setDireccion] = useState('recibir');
-  const [estado, setEstado] = useState('solicitado');
+  const [direccion, setDireccion] = useState<string>(direccionInicial ?? 'recibir');
+  const [estado, setEstado] = useState(direccionInicial === 'enviar' ? 'enviado' : 'solicitado');
   const [solicitado, setSolicitado] = useState(hoy());
   const [url, setUrl] = useState('');
   const [notas, setNotas] = useState('');
@@ -288,8 +317,7 @@ function adivinarTipo(nombre: string) {
 
 function SubirVarios({ entidad, id, archivos, pendientes, onDone }: { entidad: Ent; id: string; archivos: File[]; pendientes: Row[]; onDone: () => void }) {
   const toast = useToast();
-  const [filas, setFilas] = useState(() => archivos.map((f) => ({ f, nombre: f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim(), tipo: adivinarTipo(f.name) })));
-  const [cerrar, setCerrar] = useState(true);
+  const [filas, setFilas] = useState(() => archivos.map((f) => ({ f, nombre: f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim(), tipo: adivinarTipo(f.name), pedido: '' })));
   const [busy, setBusy] = useState(false);
   const [hechos, setHechos] = useState(0);
   const subir = async (e: FormEvent) => {
@@ -300,12 +328,10 @@ function SubirVarios({ entidad, id, archivos, pendientes, onDone }: { entidad: E
         const path = `${entidad}/${id}/${Date.now()}-${r.f.name.replace(/[^\w.\-]+/g, '_')}`;
         const up = await supabase.storage.from('documentos').upload(path, r.f);
         if (up.error) throw new Error(up.error.message);
-        await must(supabase.from('documentos').insert({ [fk(entidad)]: id, tipo: r.tipo, nombre: r.nombre || r.f.name, direccion: 'recibir', estado: 'recibido', completado_en: hoy(), archivo_path: path }));
+        if (r.pedido) await must(supabase.from('documentos').update({ archivo_path: path, estado: 'recibido', completado_en: hoy() }).eq('id', r.pedido));
+        else await must(supabase.from('documentos').insert({ [fk(entidad)]: id, tipo: r.tipo, nombre: r.nombre || r.f.name, direccion: 'recibir', estado: 'recibido', completado_en: hoy(), archivo_path: path }));
         ok++; setHechos(ok);
       } catch (err: any) { fallos.push(`${r.f.name}: ${err.message}`); }
-    }
-    if (cerrar && ok && pendientes.length) {
-      await supabase.from('documentos').update({ estado: 'recibido', completado_en: hoy(), notas: 'Cerrado al subir los archivos recibidos' }).in('id', pendientes.map((d) => d.id));
     }
     setBusy(false);
     if (fallos.length) toast(`Subidos ${ok} de ${filas.length}. Fallaron: ${fallos.join(' · ')}`, true);
@@ -321,14 +347,17 @@ function SubirVarios({ entidad, id, archivos, pendientes, onDone }: { entidad: E
             <select className="sel" value={r.tipo} onChange={(e) => setFilas(filas.map((x, j) => (j === i ? { ...x, tipo: e.target.value } : x)))} aria-label="Tipo">
               {TIPO_DOC.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
             </select>
+            {pendientes.length > 0 && (
+              <select className="sel" value={r.pedido} onChange={(e) => setFilas(filas.map((x, j) => (j === i ? { ...x, pedido: e.target.value } : x)))} aria-label="Corresponde a" title="¿Es uno de los documentos que pedimos?">
+                <option value="">Documento nuevo</option>
+                {pendientes.filter((d) => d.id === r.pedido || !filas.some((x) => x.pedido === d.id)).map((d) => <option key={d.id} value={d.id}>Es: {d.nombre}</option>)}
+              </select>
+            )}
             <button type="button" className="btn ghost" aria-label="Quitar" onClick={() => setFilas(filas.filter((_, j) => j !== i))}>×</button>
           </div>
         ))}
       </div>
-      {pendientes.length > 0 && (
-        <label style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><input type="checkbox" checked={cerrar} onChange={(e) => setCerrar(e.target.checked)} />
-          Marcar como recibido lo que estaba solicitado ({pendientes.map((d) => d.nombre).join(', ')})</label>
-      )}
+      {pendientes.length > 0 && <p className="meta">Si un archivo es uno de los documentos que pedimos, escoge cuál: ese pendiente queda recibido.</p>}
       <footer><button className="btn primary" disabled={busy || !filas.length}>{busy ? `Subiendo ${hechos} de ${filas.length}` : `Subir ${filas.length} documentos`}</button></footer>
     </form>
   );

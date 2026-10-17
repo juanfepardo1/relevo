@@ -45,7 +45,7 @@ export const FUENTE_DINERO: Opt[] = [['propio', 'Propio'], ['fondo_comprometido'
 export const ESTRUCTURAS: Opt[] = [['contado', 'Contado'], ['earn_out', 'Earn out'], ['nota_vendedor', 'Nota del vendedor'], ['acciones', 'Acciones']];
 
 export const TIPO_DOC: Opt[] = [
-  ['nda', 'NDA'], ['estados_financieros', 'Estados financieros'], ['declaracion_renta', 'Declaración de renta'], ['facturacion', 'Facturación electrónica'],
+  ['nda', 'NDA'], ['lista_documentos', 'Lista de documentos'], ['estados_financieros', 'Estados financieros'], ['declaracion_renta', 'Declaración de renta'], ['facturacion', 'Facturación electrónica'],
   ['extractos', 'Extractos bancarios'], ['camara_comercio', 'Cámara de comercio'], ['valoracion_preliminar', 'Valoración preliminar'],
   ['valoracion_profunda', 'Valoración profunda'], ['diagnostico', 'Diagnóstico'], ['teaser', 'Teaser'], ['cim', 'Memorando (CIM)'],
   ['mandato', 'Mandato'], ['loi', 'LOI'], ['contrato', 'Contrato'], ['prueba_fondos', 'Prueba de fondos'], ['otro', 'Otro'],

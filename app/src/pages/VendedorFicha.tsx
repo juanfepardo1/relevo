@@ -62,7 +62,8 @@ export default function VendedorFicha() {
             </div>
           </section>
           <TareasFichaPanel vendedorId={id} />
-          <DocumentosPanel entidad="vendedor" id={id} />
+          <DocumentosPanel entidad="vendedor" id={id} direccion="recibir" />
+          <DocumentosPanel entidad="vendedor" id={id} direccion="enviar" />
           <ActividadesPanel entidad="vendedor" id={id} onChange={q.reload} />
           <PresentacionesPanel vendedorId={id} />
         </div>

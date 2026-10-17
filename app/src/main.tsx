@@ -11,6 +11,7 @@ import Login, { CrearClave } from './pages/Login';
 import Inicio from './pages/Inicio';
 import Vendedores from './pages/Vendedores';
 import VendedorFicha from './pages/VendedorFicha';
+import Paquete from './pages/Paquete';
 import Compradores from './pages/Compradores';
 import CompradorFicha from './pages/CompradorFicha';
 import Stats from './pages/Stats';
@@ -55,6 +56,7 @@ function App() {
           <Route path="vendedores" element={<Vendedores key="todos" />} />
           <Route path="mis-clientes" element={<Vendedores key="mios" mios />} />
           <Route path="vendedores/:id" element={<VendedorFicha />} />
+          <Route path="vendedores/:id/enviar" element={<Paquete />} />
           <Route path="compradores" element={<Compradores />} />
           <Route path="compradores/:id" element={<CompradorFicha />} />
           <Route path="stats" element={<Stats />} />
