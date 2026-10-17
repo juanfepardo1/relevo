@@ -77,9 +77,10 @@ export function correoFormulario(v, tipo) {
   const boton = { texto: 'Contar mi caso', url: link, nota: '4 minutos · sin documentos · confidencial' };
   const C3 = {
     invitacion: {
-      asunto: `El siguiente paso con la valoración${de}`,
-      pre: 'Queremos acompañarte en lo que sigue.',
-      p: [`Hace unos días te enviamos la valoración flash${de}. Queremos acompañarte en lo que sigue, y para atenderte bien necesitamos entender tu caso: son unas preguntas de 4 minutos, sin documentos.`],
+      asunto: 'Queremos darle continuidad a tu caso',
+      pre: 'Más allá de tenerte en nuestra base, queremos acompañarte.',
+      p: [`Hace unos días te enviamos la valoración flash${de}. Queremos darle continuidad a tu caso: más allá de tenerte en nuestra base, queremos entender tu situación para acompañarte en lo que sigue.`],
+      p2: ['Para eso necesitamos unas preguntas de 4 minutos, sin documentos.'],
       c: ['Con tus respuestas revisamos tu caso personalmente y te escribimos. Damos prioridad a quienes nos cuentan su situación. Todo es confidencial.'],
     },
     r1: {
@@ -95,10 +96,15 @@ export function correoFormulario(v, tipo) {
       c: ['Si más adelante quieres retomarlo, responde este correo y con gusto te atendemos.'],
     },
   }[tipo];
+  // Recordatorio del rango ya enviado (valores en pesos en la ficha)
+  const mil = (n) => '$' + String(Math.round(n / 1e6)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const rango = tipo === 'invitacion' && v.valoracion_min && v.valoracion_max ? `${mil(v.valoracion_min)} a ${mil(v.valoracion_max)} millones` : '';
+  const destacado = rango ? { titulo: 'Tu valoración flash', valor: rango, nota: 'El rango que te enviamos. Con tu caso lo podemos afinar.' } : undefined;
+  const p2 = C3.p2 || [];
   return {
     asunto: C3.asunto,
-    texto: `${saludo}\n\n${C3.p.join('\n\n')}\n\n${link}\n\n${C3.c.join('\n\n')}\n\n${FIRMA_TEXTO}`,
-    html: correoHtml({ preheader: C3.pre, saludo, parrafos: C3.p, boton, cierre: C3.c }),
+    texto: `${saludo}\n\n${C3.p.join('\n\n')}${rango ? `\n\nTu valoración flash: ${rango}.` : ''}${p2.length ? '\n\n' + p2.join('\n\n') : ''}\n\n${link}\n\n${C3.c.join('\n\n')}\n\n${FIRMA_TEXTO}`,
+    html: correoHtml({ preheader: C3.pre, saludo, parrafos: C3.p, destacado, despues: p2, boton, cierre: C3.c }),
   };
 }
 
