@@ -17,10 +17,6 @@ const AUTO: Record<string, { I: any; tono: string }> = {
   etapa_estancada: { I: WarningCircle, tono: 'var(--ink-3)' },
 };
 
-function saludo() {
-  const h = Number(new Intl.DateTimeFormat('en-US', { hour: 'numeric', hourCycle: 'h23', timeZone: 'America/Bogota' }).format(new Date()));
-  return h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
-}
 const fechaLarga = () => new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Bogota' }).format(new Date());
 const SEL_TAREA = '*, vendedor:vendedores(empresa,nombre)';
 
@@ -63,7 +59,7 @@ export default function Inicio() {
     <div className="page inicio">
       <div className="head">
         <div>
-          <h1>{saludo()}{nombre && `, ${nombre}`}</h1>
+          <h1>Hola{nombre && `, ${nombre}`}</h1>
           <p style={{ textTransform: 'none' }}>
             <span style={{ textTransform: 'capitalize' }}>{fechaLarga()}</span>
             {!cargando && <> · {nAhora ? `${nAhora} ${nAhora === 1 ? 'cosa' : 'cosas'} para hoy` : 'Nada urgente hoy'}{hechas.length > 0 && `, ${hechas.length} ${hechas.length === 1 ? 'hecha' : 'hechas'}`}</>}
