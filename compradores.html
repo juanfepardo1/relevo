@@ -2,22 +2,22 @@
 <title>Relevo · Compra empresas rentables en Colombia</title>
 <meta name="description" content="Registra tu tesis de compra una vez. Relevo te muestra solo empresas colombianas verificadas que encajan, bajo confidencialidad, y te ayuda a estructurar la financiación.">
 <meta property="og:title" content="Relevo · Compra empresas rentables en Colombia"><meta property="og:description" content="Registra tu tesis de compra una vez. Te mostramos solo las empresas que encajan, bajo confidencialidad."><meta property="og:type" content="website"><meta property="og:locale" content="es_CO">
-<meta name="theme-color" content="#0a1424"><meta name="color-scheme" content="dark"><link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#21416f"><meta name="color-scheme" content="dark"><link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 @font-face{font-family:"Geist";src:url(/fonts/Geist-Variable.woff2) format("woff2");font-weight:100 900;font-display:swap}
 @font-face{font-family:"Geist Mono";src:url(/fonts/GeistMono-Variable.woff2) format("woff2");font-weight:100 900;font-display:swap}
 :root{
-  --bg:#0a1424;--bg-2:#0c1a2e;--raise:#112139;--raise-2:#16294a;
-  --line:rgba(214,226,245,.09);--line-2:rgba(214,226,245,.16);
-  --ink:#eaf0f8;--ink-2:#b4c2d8;--ink-3:#8696b0;
-  --blue:#2c5186;--blue-hi:#5b86c8;--blue-tint:rgba(91,134,200,.14);
+  --bg:#21416f;--bg-2:#1d3a64;--raise:#294b7c;--raise-2:#30568c;
+  --line:rgba(220,232,250,.14);--line-2:rgba(220,232,250,.24);
+  --ink:#f3f6fb;--ink-2:#c9d6ea;--ink-3:#a7b9d4;
+  --blue:#2c5186;--blue-hi:#9dbbe6;--blue-tint:rgba(157,187,230,.16);
   --orange:#f47b3d;--orange-hi:#ff9058;--orange-ink:#1a0d05;--orange-tint:rgba(244,123,61,.14);
   --ok:#7fc8a3;--err:#ff8f80;
   --sans:"Geist",ui-sans-serif,system-ui,sans-serif;--mono:"Geist Mono",ui-monospace,monospace;
   --r-ctl:10px;--r-panel:16px;
   --ease:cubic-bezier(.16,1,.3,1);
-  --sh:0 1px 0 rgba(255,255,255,.04) inset,0 24px 60px -24px rgba(2,8,20,.8);
+  --sh:0 1px 0 rgba(255,255,255,.06) inset,0 24px 60px -24px rgba(8,22,44,.65);
   color-scheme:dark;
 }
 *{box-sizing:border-box}[hidden]{display:none!important}
@@ -47,11 +47,11 @@ nav{display:flex;align-items:center;gap:32px;height:68px}
 .nav-r .sell{font-size:15px;color:var(--ink-3);text-decoration:none}.nav-r .sell:hover{color:var(--ink)}
 
 /* buttons */
-.btn{appearance:none;border:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;font:600 15px var(--sans);letter-spacing:-.005em;border-radius:var(--r-ctl);min-height:46px;padding:0 20px;text-decoration:none;white-space:nowrap;transition:background .2s,box-shadow .2s,transform .12s,color .2s}
+.btn{appearance:none;border:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;font:600 15px var(--sans);letter-spacing:-.005em;border-radius:999px;min-height:46px;padding:0 22px;text-decoration:none;white-space:nowrap;transition:background .2s,box-shadow .2s,transform .12s,color .2s}
 .btn .ic{width:16px;height:16px;transition:transform .35s var(--ease)}
 .btn:hover .ic{transform:translateX(3px)}
 .btn:active{transform:translateY(1px)}
-.btn-p{background:var(--orange);color:var(--orange-ink);box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 6px 16px -8px rgba(2,8,20,.7)}
+.btn-p{background:var(--orange);color:var(--orange-ink);box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 8px 20px -8px rgba(244,123,61,.6)}
 .btn-p:hover{background:var(--orange-hi)}
 .btn-s{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-2)}
 .btn-s:hover{background:var(--raise)}
@@ -60,10 +60,16 @@ nav{display:flex;align-items:center;gap:32px;height:68px}
 
 /* hero */
 .hero{position:relative;isolation:isolate;overflow:hidden}
-.hero::before{content:"";position:absolute;inset:-20% -10% auto;height:120%;z-index:-1;background:
-  radial-gradient(60% 50% at 78% 30%,rgba(44,81,134,.55),transparent 70%),
-  radial-gradient(40% 35% at 85% 55%,rgba(244,123,61,.10),transparent 70%)}
-.hero-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:64px;align-items:center;padding-block:88px 104px;min-height:min(760px,calc(100dvh - 68px))}
+.hero{background:radial-gradient(1200px 520px at 78% 18%,#3a649d 0%,rgba(58,100,157,0) 60%),linear-gradient(180deg,#2c5186 0%,var(--bg) 100%)}
+.skyline-box{overflow:hidden;display:flex;justify-content:center;pointer-events:none;user-select:none}
+.skyline{width:min(1640px,100%);margin:-30px auto -2px;position:relative;z-index:0}
+.skyline img{display:block;width:100%;height:auto}
+@media (max-width:620px){.skyline{width:900px;flex:none}}
+@media (prefers-reduced-motion:no-preference){
+  .js .skyline img{clip-path:inset(0 100% 0 0);transition:clip-path 2.6s cubic-bezier(.65,0,.35,1) .2s}
+  .js .skyline.in img{clip-path:inset(0 0 0 0)}
+}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:64px;align-items:center;padding-block:96px 24px;position:relative;z-index:1}
 .hero h1{font-size:clamp(36px,3.6vw,50px);line-height:1.04;letter-spacing:-.04em}
 .hero h1 span{color:var(--ink-3);display:block}
 .hero h1 .l1{font-weight:inherit;white-space:nowrap}
@@ -185,8 +191,8 @@ footer a{text-decoration:none}footer a:hover{color:var(--ink)}
 /* reveal */
 .rv{opacity:1}
 @media (prefers-reduced-motion:no-preference){
-  .js .hero .rv{opacity:0;transform:translateY(18px);filter:blur(6px);transition:opacity .9s var(--ease),transform .9s var(--ease),filter .9s var(--ease);transition-delay:calc(var(--d,0) * 90ms)}
-  .js .hero .rv.in{opacity:1;transform:none;filter:none}
+  .js .rv{opacity:0;transform:translateY(18px);filter:blur(6px);transition:opacity .9s var(--ease),transform .9s var(--ease),filter .9s var(--ease);transition-delay:calc(var(--d,0) * 90ms)}
+  .js .rv.in{opacity:1;transform:none;filter:none}
   .js .tl{--p:0}.js .tl.in{--p:1}
   .js .bar span{transform:scaleX(0)}.js .stack.in .bar span{transform:none}
   .js .stack.in .bar span:nth-child(2){transition-delay:.12s}.js .stack.in .bar span:nth-child(3){transition-delay:.24s}
@@ -286,7 +292,7 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
 <header class="top" id="top"><nav class="wrap">
   <a class="brand" href="/compradores" aria-label="Relevo, inicio compradores"><span class="mark" aria-hidden="true"><i></i><i></i></span>Relevo</a>
   <div class="links"><a href="#como">Cómo funciona</a><a href="#financiacion">Financiación</a><a href="#preguntas">Preguntas</a></div>
-  <div class="nav-r"><a class="sell" href="/">Vender una empresa</a><button class="btn btn-p" type="button" data-open>Registrar búsqueda</button></div>
+  <div class="nav-r"><a class="sell" href="/">¿Vendes tu empresa?</a><button class="btn btn-p" type="button" data-open>Registrar búsqueda</button></div>
 </nav></header>
 
 <main>
@@ -324,6 +330,7 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
         <figcaption class="t-foot"><svg class="ic"><use href="#i-lock-key"/></svg><span>Razón social <span class="redact" aria-hidden="true"></span> visible tras la firma</span></figcaption>
       </figure>
     </div>
+    <div class="skyline-box" aria-hidden="true"><div class="skyline" id="skyline"><img src="/img/linea-puerto.webp" srcset="/img/linea-puerto-900.webp 900w, /img/linea-puerto.webp 1774w" sizes="100vw" width="1774" height="505" alt=""></div></div>
   </section>
 
   <section class="s" id="como">
@@ -545,6 +552,7 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
   new IntersectionObserver(([e])=>$('#top').classList.toggle('scrolled',!e.isIntersecting)).observe(sentinel);
   const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.18});
   $$('.rv,#tl,#stack').forEach(el=>io.observe(el));
+  requestAnimationFrame(()=>{const k=document.getElementById('skyline');if(k)k.classList.add('in')});
   /* timeline nodes light up in sequence once visible */
   new IntersectionObserver(([e],o)=>{if(!e.isIntersecting)return;o.disconnect();
     const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;

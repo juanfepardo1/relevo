@@ -49,7 +49,11 @@ p{text-wrap:pretty}
 .links{display:flex;gap:28px;font-size:15px;font-weight:500}
 .links a{text-decoration:none;opacity:.82;transition:opacity .2s}
 .links a:hover{opacity:1}
-.nav .btn{margin-left:auto;height:42px;padding:0 18px;font-size:15px}
+.nav .btn{height:42px;padding:0 18px;font-size:15px}
+.buyer{margin-left:auto;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:999px;font-size:14px;font-weight:550;text-decoration:none;box-shadow:inset 0 0 0 1px currentColor;opacity:.8;transition:opacity .2s,background .2s}
+.buyer:hover{opacity:1}
+.buyer svg{width:15px;height:15px;transition:transform .25s var(--ease)}
+.buyer:hover svg{transform:translateX(2px)}
 
 /* hero */
 .hero{position:relative;background:radial-gradient(1200px 520px at 78% 18%,#3a649d 0%,rgba(58,100,157,0) 60%),linear-gradient(180deg,var(--blue) 0%,var(--blue-deep) 100%);color:var(--on-blue);overflow:hidden;isolation:isolate}
@@ -282,6 +286,7 @@ footer{padding:56px 0 48px;color:var(--muted);font-size:14px}
 /* responsive */
 @media (max-width:980px){
   .links{display:none}
+  .buyer{display:none}
   .hero-grid{grid-template-columns:1fr;gap:56px;padding-top:120px;padding-bottom:40px}
   .report{justify-self:center}
   .compare,.duo,.team,.faq,.closing,.nda{grid-template-columns:1fr}
