@@ -7,23 +7,25 @@ import { TIPO_COMPRADOR, SUBTIPO, ESTADO_COMPRADOR, CERTEZA, ORIGEN, SECTORES, l
 import { rango, fecha } from '../lib/format';
 import { Skeleton, ErrorBox, Modal, Dias, useToast } from '../components/ui';
 import { EtapaTag } from '../components/paneles';
+import { Multi, pasa } from '../components/Multi';
 
 export default function Compradores() {
   const nav = useNavigate();
   const { etapasDe } = useCatalogo();
   const q = useQuery(() => supabase.from('v_compradores').select('*').order('created_at', { ascending: false }));
   const [buscar, setBuscar] = useState('');
-  const [tipo, setTipo] = useState('');
-  const [estado, setEstado] = useState('');
-  const [etapa, setEtapa] = useState('');
-  const [sector, setSector] = useState('');
+  const [tipo, setTipo] = useState<string[]>([]);
+  const [estado, setEstado] = useState<string[]>([]);
+  const [etapa, setEtapa] = useState<string[]>([]);
+  const [sector, setSector] = useState<string[]>([]);
+  const hayFiltro = tipo.length + estado.length + etapa.length + sector.length > 0;
   const [nuevo, setNuevo] = useState(false);
 
   const rows = useMemo(() => {
     const s = buscar.trim().toLowerCase();
     return (q.data || []).filter((c: Row) =>
-      (!tipo || c.tipo === tipo) && (!estado || c.estado === estado) && (!etapa || c.etapa === etapa) &&
-      (!sector || (c.categorias || []).includes(sector)) &&
+      pasa(tipo, c.tipo) && pasa(estado, c.estado) && pasa(etapa, c.etapa) &&
+      (!sector.length || sector.some((x) => (c.categorias || []).includes(x))) &&
       (!s || [c.nombre, c.contacto_nombre, c.contacto_email, c.ciudad].some((x) => String(x || '').toLowerCase().includes(s))));
   }, [q.data, buscar, tipo, estado, etapa, sector]);
 
@@ -35,10 +37,11 @@ export default function Compradores() {
       </div>
       <div className="toolbar">
         <input className="in" type="search" placeholder="Buscar nombre, contacto, correo" value={buscar} onChange={(e) => setBuscar(e.target.value)} />
-        <select className="sel" value={tipo} onChange={(e) => setTipo(e.target.value)} aria-label="Tipo"><option value="">Todos los tipos</option>{TIPO_COMPRADOR.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
-        <select className="sel" value={estado} onChange={(e) => setEstado(e.target.value)} aria-label="Estado"><option value="">Todos los estados</option>{ESTADO_COMPRADOR.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
-        <select className="sel" value={etapa} onChange={(e) => setEtapa(e.target.value)} aria-label="Etapa"><option value="">Todas las etapas</option>{etapasDe('comprador').map((e) => <option key={e.codigo} value={e.codigo}>{e.nombre}</option>)}</select>
-        <select className="sel" value={sector} onChange={(e) => setSector(e.target.value)} aria-label="Sector buscado"><option value="">Cualquier sector</option>{SECTORES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
+        <Multi label="Tipo" opciones={TIPO_COMPRADOR} value={tipo} onChange={setTipo} />
+        <Multi label="Estado" opciones={ESTADO_COMPRADOR} value={estado} onChange={setEstado} />
+        <Multi label="Etapa" opciones={etapasDe('comprador').map((e) => [e.codigo, e.nombre])} value={etapa} onChange={setEtapa} />
+        <Multi label="Sector buscado" opciones={SECTORES} value={sector} onChange={setSector} />
+        {hayFiltro && <button className="linkish" style={{ fontSize: 13 }} onClick={() => { setTipo([]); setEstado([]); setEtapa([]); setSector([]); }}>Limpiar filtros</button>}
       </div>
       {q.error ? <ErrorBox msg={q.error} retry={q.reload} /> : q.loading ? <div className="panel"><Skeleton rows={6} /></div> : (
         <div className="tablewrap">

@@ -7,6 +7,7 @@ import { SECTORES, VENTAS, HORIZONTE, CANAL, label } from '../lib/catalogos';
 import { fecha, hoy } from '../lib/format';
 import { Skeleton, ErrorBox, Modal, Dias, useToast } from '../components/ui';
 import { Persona } from '../components/paneles';
+import { Multi, pasa } from '../components/Multi';
 import { tonoEtapa, tonoBucket } from '../lib/colores';
 
 const VENTAS_ORD = VENTAS.map((v) => v[0]);
@@ -19,11 +20,13 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
   const q = useQuery(() => supabase.from('v_vendedores').select('*').order('fecha_ingreso', { ascending: false }));
   const [vista, setVista] = useState<'tabla' | 'pipeline'>(() => (localStorage.getItem('v-vista') as any) || 'tabla');
   const [buscar, setBuscar] = useState('');
-  const [etapa, setEtapa] = useState('todos');
-  const [resp, setResp] = useState('');
-  const [sector, setSector] = useState('');
-  const [bucket, setBucket] = useState('');
-  const [horizonte, setHorizonte] = useState('');
+  const [etapa, setEtapa] = useState<string[]>([]);
+  const [resp, setResp] = useState<string[]>([]);
+  const [sector, setSector] = useState<string[]>([]);
+  const [bucket, setBucket] = useState<string[]>([]);
+  const [horizonte, setHorizonte] = useState<string[]>([]);
+  const hayFiltro = etapa.length + resp.length + sector.length + bucket.length + horizonte.length > 0;
+  const limpiar = () => { setEtapa([]); setResp([]); setSector([]); setBucket([]); setHorizonte([]); };
   const [orden, setOrden] = useState<{ k: string; asc: boolean }>({ k: 'fecha_ingreso', asc: false });
   const [nuevo, setNuevo] = useState(false);
   const toast = useToast();
@@ -31,9 +34,9 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
   const rows = useMemo(() => {
     const s = buscar.trim().toLowerCase();
     let r = (q.data || []).filter((v: Row) =>
-      (etapa === 'todos' || v.etapa === etapa) &&
-      (mios ? v.responsable === yo?.email : (!resp || (resp === 'sin' ? !v.responsable : v.responsable === resp))) &&
-      (!sector || v.sector === sector) && (!bucket || v.bucket === bucket) && (!horizonte || (horizonte === 'sin' ? !v.horizonte : v.horizonte === horizonte)) &&
+      pasa(etapa, v.etapa) &&
+      (mios ? v.responsable === yo?.email : pasa(resp, v.responsable)) &&
+      pasa(sector, v.sector) && pasa(bucket, v.bucket) && pasa(horizonte, v.horizonte) &&
       (!s || [v.nombre, v.empresa, v.ciudad, v.correo, v.celular].some((x) => String(x || '').toLowerCase().includes(s))));
     const k = orden.k;
     const val = (v: Row) => (k === 'ventas_rango' ? VENTAS_ORD.indexOf(v[k]) : k === 'etapa' ? v.etapa_orden : v[k]);
@@ -66,23 +69,12 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
 
       <div className="toolbar">
         <input className="in" type="search" placeholder="Buscar nombre, empresa, ciudad" value={buscar} onChange={(e) => setBuscar(e.target.value)} />
-        <select className="sel" value={etapa} onChange={(e) => setEtapa(e.target.value)} aria-label="Etapa">
-          <option value="todos">Todas las etapas</option>
-          {etapas.map((e) => <option key={e.codigo} value={e.codigo}>{e.nombre}</option>)}
-        </select>
-        {!mios && <select className="sel" value={resp} onChange={(e) => setResp(e.target.value)} aria-label="Responsable">
-          <option value="">Cualquier responsable</option><option value="sin">Sin responsable</option>
-          {equipo.map((m) => <option key={m.email} value={m.email}>{m.apodo ?? m.nombre}</option>)}
-        </select>}
-        <select className="sel" value={sector} onChange={(e) => setSector(e.target.value)} aria-label="Sector">
-          <option value="">Todos los sectores</option>{SECTORES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
-        </select>
-        <select className="sel" value={bucket} onChange={(e) => setBucket(e.target.value)} aria-label="Bucket">
-          <option value="">Todos los buckets</option>{BUCKETS.map(([k, l]) => <option key={k} value={k}>{k} · {l}</option>)}
-        </select>
-        <select className="sel" value={horizonte} onChange={(e) => setHorizonte(e.target.value)} aria-label="Horizonte de venta">
-          <option value="">Cualquier horizonte</option>{HORIZONTE.map(([k, l]) => <option key={k} value={k}>{l}</option>)}<option value="sin">Sin horizonte</option>
-        </select>
+        <Multi label="Etapa" opciones={etapas.map((e) => [e.codigo, e.nombre])} value={etapa} onChange={setEtapa} />
+        {!mios && <Multi label="Responsable" opciones={[...equipo.map((m) => [m.email, m.apodo ?? m.nombre] as [string, string]), ['__sin', 'Sin responsable']]} value={resp} onChange={setResp} />}
+        <Multi label="Sector" opciones={SECTORES} value={sector} onChange={setSector} />
+        <Multi label="Bucket" opciones={BUCKETS.map(([k, l]) => [k, `${k} · ${l}`])} value={bucket} onChange={setBucket} />
+        <Multi label="Horizonte" opciones={[...HORIZONTE, ['__sin', 'Sin dato']]} value={horizonte} onChange={setHorizonte} />
+        {hayFiltro && <button className="linkish" style={{ fontSize: 13 }} onClick={limpiar}>Limpiar filtros</button>}
       </div>
 
       {q.error ? <ErrorBox msg={q.error} retry={q.reload} /> : q.loading ? <div className="panel"><Skeleton rows={8} /></div> : vista === 'tabla' ? (
