@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import type { Session } from '@supabase/supabase-js';
 import { supabase, enlaceTipo } from './lib/supabase';
+import { loteActual } from './lib/lote';
 import { CatalogoProvider } from './lib/data';
 import { ToastProvider } from './components/ui';
 import Layout from './components/Layout';
@@ -79,6 +80,7 @@ function App() {
 
 // Si se publicó una versión nueva mientras la pestaña estaba abierta, los archivos viejos ya no existen: recarga una vez.
 window.addEventListener('vite:preloadError', (e) => {
+  if (loteActual().corriendo) return; // nunca recargar en medio de un lote de valoraciones
   try { if (sessionStorage.getItem('recargado-por-version') === '1') return; sessionStorage.setItem('recargado-por-version', '1'); } catch { /* sin almacenamiento */ }
   e.preventDefault(); location.reload();
 });

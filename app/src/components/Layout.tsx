@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useEffect, useState, type ReactNode } from 'react';
 import { House, Tray, AddressBook, UserCircle, ChartBar, SignOut, Wallet, CaretDown, FileText, ShieldStar, CalendarBlank, Buildings } from '@phosphor-icons/react';
+import { loteActual } from '../lib/lote';
 import { supabase } from '../lib/supabase';
 import { useCatalogo } from '../lib/data';
 
@@ -61,7 +62,15 @@ export default function Layout({ email }: { email: string }) {
           <button className="btn ghost" style={{ justifyContent: 'flex-start', padding: 0 }} onClick={() => supabase.auth.signOut()}><SignOut className="ic" />Salir</button>
         </div>
       </aside>
-      <main className="main"><Outlet /></main>
+      <main className="main"><LoteEnCurso /><Outlet /></main>
     </div>
   );
+}
+
+/** Aviso fijo mientras corre un lote de valoraciones: se puede navegar, pero no cerrar ni recargar la pestaña. */
+function LoteEnCurso() {
+  const [e, setE] = useState(loteActual());
+  useEffect(() => { const f = (ev: Event) => setE({ ...(ev as CustomEvent).detail }); window.addEventListener('lote:progreso', f); return () => window.removeEventListener('lote:progreso', f); }, []);
+  if (!e.corriendo) return null;
+  return <div className="aviso" style={{ marginBottom: 14 }}>{e.texto}: {e.i} de {e.n}. Puedes moverte por la app, pero no cierres ni recargues esta pestaña.</div>;
 }

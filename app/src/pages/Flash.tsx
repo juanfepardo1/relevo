@@ -11,6 +11,7 @@ import { embudo, etiqueta, type Respuesta } from '../lib/formulario';
 import { valorarYGuardar, marcarEnviado, borradorDeValorado, crearBorrador, probarGmail, htmlCorreo, enviarFormulario, proximosRecordatorios, REMITENTE, type Remitente, type Modo } from '../flash/acciones';
 import { firmaRespaldo } from '../../api/_correo.js';
 import { Modal } from '../components/ui';
+import { avisarLote, loteActual } from '../lib/lote';
 import { AvisoCorreo, marcarRebote } from '../components/AvisoCorreo';
 import { revisarCorreo } from '../../api/_correo.js';
 
@@ -71,7 +72,9 @@ export default function Flash() {
   const correrLote = async () => {
     const cola = grupos.flash.map((x) => x.L);
     if (!cola.length) return;
+    if (loteActual().corriendo) { toast('Ya hay un lote corriendo. Espera a que termine (mira el aviso arriba).', true); return; }
     pausaRef.current = false;
+    avisarLote({ corriendo: true, i: 0, n: cola.length, texto: modo === 'enviar' ? 'Valorando y enviando' : 'Valorando' });
     const log: { t: string; k: string }[] = [];
     const res = { ok: 0, drafts: 0, failed: 0 };
     setLote({ corriendo: true, pausa: false, i: 0, n: cola.length, estado: 'Empezando…', log });
@@ -91,8 +94,10 @@ export default function Flash() {
         if (/autoriz|sesión|Google rechazó/i.test(e.message)) { log.unshift({ t: 'Detuve el lote porque el problema afecta a todos.', k: 'err' }); break; }
       }
       setLote((s) => ({ ...s, i: i + 1, log: [...log] }));
+      avisarLote({ i: i + 1 });
       if (modo === 'enviar' && i < cola.length - 1 && !pausaRef.current) { say('pausa corta antes del siguiente correo…'); await pausaEnvio(); }
     }
+    avisarLote({ corriendo: false });
     setLote((s) => ({ ...s, corriendo: false, i: s.n, estado: `${pausaRef.current ? 'Pausado' : 'Terminado'}: ${res.ok} valorados, ${res.drafts} ${modo === 'enviar' ? 'enviados' : 'borradores en Gmail'}, ${res.failed} con error.` }));
     recargar();
   };
