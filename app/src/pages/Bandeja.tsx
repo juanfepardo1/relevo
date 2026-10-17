@@ -19,12 +19,12 @@ export default function Bandeja() {
 
   const aprobar = async (l: Row) => {
     setBusy(l.id);
-    try { const id = await must(supabase.rpc('aprobar_lead', { p_lead: l.id })) as string; toast('Pasó a vendedores'); nav(`/vendedores/${id}`); }
+    try { const id = await must(supabase.rpc('aprobar_lead', { p_lead: l.id })) as string; toast('Pasó a vendedores'); window.dispatchEvent(new Event('bandeja:cambio')); nav(`/vendedores/${id}`); }
     catch (e: any) { toast(e.message, true); setBusy(null); }
   };
   const descartar = async (l: Row) => {
     setBusy(l.id);
-    try { await must(supabase.from('leads').update({ status: 'descartado' }).eq('id', l.id)); toast('Descartado'); q.reload(); }
+    try { await must(supabase.from('leads').update({ status: 'descartado' }).eq('id', l.id)); toast('Descartado'); window.dispatchEvent(new Event('bandeja:cambio')); q.reload(); }
     catch (e: any) { toast(e.message, true); }
     setBusy(null);
   };

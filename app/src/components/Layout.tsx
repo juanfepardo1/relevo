@@ -24,7 +24,13 @@ export default function Layout({ email }: { email: string }) {
   const [nNotas, setNNotas] = useState<number | null>(null);
   useEffect(() => { if (miembro?.es_admin) supabase.from('notas_app').select('id', { count: 'exact', head: true }).eq('estado', 'nueva').then(({ count }) => setNNotas(count ?? null)); }, [miembro?.es_admin]);
   const [nBandeja, setNBandeja] = useState<number | null>(null);
-  useEffect(() => { supabase.from('v_bandeja').select('id', { count: 'exact', head: true }).then(({ count }) => setNBandeja(count ?? null)); }, []);
+  useEffect(() => {
+    const contar = () => supabase.from('v_bandeja').select('id', { count: 'exact', head: true }).then(({ count }) => setNBandeja(count ?? null));
+    contar();
+    window.addEventListener('bandeja:cambio', contar);
+    const t = setInterval(contar, 60_000); // por si entra un lead nuevo mientras la app está abierta
+    return () => { window.removeEventListener('bandeja:cambio', contar); clearInterval(t); };
+  }, []);
   const yo = equipo.find((m) => m.email === email.toLowerCase())?.nombre ?? email;
   return (
     <div className="shell">

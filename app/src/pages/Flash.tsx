@@ -14,7 +14,6 @@ const GRUPOS: { k: Grupo; t: string; tono: string }[] = [
   { k: 'flash', t: 'Listos para valorar', tono: 'tone-mercado' },
   { k: 'revisar', t: 'Para revisar', tono: 'tone-perdido' },
   { k: 'porEnviar', t: 'Valorados sin enviar', tono: 'tone-captacion' },
-  { k: 'fuera', t: 'Solo mensaje (menos de $1.000M)', tono: 'tone-nuevo' },
   { k: 'enviados', t: 'Enviados, en reserva', tono: 'tone-ganado' },
 ];
 const leer = (k: string, d: string) => { try { return localStorage.getItem(k) ?? d; } catch { return d; } };
@@ -39,12 +38,11 @@ export default function Flash() {
   const grupos = useMemo(() => {
     const todos = (vq.data || []) as Row[];
     const g: Record<Grupo, { L: Lead; why?: string[] }[]> = { flash: [], revisar: [], fuera: [], porEnviar: [], enviados: [] };
-    const pend = todos.filter((v) => v.etapa === 'no_contactado' && (!v.valoracion_tipo || v.valoracion_tipo === 'no_valorada') && ['B', 'C'].includes(v.bucket)).map(leadDe);
+    const pend = todos.filter((v) => v.etapa === 'no_contactado' && (!v.valoracion_tipo || v.valoracion_tipo === 'no_valorada') && v.bucket === 'B').map(leadDe);
     marcarRepetidos(pend, todos);
     for (const L of pend) {
       const r = calcular(A, L);
-      if (r.route === 'fuera') g.fuera.push({ L });
-      else if (r.route === 'flash') { const why = motivosRevision(A, L); (why.length ? g.revisar : g.flash).push({ L, why }); }
+      if (r.route === 'flash') { const why = motivosRevision(A, L); (why.length ? g.revisar : g.flash).push({ L, why }); }
     }
     for (const v of todos) {
       if (v.valoracion_tipo !== 'flash') continue;
