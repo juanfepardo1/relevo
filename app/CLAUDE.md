@@ -24,6 +24,8 @@ Contexto para cualquier sesión que edite esta app. Léelo completo antes de cam
 Naranja #F47B3D, azul #2C5186, tinta #14243D, fondo claro #EAF1FA. App en fondo claro. Logo de dos píldoras. Correos y PDFs siguen esa línea (ver `_correo.js`, `src/docs/estados.ts`, `src/docs/nda.ts`).
 
 ## Módulos
+- **Inicio** (`pages/Inicio.tsx`): personal, de quien está en la cuenta (decidido 17 oct 2026). Tus tareas (Para hoy: vencidas, de hoy y automáticas de mis vendedores desde `v_alertas`; Sin fecha; Hechas hoy), Recordatorios (tareas con fecha futura), Hoy (reuniones Calendly propias), Esperando a otros (lo que asigné a otro), Del equipo (Bandeja, Pidieron llamada, suscripciones por renovar). Los KPIs del equipo viven en Embudo/Stats.
+- **Tareas** (tabla `tareas`, `components/Tareas.tsx`): título, fecha opcional (con fecha = recordatorio), asignado (se pueden asignar entre socios), creador, vendedor opcional. Panel de Tareas en la ficha del vendedor. Solo en la app, sin correo. Notion ya no se usa: no leer ni sincronizar sus to-dos.
 - **CRM vendedores** (`Vendedores`, `VendedorFicha`): etapas en tabla `etapas` (pipeline vendedor). Filtro Activos/Todos (Activo = todo menos En reserva) y filtros de selección múltiple (`components/Multi.tsx`). "Próxima acción" se eliminó a propósito. La ficha tiene Otros contactos (tabla `personas`), documentos con descarga, NIT editable.
 - **Bandeja**: leads de la web (`v_bandeja`). El contador del menú se actualiza al aprobar o descartar (evento `bandeja:cambio`). Alerta "Correo mal escrito" con corrección sugerida. Los de ventas < $1.000M no entran (les llega correo automático de rechazo desde hablaconrelevo.com, en `api/notify-lead.js` del proyecto web). Aprobar un B lo deja a cargo de Valoraciones.
 - **Buckets**: A 5.000 a 20.000M, B 1.000 a 5.000M, C < 1.000M, D > 20.000M.
@@ -54,7 +56,7 @@ Naranja #F47B3D, azul #2C5186, tinta #14243D, fondo claro #EAF1FA. App en fondo 
 - 8 B que recibieron la flash antes del formulario están en "Recibieron la flash sin formulario" para invitarlos ("Queremos darle continuidad a tu caso").
 - Rebotes conocidos: Andres Valverde (gerencia@mansenlc.com, dominio sin correo; solo quería saber el valor; se sugirió mandarle el PDF por WhatsApp y marcar enviado). Claudia Pérez tiene `presinve.com.com` (corregir a presinve.com y reenviar con "El correo rebotó").
 - Las empresas con * Solucash, Presinve y Frlboxcol recibieron el correo con el nombre deducido antes de la regla nueva.
-- El CRM de Notion quedó desactualizado frente a la app; se recomendó que la app sea la única fuente (no confirmado por Felipe).
+- Notion dejó de usarse (confirmado por Felipe el 17 oct 2026): la app es la única fuente.
 
 ## Migraciones
 SQL en `supabase/` (sin datos personales). Desde las herramientas de Claude a veces no se puede correr DDL ni borrar vendedores: en ese caso se le pasa el archivo a Felipe para que lo corra en el SQL Editor.

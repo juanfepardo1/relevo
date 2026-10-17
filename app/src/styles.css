@@ -448,3 +448,37 @@ dialog.m{width:min(680px,calc(100% - 32px))}
 .flash-pend li>.muted{grid-area:d;font-size:12.5px}
 .flash-pend li .acc{grid-area:a;display:flex;gap:6px}
 .flash-pend p{font-size:13px;margin:0}
+
+/* ---------- Inicio y tareas ---------- */
+.grid-inicio{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr);gap:16px;align-items:start}
+@media (max-width:1000px){.grid-inicio{grid-template-columns:1fr}}
+.inicio .head h1{font-size:26px}
+.tarea-nueva{display:grid;grid-template-columns:minmax(0,1fr) 150px auto auto;gap:8px}
+.tarea-nueva .sel{width:auto;min-width:120px}
+.tarea-nueva.compacta{grid-template-columns:minmax(0,1fr) auto}
+.tarea-nueva.compacta input[type=date],.tarea-nueva.compacta .sel{grid-row:2}
+.tarea-nueva.compacta input[type=date]{grid-column:1}
+.tarea-nueva.compacta .sel{grid-column:2}
+.tarea-nueva.compacta .btn{grid-row:1;grid-column:2}
+@media (max-width:700px){.tarea-nueva{grid-template-columns:minmax(0,1fr) auto}.tarea-nueva .in[type=date],.tarea-nueva .sel{grid-row:2}}
+.tareas{display:flex;flex-direction:column;padding-bottom:4px}
+.tareas .grupo{font-size:12px;font-weight:500;color:var(--ink-3);padding:14px 16px 4px;letter-spacing:.01em}
+.tarea{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:9px 16px;border-top:1px solid var(--line);color:inherit;text-decoration:none}
+.tareas .grupo+.tarea{border-top:0}
+.tarea:hover{background:#f7f9fc}
+.tarea-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.tarea-txt>span:first-child{overflow-wrap:anywhere}
+.tarea-txt .meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--ink-3)}
+.tarea-txt .meta:empty{display:none}
+.tarea-txt .meta a{color:var(--ink-2);text-decoration:none}.tarea-txt .meta a:hover{color:var(--ink);text-decoration:underline}
+.tarea .check{appearance:none;width:20px;height:20px;border-radius:6px;border:1.5px solid var(--line-3);background:#fff;display:grid;place-items:center;cursor:pointer;padding:0;color:#fff;transition:background .15s var(--ease),border-color .15s var(--ease)}
+.tarea .check:hover{border-color:var(--orange)}
+.tarea .check svg{width:13px;height:13px}
+.tarea.hecha .check{background:var(--orange);border-color:var(--orange)}
+.tarea.hecha .tarea-txt>span:first-child{color:var(--ink-3);text-decoration:line-through}
+.tarea .borrar{opacity:0;padding:4px}.tarea:hover .borrar,.tarea .borrar:focus-visible{opacity:1}
+@media (hover:none){.tarea .borrar{opacity:1}}
+.tarea.auto{grid-template-columns:auto minmax(0,1fr) auto;cursor:pointer}
+.tarea .auto-ic{border:0;background:none;cursor:inherit}.tarea .auto-ic svg{width:18px;height:18px}
+.ver-hechas{padding:10px 16px;text-align:left;font-size:13px}
+.num.acento{color:var(--orange);font-weight:600}

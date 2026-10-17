@@ -8,6 +8,7 @@ import { millones, fecha, waLink } from '../lib/format';
 import { tonoBucket } from '../lib/colores';
 import { BotonEliminar } from '../components/Eliminar';
 import { ContactosPanel } from '../components/Contactos';
+import { TareasFichaPanel } from '../components/Tareas';
 import { FormularioPanel } from '../components/FormularioPanel';
 import { AvisoCorreo } from '../components/AvisoCorreo';
 import { Field, Skeleton, ErrorBox, Dias, useToast } from '../components/ui';
@@ -58,6 +59,7 @@ export default function VendedorFicha() {
               {v.etapa === 'perdido' && <Field label="Motivo de pérdida" type="select" options={MOTIVO_PERDIDA} value={v.motivo_perdida} onSave={save('motivo_perdida')} />}
             </div>
           </section>
+          <TareasFichaPanel vendedorId={id} />
           <DocumentosPanel entidad="vendedor" id={id} />
           <ActividadesPanel entidad="vendedor" id={id} onChange={q.reload} />
           <PresentacionesPanel vendedorId={id} />
