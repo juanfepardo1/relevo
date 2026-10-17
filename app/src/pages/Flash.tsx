@@ -27,7 +27,7 @@ export default function Flash() {
   const aq = useQuery(() => supabase.from('ajustes').select('valor').eq('clave', 'flash_supuestos').maybeSingle());
   const A = useMemo(() => { try { return mezclar(JSON.parse((aq.data as Row | null)?.valor || '{}')); } catch { return mezclar(null); } }, [aq.data]);
   const [sel, setSel] = useState<Lead | null>(null);
-  const [gmail, setGmail] = useState<{ estado: string; msg?: string }>({ estado: 'probando' });
+  const [gmail, setGmail] = useState<{ estado: string; msg?: string; firma?: boolean }>({ estado: 'probando' });
   const [borrador, setBorrador] = useState(leer('flash-borrador', '1') === '1');
   const [soloCorreo, setSoloCorreo] = useState(leer('flash-solo-correo', '0') === '1');
   const [lote, setLote] = useState<{ corriendo: boolean; pausa: boolean; i: number; n: number; estado: string; log: { t: string; k: string }[] }>({ corriendo: false, pausa: false, i: 0, n: 0, estado: '', log: [] });
@@ -153,9 +153,10 @@ export default function Flash() {
   );
 }
 
-function EstadoGmail({ g }: { g: { estado: string; msg?: string } }) {
-  const t = g.estado === 'ok' ? ['tone-ganado', 'Gmail conectado'] : g.estado === 'probando' ? ['tone-nuevo', 'Revisando Gmail…'] : g.estado === 'error' ? ['tone-perdido', 'Gmail con error'] : ['tone-mercado', 'Gmail sin conectar'];
-  return <span className={'tag ' + t[0]} title={g.msg}>{t[1]}</span>;
+function EstadoGmail({ g }: { g: { estado: string; msg?: string; firma?: boolean } }) {
+  const t = g.estado === 'ok' ? ['tone-ganado', g.firma ? 'Gmail conectado · con tu firma' : 'Gmail conectado · firma básica'] : g.estado === 'probando' ? ['tone-nuevo', 'Revisando Gmail…'] : g.estado === 'error' ? ['tone-perdido', 'Gmail con error'] : ['tone-mercado', 'Gmail sin conectar'];
+  const ayuda = g.estado === 'ok' && !g.firma ? 'Para usar tu firma de Gmail, agrega el permiso https://www.googleapis.com/auth/gmail.settings.basic al cliente de la app en admin.google.com > Seguridad > Controles de API > Delegación de todo el dominio.' : g.msg;
+  return <span className={'tag ' + t[0]} title={ayuda}>{t[1]}</span>;
 }
 
 function GuiaGmail({ g }: { g: { estado: string; msg?: string } }) {

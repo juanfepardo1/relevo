@@ -12,29 +12,32 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 async function token() { const { data } = await supabase.auth.getSession(); return data.session?.access_token ?? ''; }
 
 /** Estado de la conexión con Gmail: prueba la autorización sin crear nada. */
-export async function probarGmail(): Promise<{ estado: 'ok' | 'sin_configurar' | 'pendiente' | 'error'; msg?: string }> {
+export async function probarGmail(): Promise<{ estado: 'ok' | 'sin_configurar' | 'pendiente' | 'error'; msg?: string; firma?: boolean }> {
   try {
     const r = await fetch('/api/gmail', { method: 'POST', headers: { Authorization: `Bearer ${await token()}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ probar: true }) });
     if (r.status === 404) return { estado: 'sin_configurar', msg: 'La función de Gmail todavía no está publicada.' };
     const j = await r.json().catch(() => ({}));
-    if (j.ok) return { estado: 'ok' };
+    if (j.ok) return { estado: 'ok', firma: !!j.firmaGmail };
     if (j.configurado === false) return { estado: 'sin_configurar', msg: j.error };
     if (j.configurado === 'pendiente') return { estado: 'pendiente', msg: j.error };
     return { estado: 'error', msg: j.error || `Error ${r.status}` };
   } catch (e: any) { return { estado: 'error', msg: e.message }; }
 }
 
-function cuerpoHtml(cuerpo: string, de: Remitente) {
+function cuerpoHtml(cuerpo: string) {
   const paras = cuerpo.split(/\n{2,}/).map((p) => `<p style="margin:0 0 14px">${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
-  const sig = `<div style="margin-top:22px;font-family:Arial,sans-serif;font-size:13px;line-height:1.45;color:#222"><div style="font-weight:bold;color:#444">${esc(de.nombre)}</div><div style="color:#666">Equipo Relevo</div><div><a href="https://relevobrokers.com" style="color:#1a55c4">relevobrokers.com</a></div></div>`;
-  return `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.5;color:#222">${paras}${sig}</div>`;
+  return `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.5;color:#222">${paras}</div>`;
+}
+/** Firma de respaldo si Gmail no deja leer la firma configurada. */
+function firmaRespaldo(de: Remitente) {
+  return `<div style="margin-top:22px;font-family:Arial,sans-serif;font-size:13px;line-height:1.45;color:#222"><div style="font-weight:bold;color:#444">${esc(de.nombre)}</div><div style="color:#666">Equipo Relevo</div><div><a href="https://relevobrokers.com" style="color:#1a55c4">relevobrokers.com</a></div></div>`;
 }
 
 export async function crearBorrador(L: Lead, asunto: string, cuerpo: string, de: Remitente, pdf?: Blob | null): Promise<Draft> {
   if (!L.correo) return { made: false, skip: 'el lead no dejó correo' };
   const r = await fetch('/api/gmail', {
     method: 'POST', headers: { Authorization: `Bearer ${await token()}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ para: L.correo, asunto, texto: `${cuerpo}\n\n--\n${de.nombre}\nEquipo Relevo\nrelevobrokers.com`, html: cuerpoHtml(cuerpo, de), nombreDe: de.nombre, pdfBase64: pdf ? await blobToBase64(pdf) : undefined, pdfNombre: nombreArchivo(L) }),
+    body: JSON.stringify({ para: L.correo, asunto, texto: `${cuerpo}\n\n--\n${de.nombre}\nEquipo Relevo\nrelevobrokers.com`, html: cuerpoHtml(cuerpo), firmaHtml: firmaRespaldo(de), nombreDe: de.nombre, pdfBase64: pdf ? await blobToBase64(pdf) : undefined, pdfNombre: nombreArchivo(L) }),
   });
   const j = await r.json().catch(() => ({}));
   if (!j.ok) return { made: false, error: j.error || `Error ${r.status}` };

@@ -13,6 +13,7 @@ const DOMINIO = '@relevobrokers.com';
 const b64url = (b) => Buffer.from(b).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
 const GMAIL_SCOPE = 'https://www.googleapis.com/auth/gmail.compose';
+const FIRMA_SCOPE = 'https://www.googleapis.com/auth/gmail.settings.basic';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const errAuth = (msg) => { const e = new Error(msg); e.code = 'google_auth'; return e; };
 
@@ -25,18 +26,18 @@ async function canjear(assertion) {
     : 'Google rechazó la conexión: ' + (j.error_description || j.error || r.status));
   return j.access_token;
 }
-const claims = (iss, sub) => { const ahora = Math.floor(Date.now() / 1000); return { iss, sub, scope: GMAIL_SCOPE, aud: TOKEN_URL, iat: ahora, exp: ahora + 3600 }; };
+const claims = (iss, sub, scope = GMAIL_SCOPE) => { const ahora = Math.floor(Date.now() / 1000); return { iss, sub, scope, aud: TOKEN_URL, iat: ahora, exp: ahora + 3600 }; };
 
 /** Opción 1: llave JSON de la cuenta de servicio (GOOGLE_SERVICE_ACCOUNT). */
-async function conLlave(sa, usuario) {
+async function conLlave(sa, usuario, scope) {
   const head = b64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
-  const body = b64url(JSON.stringify(claims(sa.client_email, usuario)));
+  const body = b64url(JSON.stringify(claims(sa.client_email, usuario, scope)));
   const firma = crypto.createSign('RSA-SHA256').update(`${head}.${body}`).sign(sa.private_key);
   return canjear(`${head}.${body}.${b64url(firma)}`);
 }
 
 /** Opción 2, sin llave: Vercel se identifica ante Google (OIDC + Workload Identity Federation) y Google firma el JWT. */
-async function sinLlave(req, usuario) {
+async function sinLlave(req, usuario, scope) {
   const num = process.env.GCP_PROJECT_NUMBER, sa = process.env.GCP_SERVICE_ACCOUNT_EMAIL;
   const pool = process.env.GCP_WORKLOAD_IDENTITY_POOL_ID || 'vercel', prov = process.env.GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID || 'vercel';
   const oidc = req.headers['x-vercel-oidc-token'] || process.env.VERCEL_OIDC_TOKEN;
@@ -49,11 +50,23 @@ async function sinLlave(req, usuario) {
   if (!sts.ok) throw errAuth('Google no aceptó la identidad de Vercel (grupo de identidades): ' + (sj.error_description || sj.error || sts.status));
   const sg = await fetch(`https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${encodeURIComponent(sa)}:signJwt`, {
     method: 'POST', headers: { Authorization: `Bearer ${sj.access_token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ payload: JSON.stringify(claims(sa, usuario)) }),
+    body: JSON.stringify({ payload: JSON.stringify(claims(sa, usuario, scope)) }),
   });
   const gj = await sg.json().catch(() => ({}));
   if (!sg.ok) throw errAuth('Google no dejó firmar con la cuenta de servicio: ' + (gj.error?.message || sg.status) + '. Revisa el rol "Creador de tokens de cuenta de servicio" y que la API IAM Service Account Credentials esté habilitada.');
   return canjear(gj.signedJwt);
+}
+
+/** Firma que el usuario tiene configurada en Gmail. Necesita el permiso gmail.settings.basic en la delegación; si no está, null. */
+async function firmaGmail(obtener, email) {
+  try {
+    const token = await obtener(FIRMA_SCOPE);
+    const r = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/settings/sendAs', { headers: { Authorization: `Bearer ${token}` } });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const sa = (j.sendAs || []).find((x) => x.sendAsEmail?.toLowerCase() === email) || (j.sendAs || []).find((x) => x.isDefault);
+    return sa?.signature?.trim() || null;
+  } catch { return null; }
 }
 
 // Encabezados con tildes y ñ en el asunto o el nombre del archivo
@@ -98,12 +111,14 @@ export default async function handler(req, res) {
   let sa = null;
   if (raw) { try { sa = JSON.parse(raw); } catch { return res.status(500).json({ configurado: false, error: 'La variable GOOGLE_SERVICE_ACCOUNT no es el JSON de la llave.' }); } }
 
-  const { para, asunto, texto, html, nombreDe, pdfBase64, pdfNombre, probar } = req.body || {};
+  const { para, asunto, texto, html, firmaHtml, nombreDe, pdfBase64, pdfNombre, probar } = req.body || {};
+  const obtener = (scope) => (sa ? conLlave(sa, email, scope) : sinLlave(req, email, scope));
   try {
-    const token = sa ? await conLlave(sa, email) : await sinLlave(req, email);
-    if (probar) return res.status(200).json({ configurado: true, ok: true, cuenta: email });
+    const token = await obtener(GMAIL_SCOPE);
+    const firma = await firmaGmail(obtener, email);
+    if (probar) return res.status(200).json({ configurado: true, ok: true, cuenta: email, firmaGmail: !!firma });
     if (!para || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(para).trim())) return res.status(400).json({ error: 'Correo de destino inválido' });
-    const msg = mime({ de: email, nombreDe: nombreDe || email, para: String(para).trim(), asunto: asunto || 'Relevo', texto: texto || '', html: html || '', adjunto: pdfBase64 ? { base64: pdfBase64, nombre: pdfNombre || 'documento.pdf' } : null });
+    const msg = mime({ de: email, nombreDe: nombreDe || email, para: String(para).trim(), asunto: asunto || 'Relevo', texto: texto || '', html: (html || '') + (firma ? `<br><div class="gmail_signature">${firma}</div>` : firmaHtml || ''), adjunto: pdfBase64 ? { base64: pdfBase64, nombre: pdfNombre || 'documento.pdf' } : null });
     const r = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/drafts', {
       method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: { raw: b64url(msg) } }),
