@@ -28,7 +28,7 @@ body{font-family:"Geist",system-ui,sans-serif;background:var(--bg);color:var(--i
 a{color:inherit}
 img{display:block;max-width:100%}
 :focus-visible{outline:2px solid var(--orange);outline-offset:3px;border-radius:6px}
-.wrap{max-width:var(--wrap);margin:0 auto;padding:0 24px}
+.wrap{max-width:var(--wrap);margin:0 auto;padding-inline:24px}
 .num{font-family:"Geist Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 h1,h2,h3{font-weight:600;letter-spacing:-.035em;line-height:1.06;text-wrap:balance}
 h2{font-size:clamp(32px,3.6vw,48px)}
@@ -254,12 +254,14 @@ footer{padding:56px 0 48px;color:var(--muted);font-size:14px}
 @media (max-width:620px){
   body{font-size:16px}
   section.s{padding:88px 0}
-  .wrap{padding:0 18px}
+  .wrap{padding-inline:18px}
+  .facts dt{font-size:11.5px}
+  .facts div+div{padding-left:10px}
   .hero h1{font-size:42px}
   .hero .sub{font-size:17px}
   .skyline{width:900px;flex:none}
   .hero-grid{padding-bottom:40px}
-  .report .float{left:-6px;bottom:-30px}
+  .report .float{position:relative;left:auto;bottom:auto;margin:-18px 0 0 14px;width:max-content}
   .col{padding:26px 22px}
   .cmp li{min-height:0}
   .track{grid-template-columns:1fr}
@@ -495,7 +497,8 @@ footer{padding:56px 0 48px;color:var(--muted);font-size:14px}
 (function(){
   var d=document.documentElement; d.classList.add('js');
   var nav=document.getElementById('nav'), hero=document.querySelector('.hero');
-  new IntersectionObserver(function(e){nav.classList.toggle('solid',!e[0].isIntersecting)},{rootMargin:'-68px 0px 0px 0px'}).observe(hero.querySelector('.hero-grid'));
+  var sen=document.createElement('div');sen.style.cssText='position:absolute;top:0;left:0;height:24px;width:1px';document.body.prepend(sen);
+  new IntersectionObserver(function(e){nav.classList.toggle('solid',!e[0].isIntersecting)}).observe(sen);
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.18});
   document.querySelectorAll('.rv,#stack').forEach(function(el){io.observe(el)});
   requestAnimationFrame(function(){document.getElementById('skyline').classList.add('in');document.getElementById('report').classList.add('in')});
