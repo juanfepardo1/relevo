@@ -20,6 +20,8 @@ const GRUPOS: { k: Grupo; t: string; tono: string }[] = [
   { k: 'enviados', t: 'Enviados con formulario', tono: 'tone-ganado' },
 ];
 const leer = (k: string, d: string) => { try { return localStorage.getItem(k) ?? d; } catch { return d; } };
+/** Pausa entre correos en lote (20 a 45 s) para que Gmail no lo vea como envío masivo. */
+const pausaEnvio = () => new Promise((r) => setTimeout(r, 20000 + Math.random() * 25000));
 const guardar = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* sin almacenamiento */ } };
 
 export default function Flash() {
@@ -83,6 +85,7 @@ export default function Flash() {
         if (/autoriz|sesión|Google rechazó/i.test(e.message)) { log.unshift({ t: 'Detuve el lote porque el problema afecta a todos.', k: 'err' }); break; }
       }
       setLote((s) => ({ ...s, i: i + 1, log: [...log] }));
+      if (modo === 'enviar' && i < cola.length - 1 && !pausaRef.current) { say('pausa corta antes del siguiente correo…'); await pausaEnvio(); }
     }
     setLote((s) => ({ ...s, corriendo: false, i: s.n, estado: `${pausaRef.current ? 'Pausado' : 'Terminado'}: ${res.ok} valorados, ${res.drafts} ${modo === 'enviar' ? 'enviados' : 'borradores en Gmail'}, ${res.failed} con error.` }));
     recargar();
@@ -389,7 +392,8 @@ function ResultadosForm({ todos, yo, onCambio, toast }: { todos: Row[]; yo: Remi
   const invitar = async (lista: Row[]) => {
     if (!window.confirm(lista.length > 1 ? `¿Enviar el formulario a ${lista.length} personas desde ${REMITENTE}?` : `¿Enviar el formulario a ${lista[0].correo}?`)) return;
     let ok = 0;
-    for (const v of lista) {
+    for (const [n, v] of lista.entries()) {
+      if (n > 0) await pausaEnvio(); // espaciados para no parecer envío masivo
       setEnviando(v.id);
       try { await enviarFormulario(v); ok++; } catch (err: any) { toast(`${v.empresa || v.nombre}: ${err.message}`, true); if (/permiso|autoriz/i.test(err.message)) break; }
     }
