@@ -112,12 +112,11 @@ export async function marcarEnviado(L: Lead, tipo: 'flash' | 'fuera', via?: 'cor
     await supabase.from('actividades').insert({ vendedor_id: L.id, tipo: L.canal === 'Correo' ? 'correo' : 'whatsapp', resumen: 'Se envió el mensaje de empresa muy pequeña (ventas bajo el piso).' });
     return;
   }
-  const base = { etapa: 'val_preliminar', valoracion_tipo: 'flash', flash_enviado_en: d, ultimo_contacto: d };
-  // form_enviado_en solo existe después de correr formulario_b.sql
-  const conForm = await supabase.from('vendedores').update({ ...base, form_enviado_en: L.codigo ? d : null }).eq('id', L.id);
-  if (conForm.error) await must(supabase.from('vendedores').update(base).eq('id', L.id));
+  // Solo quería saber cuánto vale: no recibe formulario ni recordatorios, queda En reserva
+  const soloValor = L.horizonte === 'solo_valor';
+  await must(supabase.from('vendedores').update({ etapa: soloValor ? 'en_reserva' : 'val_preliminar', valoracion_tipo: 'flash', flash_enviado_en: d, ultimo_contacto: d, form_enviado_en: soloValor || !L.codigo ? null : d }).eq('id', L.id));
   await supabase.from('documentos').update({ estado: 'enviado', completado_en: d }).eq('vendedor_id', L.id).eq('tipo', 'valoracion_preliminar').eq('estado', 'pendiente');
-  await supabase.from('actividades').insert({ vendedor_id: L.id, tipo: via ?? (L.canal === 'Correo' ? 'correo' : 'whatsapp'), resumen: 'Se envió la valoración flash con el formulario "Cuéntanos tu caso".' });
+  await supabase.from('actividades').insert({ vendedor_id: L.id, tipo: via ?? (L.canal === 'Correo' ? 'correo' : 'whatsapp'), resumen: soloValor ? 'Se envió la valoración flash (solo quería saber cuánto vale: sin formulario).' : 'Se envió la valoración flash con el formulario "Cuéntanos tu caso".' });
 }
 
 /** Invitación al formulario para quien ya recibió su flash (sale desde valoraciones@, firmado Equipo Relevo). */

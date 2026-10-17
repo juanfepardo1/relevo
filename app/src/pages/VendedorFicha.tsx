@@ -95,7 +95,7 @@ export default function VendedorFicha() {
               <Field label="Canal preferido" type="select" options={CANAL} value={v.canal} onSave={save('canal')} />
             </div>
           </section>
-          {(v.bucket === 'B' || v.form_enviado_en || v.form_respondido_en) && <FormularioPanel v={v} onCambio={q.reload} />}
+          {((v.bucket === 'B' && v.horizonte !== 'solo_valor') || v.form_enviado_en || v.form_respondido_en) && <FormularioPanel v={v} onCambio={q.reload} />}
           <ContactosPanel vendedorId={id} />
           <section className="panel">
             <header><h2>Origen</h2></header>

@@ -185,6 +185,11 @@ export function mensaje(A: Supuestos, L: Lead, r: Resultado, canal = L.canal): {
   const de = emp ? ` de ${emp}` : ' de tu empresa';
   void canal;
   if (r.route === 'fuera') return { asunto: `Gracias por contarnos${de}`, cuerpo: `${saludo}, gracias por contarnos${de}.\n\nHoy nuestro proceso está pensado para empresas de mayor tamaño, así que en este momento no podemos hacer una valoración de una empresa como la tuya. Te deseamos lo mejor con su crecimiento: cuando sus ventas pasen de ${money(A.piso)} millones al año, con gusto la miramos.` };
+  // Solo quería saber cuánto vale: le llega su valoración y la puerta abierta, sin formulario
+  if (L.horizonte === 'solo_valor') return {
+    asunto: `Una primera mirada al valor${de}`,
+    cuerpo: `${saludo}, gracias por contarnos${de}. Te comparto una primera mirada a su valor, hecha con lo que nos contaste en el formulario.${r.conservador ? ' Es un rango conservador: con tus cifras reales el valor puede ser mayor.' : ''}\n\nSi algún día decides vender tu empresa, o una parte de ella, con gusto te acompañamos en el proceso. Solo responde este correo.\n\nTodo lo que nos compartiste es confidencial.`,
+  };
   const link = L.codigo ? LINK_FORM(L.codigo) : '';
   return {
     asunto: `Una primera mirada al valor${de}`,

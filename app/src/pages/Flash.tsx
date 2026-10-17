@@ -388,7 +388,7 @@ function ResultadosForm({ todos, yo, onCambio, toast }: { todos: Row[]; yo: Remi
   // Pidieron llamada y siguen a cargo de Valoraciones: alguien del equipo los toma
   const llamar = todos.filter((v) => ultimo.get(v.id)?.llamada === 'si' && v.responsable === REMITENTE);
   // Recibieron su flash antes del formulario: hay que invitarlos por correo
-  const sinForm = todos.filter((v) => v.bucket === 'B' && v.flash_enviado_en && !v.form_enviado_en && !v.form_respondido_en && v.correo && v.etapa === 'en_reserva');
+  const sinForm = todos.filter((v) => v.bucket === 'B' && v.horizonte !== 'solo_valor' && v.flash_enviado_en && !v.form_enviado_en && !v.form_respondido_en && v.correo && v.etapa === 'en_reserva');
   const invitar = async (lista: Row[]) => {
     if (!window.confirm(lista.length > 1 ? `¿Enviar el formulario a ${lista.length} personas desde ${REMITENTE}?` : `¿Enviar el formulario a ${lista[0].correo}?`)) return;
     let ok = 0;
