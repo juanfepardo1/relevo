@@ -125,7 +125,9 @@ section.s{padding:128px 0}
 .col.us h3 .mark i{height:5.5px;width:14px;background:var(--ink)}
 .col.us h3 .mark i:last-child{left:8px;top:7.5px;background:var(--orange)}
 .cmp{list-style:none;margin-top:22px}
-.cmp li{padding:18px 0;border-top:1px solid var(--line);min-height:96px}
+.cmp li{padding:18px 10px;margin:0 -10px;border-top:1px solid var(--line);min-height:96px;border-radius:10px;transition:background .25s}
+.cmp li.hl{background:rgba(255,255,255,.7)}
+.col.us .cmp li.hl{background:rgba(255,255,255,.55)}
 .col.us .cmp li{border-top-color:#d6e1ef}
 .cmp .t{font-size:13px;color:var(--muted);font-weight:500}
 .cmp .v{font-size:17px;margin-top:4px;line-height:1.4}
@@ -216,12 +218,61 @@ section.s{padding:128px 0}
 .closing h2{color:#fff;font-size:clamp(32px,3.8vw,50px)}
 .closing p{margin-top:14px;color:var(--on-blue-2);max-width:44ch}
 .closing .side{justify-self:end;text-align:right}
-.closing .side small{display:block;margin-top:14px;font-size:14px;color:var(--on-blue-2)}
+.closing .side .wa-inline{display:block;margin-top:16px;font-size:15px;color:var(--on-blue-2);text-underline-offset:4px}
+.closing .side .wa-inline[hidden]{display:none}
 
 footer{padding:56px 0 48px;color:var(--muted);font-size:14px}
 .foot{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:center;padding-top:28px;border-top:1px solid var(--line)}
 .foot .brand{font-size:17px;color:var(--ink);margin-right:auto}
 .foot a{text-decoration:none}.foot a:hover{color:var(--ink)}
+
+/* proceso interactivo */
+.stop{cursor:pointer;background:none;border:0;text-align:left;color:inherit;font:inherit;display:block;align-self:start;width:100%}
+.stop:hover h3{color:var(--orange)}
+.stop[aria-selected="true"]::before{background:var(--orange);box-shadow:0 0 0 5px rgba(244,123,61,.18)}
+.stop[aria-selected="true"] .time{background:rgba(244,123,61,.14);color:#ffd9c4;box-shadow:inset 0 0 0 1px rgba(244,123,61,.35)}
+.stop h3{transition:color .2s}
+.gets-panel{margin-top:44px;border-radius:18px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px var(--blue-line);padding:26px 30px;display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center;min-height:104px}
+.gets-panel .ic{width:52px;height:52px;border-radius:14px;background:rgba(244,123,61,.14);color:var(--orange);display:grid;place-items:center}
+.gets-panel .ic svg{width:24px;height:24px}
+.gets-panel small{display:block;font-size:13px;color:var(--on-blue-2)}
+.gets-panel p{font-size:18px;color:#fff;font-weight:500;line-height:1.45;transition:opacity .35s,transform .35s var(--ease)}
+.gets-panel p.swap{opacity:0;transform:translateY(6px)}
+
+/* confidencialidad por escrito */
+.nda{display:grid;grid-template-columns:.95fr 1.05fr;gap:64px;align-items:center}
+.nda ul{list-style:none;margin-top:28px;display:grid;gap:14px}
+.nda li{display:flex;gap:12px;color:var(--ink-2)}
+.nda li svg{flex:none;width:20px;height:20px;color:var(--orange-deep);margin-top:3px}
+.nda li b{color:var(--ink);font-weight:600}
+.nda .ctas{display:flex;gap:12px;margin-top:32px;flex-wrap:wrap}
+.btn-line{color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-2);background:var(--surface)}
+.btn-line:hover{box-shadow:inset 0 0 0 1px var(--ink)}
+.doc{position:relative}
+.sheet{background:var(--surface);border-radius:16px;box-shadow:var(--sh);padding:30px 30px 22px;position:relative;z-index:2}
+.doc::before,.doc::after{content:"";position:absolute;inset:14px -10px -14px 10px;border-radius:16px;background:#eef2f7;box-shadow:var(--sh);z-index:1;transform:rotate(2deg)}
+.doc::after{inset:26px -18px -26px 18px;background:#e6ecf4;z-index:0;transform:rotate(4deg)}
+.sheet-h{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.sheet-h b{font-size:16px;letter-spacing:-.01em}
+.sheet-h span{font-size:12px;font-weight:600;color:var(--orange-deep);background:var(--orange-tint);height:24px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center}
+.clauses{list-style:none;margin-top:8px}
+.clauses button{width:100%;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;text-align:left;background:none;border:0;font:500 15px "Geist",sans-serif;color:var(--ink-2);padding:12px 10px;border-radius:10px;cursor:pointer;transition:background .2s,color .2s}
+.clauses button:hover{background:var(--bg)}
+.clauses button[aria-pressed="true"]{background:var(--tint);color:var(--ink)}
+.clauses button i{width:22px;height:22px;border-radius:999px;display:grid;place-items:center;box-shadow:inset 0 0 0 1px var(--line-2);transition:transform .3s var(--ease),background .2s}
+.clauses button i svg{width:12px;height:12px}
+.clauses button[aria-pressed="true"] i{background:var(--ink);color:#fff;box-shadow:none;transform:rotate(90deg)}
+.plain{margin-top:14px;border-radius:12px;background:var(--blue-night);color:var(--on-blue);padding:16px 18px;font-size:15px;line-height:1.5;min-height:76px}
+.plain small{display:block;font-size:12px;color:var(--on-blue-2);margin-bottom:4px}
+.plain p{transition:opacity .3s}
+.sig{display:flex;justify-content:space-between;align-items:end;margin-top:18px;font-size:12.5px;color:var(--muted)}
+.sig svg{width:120px;height:34px}
+
+/* whatsapp */
+.wa{position:fixed;right:22px;bottom:22px;z-index:45;display:inline-flex;align-items:center;gap:10px;height:54px;padding:0 20px 0 16px;border-radius:999px;background:#14243d;color:#fff;text-decoration:none;font-weight:600;font-size:15px;box-shadow:0 14px 30px -12px rgba(8,20,40,.6);transition:transform .3s var(--ease),background .2s}
+.wa:hover{transform:translateY(-2px);background:#1c3256}
+.wa svg{width:24px;height:24px;color:#4ade80}
+.wa[hidden]{display:none}
 
 /* movimiento */
 @media (prefers-reduced-motion:no-preference){
@@ -244,7 +295,8 @@ footer{padding:56px 0 48px;color:var(--muted);font-size:14px}
   .links{display:none}
   .hero-grid{grid-template-columns:1fr;gap:56px;padding-top:120px;padding-bottom:40px}
   .report{justify-self:center}
-  .compare,.duo,.team,.faq,.closing{grid-template-columns:1fr}
+  .compare,.duo,.team,.faq,.closing,.nda{grid-template-columns:1fr}
+  .nda{gap:44px}
   .track{grid-template-columns:1fr 1fr;row-gap:40px}
   .track::before,.track .run{display:none}
   .closing{padding:48px 32px}
@@ -271,6 +323,10 @@ footer{padding:56px 0 48px;color:var(--muted);font-size:14px}
   .path{padding:24px 0}
   .path .go{width:44px;height:44px}
   .person{grid-template-columns:64px 1fr;gap:16px;padding:18px}
+  .wa span{display:none}
+  .wa{padding:0;width:54px;justify-content:center}
+  .gets-panel{grid-template-columns:1fr;padding:22px}
+  .sheet{padding:22px 18px 18px}
   .ph{width:64px;height:64px;font-size:19px}
   .nav .btn{height:38px;padding:0 14px;font-size:14px}
 }
@@ -283,6 +339,10 @@ footer{padding:56px 0 48px;color:var(--muted);font-size:14px}
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
   <symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z M14 3.5V8h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 12.5h5M10 16h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v12m-5-5 5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3.5 19 6v5.5c0 4.4-3 7.8-7 9-4-1.2-7-4.6-7-9V6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m8.8 12 2.2 2.2 4.2-4.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-wa" viewBox="0 0 24 24"><path d="M12 3.2a8.8 8.8 0 0 0-7.6 13.2L3.2 20.8l4.5-1.2A8.8 8.8 0 1 0 12 3.2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.1 8.2c.2-.4.5-.4.7-.4h.5c.2 0 .4 0 .6.5l.7 1.7c.1.2 0 .4-.1.6l-.5.6c-.1.2-.2.3 0 .6.5.9 1.3 1.7 2.3 2.2.3.1.4.1.6-.1l.6-.7c.2-.2.3-.2.6-.1l1.6.8c.3.1.4.2.4.4 0 .5-.2 1.2-.8 1.6-.5.3-1.3.5-2.6 0a9 9 0 0 1-4.7-4.1c-.6-1.1-.7-2-.4-2.6Z" fill="currentColor"/></symbol>
 </svg>
 
 <header class="nav" id="nav">
@@ -392,13 +452,14 @@ footer{padding:56px 0 48px;color:var(--muted);font-size:14px}
         <h2>Te acompañamos de principio a fin.</h2>
         <p class="lead">Tú sigues operando tu empresa. Nosotros nos encargamos del proceso.</p>
       </div>
-      <div class="track rv" id="track">
+      <div class="track rv" id="track" role="tablist" aria-label="Pasos del proceso">
         <span class="run" id="run" aria-hidden="true"></span>
-        <div class="stop"><span class="time">5 días hábiles</span><h3>Valoramos</h3><p>Revisamos tus estados financieros y te damos un rango de precio realista.</p></div>
-        <div class="stop"><span class="time">2 a 3 semanas</span><h3>Preparamos</h3><p>Armamos un documento confidencial sin tu nombre y ordenamos lo que un comprador va a pedir.</p></div>
-        <div class="stop"><span class="time">2 a 4 meses</span><h3>Buscamos comprador</h3><p>Filtramos a quienes tienen fondos reales y les presentamos tu empresa.</p></div>
-        <div class="stop"><span class="time">1 a 3 meses</span><h3>Negociamos y cerramos</h3><p>Te representamos en precio y condiciones. El pago se hace a través de una fiduciaria.</p></div>
+        <button type="button" class="stop" role="tab" aria-selected="true" data-i="0" data-get="Un informe con el rango de valor de tu empresa y lo que lo sube o lo baja."><span class="time">5 días hábiles</span><h3>Valoramos</h3><p>Revisamos tus estados financieros y te damos un rango de precio realista.</p></button>
+        <button type="button" class="stop" role="tab" aria-selected="false" data-i="1" data-get="El documento de presentación de tu empresa, sin tu nombre, para que lo apruebes antes de que lo vea nadie."><span class="time">2 a 3 semanas</span><h3>Preparamos</h3><p>Armamos un documento confidencial sin tu nombre y ordenamos lo que un comprador va a pedir.</p></button>
+        <button type="button" class="stop" role="tab" aria-selected="false" data-i="2" data-get="Los perfiles de los compradores interesados, para que decidas con quién seguir antes de compartir un solo dato."><span class="time">2 a 4 meses</span><h3>Buscamos comprador</h3><p>Filtramos a quienes tienen fondos reales y les presentamos tu empresa.</p></button>
+        <button type="button" class="stop" role="tab" aria-selected="false" data-i="3" data-get="Las ofertas comparadas lado a lado, y acompañamiento hasta que el dinero llega a tu cuenta a través de la fiduciaria."><span class="time">1 a 3 meses</span><h3>Negociamos y cerramos</h3><p>Te representamos en precio y condiciones. El pago se hace a través de una fiduciaria.</p></button>
       </div>
+      <div class="gets-panel rv" aria-live="polite"><span class="ic" aria-hidden="true"><svg><use href="#i-doc"/></svg></span><div><small>Lo que recibes en este paso</small><p id="get">Un informe con el rango de valor de tu empresa y lo que lo sube o lo baja.</p></div></div>
     </div>
   </section>
 
@@ -443,6 +504,35 @@ footer{padding:56px 0 48px;color:var(--muted);font-size:14px}
     </div>
   </section>
 
+  <section class="s" id="confidencialidad" style="padding-top:0">
+    <div class="wrap nda">
+      <div class="rv">
+        <h2>Tu información, protegida por escrito.</h2>
+        <p class="lead" style="margin-top:18px">Antes de pedirte un solo documento, Relevo Brokers S.A.S. firma contigo un compromiso de confidencialidad. Nos obliga a nosotros, no a ti.</p>
+        <ul>
+          <li><svg><use href="#i-shield"/></svg><span><b>Lo firmamos primero.</b> Antes de cualquier estado financiero.</span></li>
+          <li><svg><use href="#i-shield"/></svg><span><b>Ningún comprador ve nada</b> sin tu autorización por escrito.</span></li>
+          <li><svg><use href="#i-shield"/></svg><span><b>No te compromete a vender</b> ni a contratarnos.</span></li>
+        </ul>
+        <div class="ctas"><a class="btn btn-line" href="/docs/compromiso-confidencialidad-relevo.pdf" target="_blank" rel="noopener"><svg><use href="#i-down"/></svg>Descargar el modelo</a></div>
+      </div>
+      <div class="doc rv">
+        <div class="sheet">
+          <div class="sheet-h"><b>Compromiso de Confidencialidad</b><span>Modelo</span></div>
+          <ul class="clauses" id="clauses">
+            <li><button type="button" aria-pressed="true" data-p="Todo lo que nos compartes es confidencial: tus cifras, clientes, contratos y hasta el hecho de que estás pensando en vender."><span>Información confidencial</span><i><svg><use href="#i-chev"/></svg></i></button></li>
+            <li><button type="button" aria-pressed="false" data-p="Solo la usamos para valorar tu empresa y asesorarte. A un comprador le llega únicamente si tú lo autorizas por escrito."><span>Obligaciones de Relevo</span><i><svg><use href="#i-chev"/></svg></i></button></li>
+            <li><button type="button" aria-pressed="false" data-p="Firmarlo no te obliga a nada: ni a vender, ni a contratarnos. Cualquier encargo de venta va en un documento aparte."><span>Sin obligación para ti</span><i><svg><use href="#i-chev"/></svg></i></button></li>
+            <li><button type="button" aria-pressed="false" data-p="Si nos lo pides por escrito, devolvemos o destruimos tu información en máximo quince días hábiles."><span>Devolución de la información</span><i><svg><use href="#i-chev"/></svg></i></button></li>
+            <li><button type="button" aria-pressed="false" data-p="La reserva dura tres años desde la última vez que nos envías información, y el compromiso es irrevocable."><span>Vigencia</span><i><svg><use href="#i-chev"/></svg></i></button></li>
+          </ul>
+          <div class="plain" aria-live="polite"><small>En palabras simples</small><p id="plain">Todo lo que nos compartes es confidencial: tus cifras, clientes, contratos y hasta el hecho de que estás pensando en vender.</p></div>
+          <div class="sig"><span>Firma: Relevo Brokers S.A.S.<br>NIT 902.117.149-4</span><svg viewBox="0 0 120 34" fill="none" aria-hidden="true"><path d="M4 24c8-14 14-18 16-12s-4 14 2 10 8-16 12-14-2 14 4 12 10-12 16-10 0 10 8 8 14-6 20-8 10 0 14-2" stroke="#2c5186" stroke-width="1.6" stroke-linecap="round"/><path d="M4 30h112" stroke="#cfd7e2"/></svg></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="s" id="equipo" style="padding-top:0">
     <div class="wrap team">
       <div class="rv">
@@ -475,11 +565,13 @@ footer{padding:56px 0 48px;color:var(--muted);font-size:14px}
     <div class="wrap">
       <div class="closing rv">
         <div><h2>Empieza por saber cuánto vale.</h2><p>Gratis, confidencial y sin compromiso de vender.</p></div>
-        <div class="side"><a class="btn btn-primary" href="/valoracion">Valorar mi empresa<svg><use href="#i-arrow"/></svg></a></div>
+        <div class="side"><a class="btn btn-primary" href="/valoracion">Valorar mi empresa<svg><use href="#i-arrow"/></svg></a><a class="wa-inline" id="wa2" hidden target="_blank" rel="noopener">o escríbenos por WhatsApp</a></div>
       </div>
     </div>
   </section>
 </main>
+
+<a class="wa" id="wa" hidden target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp"><svg><use href="#i-wa"/></svg><span>Escríbenos</span></a>
 
 <footer>
   <div class="wrap foot">
@@ -502,8 +594,41 @@ footer{padding:56px 0 48px;color:var(--muted);font-size:14px}
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.18});
   document.querySelectorAll('.rv,#stack').forEach(function(el){io.observe(el)});
   requestAnimationFrame(function(){document.getElementById('skyline').classList.add('in');document.getElementById('report').classList.add('in')});
-  var run=document.getElementById('run'), track=document.getElementById('track');
-  new IntersectionObserver(function(e){if(e[0].isIntersecting){run.style.left='calc(75% + 8px)'}},{threshold:.6}).observe(track);
+  // proceso: la posta salta al paso elegido y muestra lo que recibes
+  var run=document.getElementById('run'), track=document.getElementById('track'), get=document.getElementById('get');
+  var stops=[].slice.call(track.querySelectorAll('.stop')), auto=null, touched=false;
+  function go(i){
+    stops.forEach(function(s,k){s.setAttribute('aria-selected',String(k===i))});
+    var r=stops[i].offsetLeft; run.style.left=r+'px';
+    get.classList.add('swap'); setTimeout(function(){get.textContent=stops[i].dataset.get;get.classList.remove('swap')},180);
+  }
+  stops.forEach(function(s,k){s.addEventListener('click',function(){touched=true;clearInterval(auto);go(k)})});
+  new IntersectionObserver(function(e){
+    if(e[0].isIntersecting&&!auto&&!touched&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+      var i=0; auto=setInterval(function(){i=(i+1)%stops.length;go(i)},3800);
+    }
+  },{threshold:.5}).observe(track);
+
+  // comparación: resalta la misma fila en ambas columnas
+  var cols=document.querySelectorAll('.compare .cmp');
+  if(cols.length===2){[0,1].forEach(function(c){[].forEach.call(cols[c].children,function(li,i){
+    li.addEventListener('mouseenter',function(){cols[0].children[i].classList.add('hl');cols[1].children[i].classList.add('hl')});
+    li.addEventListener('mouseleave',function(){cols[0].children[i].classList.remove('hl');cols[1].children[i].classList.remove('hl')});
+  })})}
+
+  // compromiso de confidencialidad: cada cláusula en palabras simples
+  var plain=document.getElementById('plain');
+  document.querySelectorAll('#clauses button').forEach(function(b){b.addEventListener('click',function(){
+    document.querySelectorAll('#clauses button').forEach(function(x){x.setAttribute('aria-pressed',String(x===b))});
+    plain.style.opacity=0; setTimeout(function(){plain.textContent=b.dataset.p;plain.style.opacity=1},160);
+  })});
+
+  // WhatsApp Business: poner el número (57 + celular, sin espacios) para mostrar los botones
+  var WA_NUMBER='';
+  if(WA_NUMBER){
+    var href='https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent('Hola, vi la página de Relevo y quiero saber cuánto vale mi empresa.');
+    ['wa','wa2'].forEach(function(id){var a=document.getElementById(id);a.href=href;a.hidden=false});
+  }
   var t=document.getElementById('teaser'), city=document.getElementById('city');
   t.querySelectorAll('.seg button').forEach(function(b){b.addEventListener('click',function(){
     var open=b.dataset.v==='despues';
