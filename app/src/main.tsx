@@ -77,6 +77,13 @@ function App() {
   );
 }
 
+// Si se publicó una versión nueva mientras la pestaña estaba abierta, los archivos viejos ya no existen: recarga una vez.
+window.addEventListener('vite:preloadError', (e) => {
+  try { if (sessionStorage.getItem('recargado-por-version') === '1') return; sessionStorage.setItem('recargado-por-version', '1'); } catch { /* sin almacenamiento */ }
+  e.preventDefault(); location.reload();
+});
+try { setTimeout(() => sessionStorage.removeItem('recargado-por-version'), 30000); } catch { /* sin almacenamiento */ }
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode><BrowserRouter><ToastProvider><App /></ToastProvider></BrowserRouter></StrictMode>,
 );

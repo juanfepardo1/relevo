@@ -82,6 +82,7 @@ export default function Flash() {
       } catch (e: any) {
         res.failed++;
         log.unshift({ t: `${L.nombre || L.empresa}: ${e.message}`, k: 'err' });
+        if (/module script|dynamically imported|Failed to fetch/i.test(e.message)) { log.unshift({ t: 'La app se actualizó mientras estaba abierta. Recarga la página (Cmd + Shift + R) y vuelve a darle Valorar todos. No se valoró nada.', k: 'err' }); break; }
         if (/autoriz|sesión|Google rechazó/i.test(e.message)) { log.unshift({ t: 'Detuve el lote porque el problema afecta a todos.', k: 'err' }); break; }
       }
       setLote((s) => ({ ...s, i: i + 1, log: [...log] }));
