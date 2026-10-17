@@ -1,3 +1,4 @@
+import { CrearClave } from './Login';
 import { useEffect, useState } from 'react';
 import { UploadSimple } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
@@ -61,6 +62,10 @@ export default function Perfil({ email }: { email: string }) {
             {firmaUrl ? <div className="firma-prev"><img src={firmaUrl} alt="Tu firma" /></div>
               : <p className="muted">Sin firma. Sube un PNG con fondo transparente para que se vea sobre la línea del documento.</p>}
           </div>
+        </section>
+        <section className="panel">
+          <header><h2>Contraseña</h2></header>
+          <div className="body"><CrearClave email={p.email ?? ''} compacto /></div>
         </section>
       </div>
     </div>

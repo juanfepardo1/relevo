@@ -2,11 +2,11 @@ import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import type { Session } from '@supabase/supabase-js';
-import { supabase } from './lib/supabase';
+import { supabase, enlaceTipo } from './lib/supabase';
 import { CatalogoProvider } from './lib/data';
 import { ToastProvider } from './components/ui';
 import Layout from './components/Layout';
-import Login from './pages/Login';
+import Login, { CrearClave } from './pages/Login';
 import Inicio from './pages/Inicio';
 import Vendedores from './pages/Vendedores';
 import VendedorFicha from './pages/VendedorFicha';
@@ -27,10 +27,12 @@ import './styles.css';
 function App() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [permitido, setPermitido] = useState<boolean | null>(null);
+  // Llegó por invitación o "olvidé mi contraseña": primero crea su contraseña.
+  const [crearClave, setCrearClave] = useState(() => ['invite', 'recovery', 'signup'].includes(enlaceTipo ?? ''));
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    const { data } = supabase.auth.onAuthStateChange((e, s) => { if (e === 'PASSWORD_RECOVERY') setCrearClave(true); setSession(s); });
     return () => data.subscription.unsubscribe();
   }, []);
 
@@ -42,6 +44,7 @@ function App() {
   if (session === undefined || (session && permitido === null)) return <div className="login"><div className="skel" style={{ width: 160 }} /></div>;
   if (!session) return <Login />;
   if (!permitido) return <Login noAutorizado={session.user.email ?? ''} />;
+  if (crearClave) return <div className="login"><CrearClave email={session.user.email ?? ''} onDone={() => { setCrearClave(false); history.replaceState(null, '', '/'); }} /></div>;
 
   return (
     <CatalogoProvider email={session.user.email ?? ''}>

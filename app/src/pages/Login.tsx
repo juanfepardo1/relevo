@@ -46,3 +46,36 @@ export default function Login({ noAutorizado }: { noAutorizado?: string }) {
     </div>
   );
 }
+
+/** Crear o cambiar la contraseña de la sesión actual (invitación, recuperación o desde Mi perfil). */
+export function CrearClave({ email, onDone, compacto }: { email: string; onDone?: () => void; compacto?: boolean }) {
+  const [a, setA] = useState('');
+  const [b, setB] = useState('');
+  const [err, setErr] = useState('');
+  const [ok, setOk] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const submit = async (e: FormEvent) => {
+    e.preventDefault(); setErr('');
+    if (a.length < 8) return setErr('Usa al menos 8 caracteres.');
+    if (a !== b) return setErr('Las dos contraseñas no coinciden.');
+    setBusy(true);
+    const { error } = await supabase.auth.updateUser({ password: a });
+    setBusy(false);
+    if (error) return setErr(error.message.includes('different from the old') ? 'Debe ser distinta a la anterior.' : error.message);
+    setOk(true); setA(''); setB('');
+    if (onDone) setTimeout(onDone, 900);
+  };
+  return (
+    <form onSubmit={submit} style={compacto ? { maxWidth: 380 } : undefined}>
+      {!compacto && <div className="brand" style={{ padding: 0 }}><span className="mark" aria-hidden="true"><i></i><i></i></span>Relevo</div>}
+      {!compacto && <h1>Crea tu contraseña</h1>}
+      {!compacto && <p className="soft">Para {email}. La usarás para entrar de ahora en adelante.</p>}
+      <input type="email" autoComplete="username" value={email} readOnly hidden />
+      <label>Contraseña nueva<input className="in" type="password" autoComplete="new-password" required autoFocus={!compacto} value={a} onChange={(e) => setA(e.target.value)} /></label>
+      <label>Repítela<input className="in" type="password" autoComplete="new-password" required value={b} onChange={(e) => setB(e.target.value)} /></label>
+      {err && <p className="err-text" role="alert">{err}</p>}
+      {ok && <p className="soft">Contraseña guardada.</p>}
+      <button className="btn primary" disabled={busy}>{busy ? 'Guardando' : 'Guardar contraseña'}</button>
+    </form>
+  );
+}

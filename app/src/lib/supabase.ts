@@ -1,5 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
+/** Tipo de enlace con el que llegó (invitación o recuperación). Se lee antes de que Supabase limpie la URL. */
+export const enlaceTipo: string | null = (() => {
+  try { return new URLSearchParams(location.hash.slice(1)).get('type') || new URLSearchParams(location.search).get('type'); } catch { return null; }
+})();
+
 // Clave publicable: segura en el navegador. El acceso real lo decide RLS (tabla equipo).
 export const supabase = createClient(
   'https://zxjqixxpyxdyrqaweorn.supabase.co',
