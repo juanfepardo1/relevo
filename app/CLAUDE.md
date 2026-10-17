@@ -25,23 +25,45 @@ Naranja #F47B3D, azul #2C5186, tinta #14243D, fondo claro #EAF1FA. App en fondo 
 
 ## Módulos
 - **CRM vendedores** (`Vendedores`, `VendedorFicha`): etapas en tabla `etapas` (pipeline vendedor). Filtro Activos/Todos (Activo = todo menos En reserva) y filtros de selección múltiple (`components/Multi.tsx`). "Próxima acción" se eliminó a propósito. La ficha tiene Otros contactos (tabla `personas`), documentos con descarga, NIT editable.
-- **Bandeja**: leads de la web (`v_bandeja`). Los de ventas < $1.000M no entran (les llega correo automático de rechazo desde hablaconrelevo.com, en `api/notify-lead.js` del proyecto web). Aprobar un B lo deja a cargo de Valoraciones.
+- **Bandeja**: leads de la web (`v_bandeja`). El contador del menú se actualiza al aprobar o descartar (evento `bandeja:cambio`). Alerta "Correo mal escrito" con corrección sugerida. Los de ventas < $1.000M no entran (les llega correo automático de rechazo desde hablaconrelevo.com, en `api/notify-lead.js` del proyecto web). Aprobar un B lo deja a cargo de Valoraciones.
 - **Buckets**: A 5.000 a 20.000M, B 1.000 a 5.000M, C < 1.000M, D > 20.000M.
 - **Valoración flash** (`pages/Flash.tsx`, `src/flash/`): solo bucket B, motor de Alejo (`motor.ts`). Alejo es dueño de la metodología: respetar lo que él decida. Los supuestos se editan en Admin → Supuestos de valoración (los socios entran a esa pestaña; el resto de Admin es solo para Felipe). Empresas con * (deducidas del correo) nunca se nombran frente al cliente: correo, PDF y formulario dicen "tu empresa".
   - Responsable de todos los B: el usuario "Valoraciones" (valoraciones@relevobrokers.com). Cuando alguien toma un caso ("Lo tomo" en Pidieron llamada) queda como responsable y el lead pasa a Contactado.
   - Etapas B: No contactado, luego "Val. flash enviada" (código `val_preliminar`), luego Contactado si toman el caso, o En reserva.
   - Los B se atienden solo por correo, desde valoraciones@, firmado "Equipo Relevo" (nunca con nombre personal).
   - Al enviar la flash va con el formulario "Cuéntanos tu caso" (relevobrokers.com/caso?c=CODIGO, `caso.html` en la raíz). Excepción: horizonte "Solo quiero saber cuánto vale" recibe solo la flash con la puerta abierta a vender, sin formulario, y queda En reserva.
-  - Envíos en lote espaciados 20 a 45 s.
+  - Envíos en lote espaciados 20 a 45 s. El lote corre en el navegador: su estado vive en `src/lib/lote.ts` (aviso global en Layout, no se recarga la app ni se cierra la pestaña sin confirmar mientras corre). Selector "Al valorar": solo valorar / borrador / enviar de una vez. Listas cerradas por defecto.
   - Correos: `revisarCorreo` (en `_correo.js`) detecta errores típicos (gmial.com, .con, .com.com) y sugiere la corrección; `/api/gmail` además verifica que el dominio reciba correo (MX) y bloquea el envío si no. Un rebote se registra con el botón "El correo rebotó" (actividad "Rebotó el correo a X"): el lead vuelve a por enviar y no recibe recordatorios hasta corregirlo.
 - **Formulario "Cuéntanos tu caso"**: prueba la hipótesis de un mercado informal de compraventa de pymes que necesita acompañamiento (cuántos ya conversaron con un comprador, cuántos se frenan por plata). Columnas `form_codigo`, `form_enviado_en`, `form_respondido_en`; tabla `formulario_respuestas`; RPC `formulario_datos` y `formulario_responder` (anon). Sin avance automático entre preguntas (público mayor). Si responden "No" a la primera, se saltan las preguntas del comprador y la de llamada.
 - **Compradores**, **Documentos** (NDA a nombre de la SAS, firmado por Felipe como representante legal), **Calendario** (Calendly, por defecto solo lo propio), **Empresa** (documentos legales de la SAS), **Embudo/Stats**, **Admin** (notas de la app).
 - **Finanzas**: movimientos, estados financieros formato PUC a 4 dígitos con PDF de marca (`src/lib/estados.ts`, `src/docs/estados.ts`), cuentas entre socios 50/50, suscripciones. Capital: autorizado 50M, suscrito 5M, pagado 10.000 (en caja); suscrito no pagado como activo 1325 por defecto. Lo pagado por socios de su bolsillo es deuda 2355; transferencias a la cuenta de Relevo son aporte a capital.
 
+## Acceso y dominio
+- App en https://app.relevobrokers.com (la dirección vieja relevoapp-delta.vercel.app sigue funcionando). En Supabase, Site URL y Redirect URLs apuntan al dominio nuevo.
+- Invitación o "olvidé mi contraseña" llevan a crear contraseña (`CrearClave` en `Login.tsx`); también se cambia en Mi perfil. Entrar con Google quedó como opción futura, no implementada.
+- En Gmail de Felipe, valoraciones@ es un alias con "Enviar como". Lo enviado por valoraciones@ se separa con un filtro de Gmail (etiqueta "Valoraciones").
+
+## Estrategia para los B (contexto de negocio, oct 2026)
+- Felipe no quiere "ignorar a los pequeños": Relevo debe encontrar una forma tan eficiente de atenderlos que valga la pena. Relevo NO es un marketplace.
+- Hipótesis principal: existe un mercado informal de compraventa de pymes donde el dueño ya tiene comprador (empleado, socio, competidor, proveedor) y vende al precio que cree, que le dice el contador o que le ofrecen; necesita acompañamiento y, a veces, financiación. Si se confirma, Relevo entra a transacciones casi hechas.
+- Ideas en evaluación: probar la financiación (pago a plazos del vendedor + crédito bancario; reuniones con bancas pyme con Eduardo de Grandes Patrimonios), atención en grupo (webinar mensual como filtro de compromiso), contadores como canal. Todavía no hay pool de compradores.
+- El formulario "Cuéntanos tu caso" es la herramienta para validar esto antes de invertir tiempo. Ojo: muestra pequeña y sesgada (llegaron por un anuncio de valoración); las llamadas con quien diga que tiene comprador valen más que los porcentajes.
+
+## Estado al 17 oct 2026
+- Hasta ese día se enviaron 18 flash el 17 de octubre, más las anteriores. Quedan unos 23 B sin valorar (lote cortado por una recarga; se retoma con "Valorar todos").
+- 8 B que recibieron la flash antes del formulario están en "Recibieron la flash sin formulario" para invitarlos ("Queremos darle continuidad a tu caso").
+- Rebotes conocidos: Andres Valverde (gerencia@mansenlc.com, dominio sin correo; solo quería saber el valor; se sugirió mandarle el PDF por WhatsApp y marcar enviado). Claudia Pérez tiene `presinve.com.com` (corregir a presinve.com y reenviar con "El correo rebotó").
+- Las empresas con * Solucash, Presinve y Frlboxcol recibieron el correo con el nombre deducido antes de la regla nueva.
+- El CRM de Notion quedó desactualizado frente a la app; se recomendó que la app sea la única fuente (no confirmado por Felipe).
+
 ## Migraciones
 SQL en `supabase/` (sin datos personales). Desde las herramientas de Claude a veces no se puede correr DDL ni borrar vendedores: en ese caso se le pasa el archivo a Felipe para que lo corra en el SQL Editor.
 
 ## Pendientes conocidos
-- Borrar el vendedor de prueba "PRUEBA Felipe Pardo" desde su ficha.
-- Enviar los B valorados repartidos en varios días (dominio nuevo, cuidar reputación).
+- Borrar el vendedor de prueba "PRUEBA Felipe Pardo" desde su ficha (Claude no pudo borrarlo; está en Perdido).
+- Retomar el lote de los ~23 B sin valorar y enviarlos repartidos en varios días (dominio nuevo, cuidar reputación). Revisar que SPF, DKIM y DMARC digan PASS en "Mostrar original".
+- Enviar el formulario a los 8 de "Recibieron la flash sin formulario".
+- Detección automática de rebotes: Felipe eligió la opción de leer su buzón (no crear cuenta propia para valoraciones@). Falta que agregue `https://www.googleapis.com/auth/gmail.readonly` a la delegación de dominio; luego construir la revisión (buscar from:mailer-daemon, marcar rebote) y, si se quiere, mostrar respuestas de clientes en la ficha.
+- Etapas "En pausa" y "No asistió" de Notion no existen en la app (Fabián Echeverri, Jorge Granados quedaron en etapas aproximadas).
+- Estados financieros: la línea de firma del contador sale en blanco hasta que haya contador.
 - Revisar respuestas del formulario y decidir el modelo para B según los resultados.
