@@ -166,10 +166,12 @@ module.exports = async function handler(req, res) {
     const m = buildDecline();
     await transport.sendMail({ from: `Felipe Pardo <${SECONDARY_USER}>`, to: r.email, replyTo: SECONDARY_USER, ...m });
   };
-  // Vendedor pequeño: correo al lead y nada a Felipe. Si ese correo falla, Felipe recibe el aviso para escribirle a mano.
+  // Los leads ya llegan a la app interna: el aviso por correo a Felipe está apagado (NOTIFY_INTERNAL=1 en Vercel lo reactiva).
+  // Vendedor pequeño: correo al lead. Si ese correo falla, Felipe sí recibe el aviso para escribirle a mano.
+  const internal = process.env.NOTIFY_INTERNAL === '1';
   const sendMail = isSmallSeller(r)
     ? () => decline().catch((e) => { console.error('decline', e && e.message); return notify(subject.replace('[No califica]', '[No califica · correo NO enviado]')); })
-    : () => notify();
+    : () => (internal ? notify() : Promise.resolve('aviso interno apagado'));
   const [mail, capi] = await Promise.allSettled([sendMail(), sendCapi(r)]);
   if (capi.status === 'rejected') console.error('capi', capi.reason && capi.reason.message);
   if (mail.status === 'rejected') {
