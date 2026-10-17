@@ -23,6 +23,7 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
   const [resp, setResp] = useState('');
   const [sector, setSector] = useState('');
   const [bucket, setBucket] = useState('');
+  const [horizonte, setHorizonte] = useState('');
   const [orden, setOrden] = useState<{ k: string; asc: boolean }>({ k: 'fecha_ingreso', asc: false });
   const [nuevo, setNuevo] = useState(false);
   const toast = useToast();
@@ -32,13 +33,13 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
     let r = (q.data || []).filter((v: Row) =>
       (etapa === 'todos' || v.etapa === etapa) &&
       (mios ? v.responsable === yo?.email : (!resp || (resp === 'sin' ? !v.responsable : v.responsable === resp))) &&
-      (!sector || v.sector === sector) && (!bucket || v.bucket === bucket) &&
+      (!sector || v.sector === sector) && (!bucket || v.bucket === bucket) && (!horizonte || (horizonte === 'sin' ? !v.horizonte : v.horizonte === horizonte)) &&
       (!s || [v.nombre, v.empresa, v.ciudad, v.correo, v.celular].some((x) => String(x || '').toLowerCase().includes(s))));
     const k = orden.k;
     const val = (v: Row) => (k === 'ventas_rango' ? VENTAS_ORD.indexOf(v[k]) : k === 'etapa' ? v.etapa_orden : v[k]);
     r = [...r].sort((a, b) => { const x = val(a), y = val(b); if (x == null) return 1; if (y == null) return -1; return (x > y ? 1 : x < y ? -1 : 0) * (orden.asc ? 1 : -1); });
     return r;
-  }, [q.data, buscar, etapa, resp, sector, bucket, orden, mios, yo]);
+  }, [q.data, buscar, etapa, resp, sector, bucket, horizonte, orden, mios, yo]);
 
   const th = (k: string, t: string, cls = '') => (
     <th className={cls} onClick={() => setOrden((o) => ({ k, asc: o.k === k ? !o.asc : true }))} aria-sort={orden.k === k ? (orden.asc ? 'ascending' : 'descending') : 'none'}>
@@ -78,6 +79,9 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
         </select>
         <select className="sel" value={bucket} onChange={(e) => setBucket(e.target.value)} aria-label="Bucket">
           <option value="">Todos los buckets</option>{BUCKETS.map(([k, l]) => <option key={k} value={k}>{k} · {l}</option>)}
+        </select>
+        <select className="sel" value={horizonte} onChange={(e) => setHorizonte(e.target.value)} aria-label="Horizonte de venta">
+          <option value="">Cualquier horizonte</option>{HORIZONTE.map(([k, l]) => <option key={k} value={k}>{l}</option>)}<option value="sin">Sin horizonte</option>
         </select>
       </div>
 
