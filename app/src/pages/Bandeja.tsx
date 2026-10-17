@@ -19,7 +19,9 @@ export default function Bandeja() {
 
   const aprobar = async (l: Row) => {
     setBusy(l.id);
-    try { const id = await must(supabase.rpc('aprobar_lead', { p_lead: l.id })) as string; toast('Pasó a vendedores'); window.dispatchEvent(new Event('bandeja:cambio')); nav(`/vendedores/${id}`); }
+    try { const id = await must(supabase.rpc('aprobar_lead', { p_lead: l.id })) as string;
+      // Los B quedan a cargo de Valoraciones hasta que alguien tome el caso
+      await supabase.from('vendedores').update({ responsable: 'valoraciones@relevobrokers.com' }).eq('id', id).eq('bucket', 'B'); toast('Pasó a vendedores'); window.dispatchEvent(new Event('bandeja:cambio')); nav(`/vendedores/${id}`); }
     catch (e: any) { toast(e.message, true); setBusy(null); }
   };
   const descartar = async (l: Row) => {

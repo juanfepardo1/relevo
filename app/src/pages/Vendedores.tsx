@@ -23,6 +23,7 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
   const [vista, setVista] = useState<'tabla' | 'pipeline'>(() => (localStorage.getItem('v-vista') as any) || 'tabla');
   const [buscar, setBuscar] = useState('');
   const [etapa, setEtapa] = useState<string[]>([]);
+  const [activos, setActivos] = useState(true); // Activo = cualquier lead que no esté En reserva
   const [resp, setResp] = useState<string[]>([]);
   const [sector, setSector] = useState<string[]>([]);
   const [bucket, setBucket] = useState<string[]>([]);
@@ -37,7 +38,7 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
   const rows = useMemo(() => {
     const s = buscar.trim().toLowerCase();
     let r = (q.data || []).filter((v: Row) =>
-      pasa(etapa, v.etapa) &&
+      (!activos || v.etapa !== 'en_reserva') && pasa(etapa, v.etapa) &&
       (mios ? v.responsable === yo?.email : pasa(resp, v.responsable)) &&
       pasa(sector, v.sector) && pasa(bucket, v.bucket) && pasa(horizonte, v.horizonte) && pasa(form, estadoForm(v)) &&
       (!s || [v.nombre, v.empresa, v.ciudad, v.correo, v.celular].some((x) => String(x || '').toLowerCase().includes(s))));
@@ -45,7 +46,7 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
     const val = (v: Row) => (k === 'ventas_rango' ? VENTAS_ORD.indexOf(v[k]) : k === 'etapa' ? v.etapa_orden : v[k]);
     r = [...r].sort((a, b) => { const x = val(a), y = val(b); if (x == null) return 1; if (y == null) return -1; return (x > y ? 1 : x < y ? -1 : 0) * (orden.asc ? 1 : -1); });
     return r;
-  }, [q.data, buscar, etapa, resp, sector, bucket, horizonte, form, orden, mios, yo]);
+  }, [q.data, buscar, activos, etapa, resp, sector, bucket, horizonte, form, orden, mios, yo]);
 
   const th = (k: string, t: string, cls = '') => (
     <th className={cls} onClick={() => setOrden((o) => ({ k, asc: o.k === k ? !o.asc : true }))} aria-sort={orden.k === k ? (orden.asc ? 'ascending' : 'descending') : 'none'}>
@@ -72,6 +73,10 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
 
       <div className="toolbar">
         <input className="in" type="search" placeholder="Buscar nombre, empresa, ciudad" value={buscar} onChange={(e) => setBuscar(e.target.value)} />
+        <div className="seg" role="radiogroup" aria-label="Activos o todos">
+          <button type="button" role="radio" aria-checked={activos} className={activos ? 'on' : ''} onClick={() => setActivos(true)}>Activos</button>
+          <button type="button" role="radio" aria-checked={!activos} className={!activos ? 'on' : ''} onClick={() => setActivos(false)}>Todos</button>
+        </div>
         <Multi label="Etapa" opciones={etapas.map((e) => [e.codigo, e.nombre])} value={etapa} onChange={setEtapa} />
         {!mios && <Multi label="Responsable" opciones={[...equipo.map((m) => [m.email, m.apodo ?? m.nombre] as [string, string]), ['__sin', 'Sin responsable']]} value={resp} onChange={setResp} />}
         <Multi label="Sector" opciones={SECTORES} value={sector} onChange={setSector} />
@@ -104,7 +109,7 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
           </table>
         </div>
       ) : (
-        <Pipeline rows={rows} etapas={etapas} onOpen={(id) => nav(`/vendedores/${id}`)} onMove={mover} />
+        <Pipeline rows={rows} etapas={activos ? etapas.filter((e) => e.codigo !== 'en_reserva') : etapas} onOpen={(id) => nav(`/vendedores/${id}`)} onMove={mover} />
       )}
 
       <Modal open={nuevo} onClose={() => setNuevo(false)} title="Nuevo vendedor">

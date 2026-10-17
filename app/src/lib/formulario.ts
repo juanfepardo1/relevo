@@ -47,26 +47,5 @@ export function senal(r: Respuesta): 'caliente' | 'tibio' | 'frio' {
   return 'frio';
 }
 
-/* Nombres como los escribió el lead: a veces vienen mal o vacíos. Si no se ven bien, mejor no usarlos. */
-const TITULOS = new Set(['sr', 'sra', 'srta', 'don', 'dona', 'doña', 'dr', 'dra', 'ing', 'lic', 'arq']);
-const NO_NOMBRE = new Set(['gerencia', 'gerente', 'admin', 'administracion', 'administración', 'info', 'contacto', 'ventas', 'empresa', 'prueba', 'test', 'na', 'ninguno', 'usuario', 'cliente', 'propietario', 'dueno', 'dueño']);
-const NO_EMPRESA = /^((una|mi|la|nuestra) empresa.*|(una|mi) (compañía|compania|firma|sociedad|negocio).*|n\/?a|no|ninguna|ninguno|empresa|privad[ao]|confidencial|prueba|test|x+|\.+|-+|sin nombre|no aplica|reservad[ao]|educaci[oó]n|salud|comercio|transporte|construcci[oó]n|servicios|restaurante|alimentos|tecnolog[ií]a|agro|manufactura|log[ií]stica|turismo|retail)$/i;
-const titulo = (w: string) => (w.length <= 3 && w === w.toUpperCase() && /[A-ZÁÉÍÓÚÑ]/.test(w) ? w : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
-
-/** Primer nombre presentable, o '' si no se ve confiable. */
-export function nombrePila(n: unknown): string {
-  const ws = String(n ?? '').replace(/^[^\p{L}]+/u, '').replace(/^PRUEBA\s+/i, '').trim().split(/\s+/).filter(Boolean);
-  while (ws.length && TITULOS.has(ws[0].replace(/\./g, '').toLowerCase())) ws.shift();
-  const w = ws[0] || '';
-  if (!/^[\p{L}'’]{2,20}$/u.test(w) || NO_NOMBRE.has(w.toLowerCase())) return '';
-  return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
-}
-
-/** Nombre de empresa presentable (sin S.A.S, sin mayúsculas sostenidas), o '' si no se ve confiable. */
-export function empresaLimpia(e: unknown): string {
-  let t = String(e ?? '').replace(/^[^\p{L}\p{N}]+/u, '').replace(/^PRUEBA\s+/i, '').replace(/\(.*?\)/g, '').replace(/[*]+/g, '').split(/[,;|]/)[0].trim();
-  t = t.replace(/\s+(s\.?\s?a\.?\s?s\.?|s\.?\s?a\.?|ltda\.?|e\.?\s?u\.?|s\.?\s?en\s?c\.?|bic)\.?$/i, '').replace(/\s+(s\.?\s?a\.?\s?s\.?)$/i, '').trim();
-  if (t.length < 3 || t.length > 60 || NO_EMPRESA.test(t) || /@|https?:|www\./i.test(t) || !/\p{L}/u.test(t)) return '';
-  if (t === t.toUpperCase()) t = t.split(/\s+/).map(titulo).join(' ');
-  return t;
-}
+/* Nombres como los escribió el lead: la limpieza vive en api/_correo.js para que la usen también los recordatorios automáticos. */
+export { nombrePila, empresaLimpia } from '../../api/_correo.js';

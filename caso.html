@@ -112,7 +112,7 @@ const Q=[
   {k:'contabilidad',t:'¿Cómo está la contabilidad?',o:[['formal','Formal, con contador y declaración al día'],['mixta','Formal en parte'],['informal','Mayormente informal']]},
   {k:'que_vende',t:'¿Qué te gustaría vender?',o:[['todo','La empresa completa'],['mayoria','La mayoría, y me quedo con una parte'],['socio','Que entre un socio con una parte'],['nose','Todavía no lo sé']]},
   {k:'transicion',t:'¿Acompañarías al nuevo dueño durante la transición?',o:[['si','Sí, el tiempo que haga falta'],['corto','Sí, unos pocos meses'],['no','Prefiero salir de inmediato']]},
-  {k:'llamada',t:'Última: ¿te podemos llamar 15 minutos para entender mejor tu caso?',o:[['si','Sí, con gusto'],['no','Por ahora no']]},
+  {k:'llamada',si:conOferta,t:'Última: ¿te podemos llamar 15 minutos para entender mejor tu caso?',o:[['si','Sí, con gusto'],['no','Por ahora no']]},
 ];
 
 let datos=null, r={}, i=-1, enviando=false;
@@ -157,13 +157,13 @@ function ir(idx){
       ${q.o.map(([k,l],n)=>`<button type="button" class="opt${multi?' multi':''}" data-k="${k}" aria-pressed="${marcado(k)}"><span class="k">${letras[n]}</span>${esc(l)}</button>`).join('')}
     </div>
     <div class="nav">
-      ${multi?`<button class="btn btn-primary" id="next" ${(sel||[]).length?'':'disabled'}>Continuar <span aria-hidden="true">→</span></button>`:''}
+      <button class="btn btn-primary" id="next" ${(multi?(sel||[]).length:sel)?'':'disabled'}>${siguienteDe(i)===-1?'Enviar':'Continuar'} <span aria-hidden="true">→</span></button>
       <button class="back" id="back">← Atrás</button>
     </div>
   </section>`;
   $app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>elegir(q,b.dataset.k));
   document.getElementById('back').onclick=()=>ir(anteriorDe(i));
-  const nx=document.getElementById('next'); if(nx) nx.onclick=()=>ir(siguienteDe(i));
+  document.getElementById('next').onclick=()=>ir(siguienteDe(i));
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function elegir(q,k){
@@ -177,9 +177,9 @@ function elegir(q,k){
     return;
   }
   r[q.k]=k;
-  if(q.k==='oferta'&&k==='no'){delete r.quien;delete r.avance;delete r.freno;}
+  if(q.k==='oferta'&&k==='no'){delete r.quien;delete r.avance;delete r.freno;delete r.llamada;}
   $app.querySelectorAll('.opt').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k));
-  setTimeout(()=>ir(siguienteDe(i)),220);
+  const nx=document.getElementById('next'); nx.disabled=false; nx.firstChild.textContent=(siguienteDe(i)===-1?'Enviar':'Continuar')+' ';
 }
 function enviar(){
   if(enviando)return; enviando=true; $bar.style.width='100%';
@@ -208,7 +208,7 @@ else rpc('formulario_datos',{c:codigo}).then(d=>{ if(!d) return invalido('Este e
   datos=d; if(d.respondido){ $app.innerHTML=`<section class="step"><p class="kicker">Ya lo respondiste</p><h1>Gracias${nombrePila(d.nombre)?', '+esc(nombrePila(d.nombre)):''}.</h1><p>Ya tenemos tu caso y lo estamos revisando. Si quieres corregir algo, puedes responder de nuevo.</p><div class="nav"><button class="btn btn-primary" id="go">Responder de nuevo</button></div></section>`; document.getElementById('go').onclick=inicio; } else inicio();
 }).catch(()=>invalido('No pudimos cargar el formulario.'));
 
-document.addEventListener('keydown',e=>{ if(i<0)return; const q=Q[i]; const n='abcdefghij'.indexOf(e.key.toLowerCase()); if(n>=0&&n<q.o.length) elegir(q,q.o[n][0]); if(e.key==='Enter'&&q.m&&(r[q.k]||[]).length) ir(siguienteDe(i)); });
+document.addEventListener('keydown',e=>{ if(i<0)return; const q=Q[i]; const n='abcdefghij'.indexOf(e.key.toLowerCase()); if(n>=0&&n<q.o.length) elegir(q,q.o[n][0]); if(e.key==='Enter'&&(q.m?(r[q.k]||[]).length:r[q.k])) ir(siguienteDe(i)); });
 })();
 </script>
 </body>

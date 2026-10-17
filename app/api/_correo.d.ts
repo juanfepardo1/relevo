@@ -1,0 +1,10 @@
+export type Correo = {
+  preheader?: string; saludo?: string; parrafos?: string[]; despues?: string[];
+  destacado?: { titulo: string; valor: string; nota?: string };
+  boton?: { texto: string; url: string; nota?: string }; cierre?: string[];
+};
+export function correoHtml(c: Correo): string;
+export function firmaRespaldo(nombre: string): string;
+export function correoDesdeTexto(texto: string, extra?: { preheader?: string; destacado?: Correo['destacado']; boton?: string; notaBoton?: string }): string;
+export function nombrePila(n: unknown): string;
+export function empresaLimpia(e: unknown): string;
