@@ -34,6 +34,27 @@ p{margin:0}ul,ol{margin:0;padding:0;list-style:none}
 .ic{width:20px;height:20px;flex:none;fill:currentColor}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 
+/* comité */
+.cm{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:center}
+.cm-tabs{margin-top:32px;display:grid;gap:10px}
+.cm-tabs button{appearance:none;border:0;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 18px;border-radius:14px;background:transparent;color:var(--ink);font:inherit;box-shadow:inset 0 0 0 1px var(--line);transition:background .25s,box-shadow .25s}
+.cm-tabs button b{font-weight:600;font-size:17px}
+.cm-tabs button span{font-size:13.5px;color:var(--ink-3)}
+.cm-tabs button:hover{background:rgba(255,255,255,.03)}
+.cm-tabs button[aria-selected="true"]{background:var(--raise);box-shadow:inset 0 0 0 1px rgba(244,123,61,.45),0 12px 30px -16px rgba(0,0,0,.6)}
+.cm-tabs button[aria-selected="true"] span{color:#ffc6a6}
+.cm-doc{position:relative;background:linear-gradient(180deg,#f6f8fb,#e9eef6);color:#14243d;border-radius:18px;padding:34px 34px 24px;box-shadow:0 30px 70px -30px rgba(0,0,0,.7);min-height:380px;display:flex;flex-direction:column}
+.cm-doc::before{content:"";position:absolute;inset:12px -10px -12px 10px;border-radius:18px;background:#c9d6ea;opacity:.25;z-index:-1;transform:rotate(2deg)}
+.cm-doc h3{font-size:22px;letter-spacing:-.025em}
+.cm-doc ul{margin-top:18px;display:grid;gap:12px}
+.cm-doc li{display:flex;gap:12px;font-size:16px;color:#3d4b61;line-height:1.45}
+.cm-doc li::before{content:"";flex:none;width:8px;height:8px;margin-top:8px;border-radius:2px;background:var(--orange)}
+.cm-panel{animation:cmIn .45s var(--ease)}
+@keyframes cmIn{from{opacity:0;transform:translateY(6px)}}
+.cm-foot{margin-top:auto;padding-top:22px;border-top:1px solid #d6dfeb;display:flex;align-items:center;gap:8px;font-size:13.5px;color:#5b6880}
+.cm-foot .ic{width:16px;height:16px;color:#c95a22}
+@media (max-width:900px){.cm{grid-template-columns:1fr;gap:36px}.cm-doc{padding:24px 22px 18px;min-height:0}}
+
 /* nav */
 .top{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 78%,transparent);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid transparent;transition:border-color .3s}
 .top.scrolled{border-bottom-color:var(--line)}
@@ -61,11 +82,9 @@ nav{display:flex;align-items:center;gap:32px;height:68px}
 /* hero */
 .hero{position:relative;isolation:isolate;overflow:hidden}
 .hero{background:var(--bg)}
-.hero-art{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-.hero-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 100%}
-.hero-art::after{content:"";position:absolute;inset:0;background:
-  linear-gradient(90deg,rgba(11,23,48,.95) 0%,rgba(11,23,48,.8) 34%,rgba(11,23,48,.2) 57%,rgba(11,23,48,0) 76%),
-  linear-gradient(0deg,var(--bg) 0%,rgba(11,23,48,0) 20%)}
+.hero-art{position:absolute;top:0;right:0;bottom:0;width:62%;z-index:0;overflow:hidden;pointer-events:none;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 34%);mask-image:linear-gradient(90deg,transparent 0,#000 34%)}
+.hero-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 0;opacity:.78}
+.hero-art::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,var(--bg) 0%,rgba(11,23,48,0) 26%)}
 @media (prefers-reduced-motion:no-preference){
   .js .hero-art img{clip-path:inset(100% 0 0 0);transform:scale(1.06);transition:clip-path 2.4s cubic-bezier(.65,0,.35,1) .1s,transform 3s var(--ease) .1s}
   .js .hero-art.in img{clip-path:inset(0 0 0 0);transform:none}
@@ -74,7 +93,7 @@ nav{display:flex;align-items:center;gap:32px;height:68px}
     @keyframes artpar{to{transform:translateY(90px)}}
   }
 }
-@media (max-width:900px){.hero-art::after{background:linear-gradient(180deg,rgba(11,23,48,.9) 0%,rgba(11,23,48,.66) 55%,rgba(11,23,48,.4) 100%)}}
+@media (max-width:900px){.hero-art{width:100%;-webkit-mask-image:none;mask-image:none}.hero-art img{opacity:.35}}
 .skyline-box{overflow:hidden;display:flex;justify-content:center;pointer-events:none;user-select:none}
 .skyline{width:min(1640px,100%);margin:-70px auto -2px;position:relative;z-index:0}
 .skyline img{display:block;width:100%;height:auto}
@@ -83,7 +102,7 @@ nav{display:flex;align-items:center;gap:32px;height:68px}
   .js .skyline img{clip-path:inset(0 100% 0 0);transition:clip-path 2.6s cubic-bezier(.65,0,.35,1) .2s}
   .js .skyline.in img{clip-path:inset(0 0 0 0)}
 }
-.hero-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:64px;align-items:center;padding-block:120px 170px;position:relative;z-index:2}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:64px;align-items:center;padding-block:110px 130px;position:relative;z-index:2}
 .hero h1{font-size:clamp(36px,3.6vw,50px);line-height:1.04;letter-spacing:-.04em}
 .hero h1 span{color:var(--ink-3);display:block}
 .hero h1 .l1{font-weight:inherit;white-space:nowrap}
@@ -104,6 +123,20 @@ nav{display:flex;align-items:center;gap:32px;height:68px}
 .kpis div{background:var(--bg-2);padding:14px 16px}
 .kpis dt{font-size:12.5px;color:var(--ink-3)}
 .kpis dd{margin:4px 0 0;font-size:19px;font-weight:500;color:var(--ink)}
+.ev{margin-top:18px;padding:16px 18px;border-radius:12px;background:linear-gradient(135deg,rgba(244,123,61,.14),rgba(244,123,61,.04));box-shadow:inset 0 0 0 1px rgba(244,123,61,.28)}
+.ev span{display:block;font-size:12.5px;color:var(--ink-3)}
+.ev b{display:block;font-size:24px;font-weight:500;color:var(--ink);margin-top:2px}
+.ev small{display:block;font-size:12.5px;color:#ffc6a6;margin-top:2px}
+.seg-row{display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:13px;color:var(--ink-3)}
+.seg2{display:inline-flex;padding:3px;border-radius:999px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px var(--line)}
+.seg2 button{appearance:none;border:0;background:none;color:var(--ink-3);font:500 12.5px var(--sans);height:26px;padding:0 12px;border-radius:999px;cursor:pointer;transition:background .25s,color .25s}
+.seg2 button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.kpis{grid-template-columns:1fr 1fr 1fr!important;margin-top:10px!important}
+.kpis dd{font-size:16.5px!important;transition:opacity .2s;white-space:nowrap}
+.kpis dt{white-space:nowrap}
+.adj{margin-top:12px;font-size:12.5px;color:var(--ink-3);min-height:19px;transition:opacity .25s}
+.adj b{color:#ffc6a6;font-weight:500}
+@media (max-width:600px){.kpis{grid-template-columns:1fr 1fr!important}}
 .fit{margin-top:18px}
 .fit-h{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--ink-3)}
 .fit-h strong{color:var(--ink);font-weight:600}
@@ -322,27 +355,24 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
         </div>
       </div>
 
-      <figure class="teaser rv" style="--d:3;margin:0" aria-label="Ejemplo de ficha anónima que recibe un comprador">
-        <div class="t-head"><b><svg class="ic"><use href="#i-eye-slash"/></svg>Ficha anónima</b><span class="tag">Ejemplo ilustrativo</span></div>
+      <figure class="teaser rv" id="deal" style="--d:3;margin:0" aria-label="Ejemplo de resumen de oportunidad">
+        <div class="t-head"><b><svg class="ic"><use href="#i-eye-slash"/></svg>Proyecto Cóndor</b><span class="tag">Ejemplo ilustrativo</span></div>
         <div class="t-body">
-          <p class="t-title">Empresa de alimentos procesados</p>
-          <p class="t-meta">Antioquia, 22 años de operación</p>
+          <p class="t-title">Procesadora de alimentos, Antioquia</p>
+          <p class="t-meta">Fundada en 2003 · Venta del 100% por sucesión</p>
+          <div class="ev"><span>Valor empresa indicativo</span><b class="num">$10.500M a $12.800M</b><small id="mult">4,4x a 5,3x EBITDA ajustado</small></div>
+          <div class="seg-row"><span>EBITDA 2025</span><div class="seg2" role="group" aria-label="Tipo de EBITDA"><button type="button" aria-pressed="false" data-k="rep">Reportado</button><button type="button" aria-pressed="true" data-k="adj">Ajustado</button></div></div>
           <dl class="kpis">
-            <div><dt>Ventas último año</dt><dd class="num">$8.400M</dd></div>
-            <div><dt>Margen EBITDA</dt><dd class="num">14,2%</dd></div>
-            <div><dt>Deuda neta / EBITDA</dt><dd class="num">0,8x</dd></div>
-            <div><dt>Motivo de venta</dt><dd>Sucesión</dd></div>
+            <div><dt>Ventas 2025</dt><dd class="num">$16.800M</dd></div>
+            <div><dt>EBITDA</dt><dd class="num" id="ebitda">$2.410M</dd></div>
+            <div><dt>Margen EBITDA</dt><dd class="num" id="margin">14,3%</dd></div>
+            <div><dt>CAGR ventas 3a</dt><dd class="num">11,2%</dd></div>
+            <div><dt>Deuda neta/EBITDA</dt><dd class="num">0,8x</dd></div>
+            <div><dt>Mayor cliente</dt><dd class="num">12%</dd></div>
           </dl>
-          <div class="fit">
-            <p class="fit-h"><span>Encaje con tu búsqueda</span><strong>3 de 3</strong></p>
-            <ul>
-              <li><svg class="ic"><use href="#i-check"/></svg><span>Sector</span>Alimentos y bebidas</li>
-              <li><svg class="ic"><use href="#i-check"/></svg><span>Región</span>Antioquia</li>
-              <li><svg class="ic"><use href="#i-check"/></svg><span>Ticket</span><b class="num" style="font-weight:400">$2.000M a $8.000M</b></li>
-            </ul>
-          </div>
+          <p class="adj" id="adj">Incluye ajuste por salario del dueño por encima de mercado: <b class="num">+$310M</b></p>
         </div>
-        <figcaption class="t-foot"><svg class="ic"><use href="#i-lock-key"/></svg><span>Razón social <span class="redact" aria-hidden="true"></span> visible tras la firma</span></figcaption>
+        <figcaption class="t-foot"><svg class="ic"><use href="#i-seal-check"/></svg><span>Cifras conciliadas con DIAN, facturación electrónica y extractos</span></figcaption>
       </figure>
     </div>
   </section>
@@ -357,6 +387,54 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
         <li><span class="node"></span><h3><svg class="ic"><use href="#i-file-magnifying-glass"/></svg>Abres el data room</h3><p>Firmas confidencialidad, verificamos fondos y accedes a los estados financieros.</p></li>
         <li><span class="node"></span><h3><svg class="ic"><use href="#i-handshake"/></svg>Negocias y cierras</h3><p>Te acompañamos en la oferta, la revisión y el pago a través de fiducia.</p></li>
       </ol>
+    </div>
+  </section>
+
+
+  <section class="s" id="comite" style="padding-top:0">
+    <div class="wrap cm">
+      <div class="rv">
+        <h2>Lo que llega a tu comité de inversión.</h2>
+        <p class="lede">Cada etapa abre más información. Nada de listados masivos ni cifras sin respaldo.</p>
+        <div class="cm-tabs" role="tablist" aria-label="Etapas de información">
+          <button type="button" role="tab" aria-selected="true" data-t="0"><b>Ficha anónima</b><span>Antes de firmar</span></button>
+          <button type="button" role="tab" aria-selected="false" data-t="1"><b>Memorando</b><span>Tras confidencialidad</span></button>
+          <button type="button" role="tab" aria-selected="false" data-t="2"><b>Data room</b><span>Con fondos verificados</span></button>
+        </div>
+      </div>
+      <div class="cm-doc rv" aria-live="polite">
+        <div class="cm-panel" data-p="0">
+          <h3>Ficha anónima</h3>
+          <ul>
+            <li>Sector, región y años de operación</li>
+            <li>Rangos de ventas, EBITDA y margen de los últimos tres años</li>
+            <li>Valor empresa indicativo y múltiplo implícito</li>
+            <li>Participación disponible y motivo de la venta</li>
+            <li>Encaje con tu tesis registrada</li>
+          </ul>
+        </div>
+        <div class="cm-panel" data-p="1" hidden>
+          <h3>Memorando de la oportunidad</h3>
+          <ul>
+            <li>Estados financieros de tres años y cierre parcial del año en curso</li>
+            <li>EBITDA normalizado, con cada ajuste explicado</li>
+            <li>Concentración de clientes y proveedores</li>
+            <li>Capital de trabajo, deuda y obligaciones fuera de balance</li>
+            <li>Equipo directivo y dependencia del dueño</li>
+          </ul>
+        </div>
+        <div class="cm-panel" data-p="2" hidden>
+          <h3>Data room</h3>
+          <ul>
+            <li>Declaraciones ante la DIAN y facturación electrónica</li>
+            <li>Extractos bancarios conciliados con lo reportado</li>
+            <li>Contratos con clientes, proveedores y arrendadores</li>
+            <li>Situación laboral, tributaria y litigios</li>
+            <li>Activos, licencias y permisos de operación</li>
+          </ul>
+        </div>
+        <p class="cm-foot"><svg class="ic"><use href="#i-lock-key"/></svg>El vendedor aprueba cada apertura de información.</p>
+      </div>
     </div>
   </section>
 
@@ -566,6 +644,18 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
   new IntersectionObserver(([e])=>$('#top').classList.toggle('scrolled',!e.isIntersecting)).observe(sentinel);
   const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.18});
   $$('.rv,#tl,#stack').forEach(el=>io.observe(el));
+  // EBITDA reportado vs ajustado
+  const D={rep:{e:'$2.100M',m:'12,5%',x:'5,0x a 6,1x EBITDA reportado',a:'EBITDA tal como aparece en los estados financieros.'},adj:{e:'$2.410M',m:'14,3%',x:'4,4x a 5,3x EBITDA ajustado',a:'Incluye ajuste por salario del dueño por encima de mercado: <b class="num">+$310M</b>'}};
+  $$('#deal .seg2 button').forEach(b=>b.addEventListener('click',()=>{
+    $$('#deal .seg2 button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+    const d=D[b.dataset.k]; ['ebitda','margin','adj'].forEach(id=>document.getElementById(id).style.opacity=0);
+    setTimeout(()=>{document.getElementById('ebitda').textContent=d.e;document.getElementById('margin').textContent=d.m;document.getElementById('mult').textContent=d.x;document.getElementById('adj').innerHTML=d.a;['ebitda','margin','adj'].forEach(id=>document.getElementById(id).style.opacity=1)},160);
+  }));
+  // etapas de información
+  $$('.cm-tabs button').forEach(b=>b.addEventListener('click',()=>{
+    $$('.cm-tabs button').forEach(x=>x.setAttribute('aria-selected',String(x===b)));
+    $$('.cm-panel').forEach(p=>p.hidden=p.dataset.p!==b.dataset.t);
+  }));
   requestAnimationFrame(()=>{const k=document.getElementById('hero-art');if(k)k.classList.add('in')});
   /* timeline nodes light up in sequence once visible */
   new IntersectionObserver(([e],o)=>{if(!e.isIntersecting)return;o.disconnect();
