@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { Volver } from '../components/Volver';
+import { ArrowsClockwise } from '@phosphor-icons/react';
 import { useParams, Link } from 'react-router-dom';
-import { CaretLeft, WhatsappLogo, Envelope, MapPin } from '@phosphor-icons/react';
+import { WhatsappLogo, Envelope, MapPin } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
 import { useQuery, useCatalogo, guardar } from '../lib/data';
 import { SECTORES, VENTAS, HORIZONTE, MOTIVO_VENTA, MOTIVO_PERDIDA, VALORACION, CANAL, label } from '../lib/catalogos';
@@ -29,7 +31,7 @@ export default function VendedorFicha() {
 
   return (
     <div className="page">
-      <Link to="/vendedores" className="btn ghost" style={{ marginBottom: 12, paddingLeft: 4 }}><CaretLeft className="ic" />Vendedores</Link>
+      <Volver lista="/vendedores" nombre="Vendedores" />
       <div className="head">
         <div>
           <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}>{v.empresa || v.nombre}{v.bucket && <span className={'tag plain ' + tonoBucket(v.bucket)}>Bucket {v.bucket}</span>}</h1>
@@ -43,6 +45,7 @@ export default function VendedorFicha() {
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <Stepper pipeline="vendedor" actual={v.etapa} onChange={save('etapa')} />
           <Dias d={v.dias_en_etapa} sla={v.sla_dias} />
+          <Insistencia id={id} />
           {wa && <a className="btn" href={wa} target="_blank" rel="noopener"><WhatsappLogo className="ic" />WhatsApp</a>}
           {v.correo && <a className="btn" href={`mailto:${v.correo}`}><Envelope className="ic" />Correo</a>}
           <BotonEliminar entidad="vendedor" id={id} nombre={v.empresa || v.nombre} />
@@ -163,4 +166,12 @@ function PresentacionesPanel({ vendedorId }: { vendedorId: string }) {
       </div>
     </section>
   );
+}
+
+/** Llenó el formulario de la web más de una vez: señal de que está esperando respuesta. */
+function Insistencia({ id }: { id: string }) {
+  const q = useQuery<Row | null>(() => supabase.from('vendedores').select('formularios,ultimo_formulario_en').eq('id', id).maybeSingle(), [id]);
+  const n = Number(q.data?.formularios ?? 1);
+  if (n < 2) return null;
+  return <span className="b warn insiste" title={q.data?.ultimo_formulario_en ? `La última vez el ${fecha(q.data.ultimo_formulario_en, true)}` : undefined}><ArrowsClockwise className="ic" />Llenó el formulario {n} veces</span>;
 }

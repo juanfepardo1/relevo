@@ -1,24 +1,30 @@
 import { useMemo, useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus } from '@phosphor-icons/react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Plus, ArrowCounterClockwise } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
 import { useQuery, useCatalogo } from '../lib/data';
 import { TIPO_COMPRADOR, SUBTIPO, ESTADO_COMPRADOR, CERTEZA, ORIGEN, SECTORES, label } from '../lib/catalogos';
 import { rango, fecha } from '../lib/format';
 import { Skeleton, ErrorBox, Modal, Dias, useToast } from '../components/ui';
 import { EtapaTag } from '../components/paneles';
-import { Multi, pasa } from '../components/Multi';
+import { Filtros, pasa, usePersistente, type DefFiltro } from '../components/Multi';
 
 export default function Compradores() {
   const nav = useNavigate();
   const { etapasDe } = useCatalogo();
   const q = useQuery(() => supabase.from('v_compradores').select('*').order('created_at', { ascending: false }));
-  const [buscar, setBuscar] = useState('');
-  const [tipo, setTipo] = useState<string[]>([]);
-  const [estado, setEstado] = useState<string[]>([]);
-  const [etapa, setEtapa] = useState<string[]>([]);
-  const [sector, setSector] = useState<string[]>([]);
-  const hayFiltro = tipo.length + estado.length + etapa.length + sector.length > 0;
+  const loc = useLocation();
+  const [buscar, setBuscar] = usePersistente('f-comp:buscar', '');
+  const [f, setF] = usePersistente<Record<string, string[]>>('f-comp:filtros', {});
+  const g = (x: string) => f[x] ?? [];
+  const tipo = g('tipo'), estado = g('estado'), etapa = g('etapa'), sector = g('sector');
+  const hayCambios = !!buscar || Object.keys(f).length > 0;
+  const defs: DefFiltro[] = [
+    { k: 'tipo', label: 'Tipo', opciones: TIPO_COMPRADOR },
+    { k: 'estado', label: 'Estado', opciones: ESTADO_COMPRADOR },
+    { k: 'etapa', label: 'Etapa', opciones: etapasDe('comprador').map((e) => [e.codigo, e.nombre]) },
+    { k: 'sector', label: 'Sector buscado', opciones: SECTORES },
+  ];
   const [nuevo, setNuevo] = useState(false);
 
   const rows = useMemo(() => {
@@ -27,7 +33,7 @@ export default function Compradores() {
       pasa(tipo, c.tipo) && pasa(estado, c.estado) && pasa(etapa, c.etapa) &&
       (!sector.length || sector.some((x) => (c.categorias || []).includes(x))) &&
       (!s || [c.nombre, c.contacto_nombre, c.contacto_email, c.ciudad].some((x) => String(x || '').toLowerCase().includes(s))));
-  }, [q.data, buscar, tipo, estado, etapa, sector]);
+  }, [q.data, buscar, f]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="page">
@@ -37,11 +43,8 @@ export default function Compradores() {
       </div>
       <div className="toolbar">
         <input className="in" type="search" placeholder="Buscar nombre, contacto, correo" value={buscar} onChange={(e) => setBuscar(e.target.value)} />
-        <Multi label="Tipo" opciones={TIPO_COMPRADOR} value={tipo} onChange={setTipo} />
-        <Multi label="Estado" opciones={ESTADO_COMPRADOR} value={estado} onChange={setEstado} />
-        <Multi label="Etapa" opciones={etapasDe('comprador').map((e) => [e.codigo, e.nombre])} value={etapa} onChange={setEtapa} />
-        <Multi label="Sector buscado" opciones={SECTORES} value={sector} onChange={setSector} />
-        {hayFiltro && <button className="linkish" style={{ fontSize: 13 }} onClick={() => { setTipo([]); setEstado([]); setEtapa([]); setSector([]); }}>Limpiar filtros</button>}
+        <Filtros defs={defs} valores={f} onChange={setF} />
+        {hayCambios && <button className="btn ghost restablecer" onClick={() => { setBuscar(''); setF({}); }}><ArrowCounterClockwise className="ic" />Restablecer</button>}
       </div>
       {q.error ? <ErrorBox msg={q.error} retry={q.reload} /> : q.loading ? <div className="panel"><Skeleton rows={6} /></div> : (
         <div className="tablewrap">
@@ -49,7 +52,7 @@ export default function Compradores() {
             <thead><tr><th>Comprador</th><th>Tipo</th><th>Estado</th><th>Certeza</th><th>Etapa</th><th className="r">Días</th><th>Ticket</th><th>Sectores</th><th>Ingreso</th></tr></thead>
             <tbody>
               {!rows.length ? <tr><td colSpan={10}><p className="empty-state">Ningún comprador coincide.</p></td></tr> : rows.map((c: Row) => (
-                <tr key={c.id} onClick={() => nav(`/compradores/${c.id}`)}>
+                <tr key={c.id} onClick={() => nav(`/compradores/${c.id}`, { state: { desde: loc.pathname } })}>
                   <td><span className="primary-cell">{c.nombre}</span><span className="sub">{c.contacto_nombre !== c.nombre ? c.contacto_nombre : c.contacto_email}</span></td>
                   <td>{label(TIPO_COMPRADOR, c.tipo)}{c.subtipo ? <span className="sub">{label(SUBTIPO[c.tipo] || [], c.subtipo)}</span> : null}</td>
                   <td><span className={'b ' + (c.estado === 'registrado' ? 'ok' : c.estado === 'inactivo' ? '' : 'bl')}>{label(ESTADO_COMPRADOR, c.estado)}</span></td>

@@ -6,7 +6,7 @@ import { habilesDesde, diasDesde } from './habiles';
  * Alerta: se calcula del estado y desaparece sola al avanzar. Acción: pide contestar con botones.
  * Etapas de Docs recibidos hacia abajo de "Valoración completa" no tienen avisos todavía.
  */
-export type TipoAviso = 'no_contactado' | 'contactado' | 'reunion_fecha' | 'reunion_paso' | 'reunion_hecha' | 'recordar_docs' | 'reserva' | 'valoracion' | 'val_completa' | 'reunion_sin_vincular';
+export type TipoAviso = 'no_contactado' | 'contactado' | 'reunion_fecha' | 'reunion_paso' | 'reunion_hecha' | 'recordar_docs' | 'reserva' | 'valoracion' | 'val_completa' | 'reunion_sin_vincular' | 'insistio';
 export type Aviso = {
   key: string; tipo: TipoAviso; accion: boolean; vendedorId?: string; reunionId?: string;
   titulo: string; detalle: string; tono: '' | 'warn' | 'err'; para: string | null; // null = todo el equipo
@@ -38,11 +38,12 @@ export function escalonValoracion(dias: number): { tono: '' | 'warn' | 'err'; te
 export async function cargarAvisos(): Promise<{ avisos: Aviso[]; noContactados: number }> {
   const vend = (await must(supabase.from('vendedores').select('id,nombre,empresa,etapa,responsable,bucket,reunion_en').in('etapa', ETAPAS_CON_AVISO))) as Row[];
   const ids = vend.map((v) => v.id);
-  const [hist, recs, sueltas] = await Promise.all([
+  const [hist, recs, sueltas, insisten] = await Promise.all([
     ids.length ? must(supabase.from('etapa_historial').select('entidad_id,desde').eq('entidad', 'vendedor').is('hasta', null).in('entidad_id', ids)) : Promise.resolve([]),
     ids.length ? must(supabase.from('actividades').select('vendedor_id,fecha').eq('clave', CLAVE_RECORDATORIO).in('vendedor_id', ids)) : Promise.resolve([]),
     must(supabase.from('reuniones').select('id,organizador,invitado_nombre,invitado_email,inicio').is('vendedor_id', null).is('comprador_id', null).eq('estado', 'activa').gte('inicio', new Date(Date.now() - 14 * 864e5).toISOString())),
-  ]) as [Row[], Row[], Row[]];
+    supabase.from('vendedores').select('id,nombre,empresa,etapa,responsable,formularios,ultimo_formulario_en').gte('ultimo_formulario_en', new Date(Date.now() - 3 * 864e5).toISOString()).then((r) => r.data ?? []),
+  ]) as [Row[], Row[], Row[], Row[]];
   const desde = new Map(hist.map((h) => [h.entidad_id, h.desde as string]));
   const ahora = Date.now();
   const avisos: Aviso[] = [];
@@ -90,6 +91,12 @@ export async function cargarAvisos(): Promise<{ avisos: Aviso[]; noContactados: 
         break;
       }
     }
+  }
+
+  for (const v of insisten) {
+    if (['cerrado', 'perdido'].includes(v.etapa)) continue;
+    avisos.push({ key: 'in' + v.id, tipo: 'insistio', accion: false, vendedorId: v.id, titulo: nombre(v), para: v.responsable ?? null, etapa: v.etapa,
+      detalle: 'Volvió a llenar el formulario de la web. Está insistiendo: escríbele hoy', cifra: `${v.formularios} veces`, tono: 'warn', peso: 88 });
   }
 
   for (const r of sueltas) {

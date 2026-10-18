@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
+import { Volver } from '../components/Volver';
 import { useParams, Link } from 'react-router-dom';
-import { CaretLeft, Plus, PencilSimple, WhatsappLogo, Envelope } from '@phosphor-icons/react';
+import { Plus, PencilSimple, WhatsappLogo, Envelope } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
 import { useQuery, useCatalogo, guardar } from '../lib/data';
 import { TIPO_COMPRADOR, SUBTIPO, ESTADO_COMPRADOR, CERTEZA, ORIGEN, SECTORES, ESTADO_ORDEN, TIPO_ORDEN, FUENTE_DINERO, ESTRUCTURAS, label, type Opt } from '../lib/catalogos';
@@ -27,7 +28,7 @@ export default function CompradorFicha() {
 
   return (
     <div className="page">
-      <Link to="/compradores" className="btn ghost" style={{ marginBottom: 12, paddingLeft: 4 }}><CaretLeft className="ic" />Compradores</Link>
+      <Volver lista="/compradores" nombre="Compradores" />
       <div className="head">
         <div>
           <h1>{c.nombre}</h1>

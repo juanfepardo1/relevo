@@ -23,7 +23,13 @@ function Grupo({ icono, titulo, rutas, children }: { icono: ReactNode; titulo: s
 export default function Layout({ email }: { email: string }) {
   const { equipo, yo: miembro } = useCatalogo();
   const [nNotas, setNNotas] = useState<number | null>(null);
-  useEffect(() => { if (miembro?.es_admin) supabase.from('notas_app').select('id', { count: 'exact', head: true }).eq('estado', 'nueva').then(({ count }) => setNNotas(count ?? null)); }, [miembro?.es_admin]);
+  useEffect(() => {
+    if (!miembro?.es_admin) return;
+    const contar = () => supabase.from('notas_app').select('id', { count: 'exact', head: true }).eq('estado', 'nueva').then(({ count }) => setNNotas(count ?? null));
+    contar();
+    window.addEventListener('notas:cambio', contar);
+    return () => window.removeEventListener('notas:cambio', contar);
+  }, [miembro?.es_admin]);
   const [nBandeja, setNBandeja] = useState<number | null>(null);
   useEffect(() => {
     const contar = () => supabase.from('v_bandeja').select('id', { count: 'exact', head: true }).then(({ count }) => setNBandeja(count ?? null));

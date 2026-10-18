@@ -32,6 +32,7 @@ function FormNota({ onDone }: { onDone: () => void }) {
     setBusy(true);
     try {
       await must(supabase.from('notas_app').insert({ tipo, texto: texto.trim(), pagina: pagina.trim() || pathname }));
+      window.dispatchEvent(new Event('notas:cambio'));
       toast('Nota enviada. Gracias.'); onDone();
     } catch (err: any) { toast(err.message, true); }
     setBusy(false);

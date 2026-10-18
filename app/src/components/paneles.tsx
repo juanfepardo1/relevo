@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowDown, ArrowUp, ChatCircle, Envelope, FileText, Note, Phone, Plus, Users, Paperclip, Check, ArrowSquareOut, FilePlus, UploadSimple, CaretRight, DownloadSimple } from '@phosphor-icons/react';
+import { ArrowDown, ArrowUp, ChatCircle, Envelope, FileText, Note, Phone, Plus, Users, Paperclip, Check, ArrowSquareOut, FilePlus, UploadSimple, CaretRight, DownloadSimple, X } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
 import { useQuery, useCatalogo } from '../lib/data';
 import { TIPO_DOC, ESTADO_DOC, TIPO_ACTIVIDAD, label } from '../lib/catalogos';
@@ -86,6 +86,10 @@ export function DocumentosPanel({ entidad, id, direccion }: { entidad: Ent; id: 
     window.location.assign(data.signedUrl);
   };
 
+  const descartar = async (d: Row) => {
+    try { await must(supabase.from('documentos').update({ estado: 'descartado' }).eq('id', d.id)); toast(`${d.nombre}: descartado`); q.reload(); }
+    catch (e: any) { toast(e.message, true); }
+  };
   const subirA = async (d: Row, f: File) => {
     setSubiendo(d.id);
     try {
@@ -116,10 +120,12 @@ export function DocumentosPanel({ entidad, id, direccion }: { entidad: Ent; id: 
           <span className={'b ' + (atraso != null && atraso >= 15 ? 'err' : pend ? 'warn' : d.estado === 'descartado' ? '' : 'ok')}>
             {label(ESTADO_DOC, d.estado)}{atraso != null ? ` · ${atraso} d` : ''}
           </span>
+          {!pend && d.estado === 'recibido' && !d.archivo_path && !d.url && <span className="b" title="Se marcó como recibido pero no tiene archivo. Súbelo o descártalo.">Sin archivo</span>}
           {(d.archivo_path || d.url) && <button className="btn ghost" title="Abrir" onClick={() => abrir(d)}><ArrowSquareOut className="ic" /></button>}
           {d.archivo_path && <button className="btn ghost" title="Descargar" aria-label="Descargar" onClick={() => descargar(d)}><DownloadSimple className="ic" /></button>}
-          {pend && d.direccion === 'recibir' && <label className="btn ghost" title="Subir el archivo de este documento" style={{ cursor: 'pointer' }}><UploadSimple className="ic" />{subiendo === d.id ? '…' : ''}<input type="file" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) subirA(d, f); }} /></label>}
+          {(pend || (!d.archivo_path && !d.url)) && d.direccion === 'recibir' && <label className="btn ghost" title="Subir el archivo de este documento" style={{ cursor: 'pointer' }}><UploadSimple className="ic" />{subiendo === d.id ? '…' : ''}<input type="file" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) subirA(d, f); }} /></label>}
           {pend && <button className="btn ghost" title={d.direccion === 'recibir' ? 'Marcar recibido' : 'Marcar enviado'} onClick={() => marcar(d)}><Check className="ic" /></button>}
+          {(pend || (!d.archivo_path && !d.url)) && d.estado !== 'descartado' && <button className="btn ghost" title="Descartar: ya no se necesita" aria-label="Descartar" onClick={() => descartar(d)}><X className="ic" /></button>}
         </div>
       </div>
     );
@@ -128,7 +134,7 @@ export function DocumentosPanel({ entidad, id, direccion }: { entidad: Ent; id: 
   const pedidos = lista.filter((d) => d.direccion === 'recibir' && d.paquete_id && d.estado !== 'descartado');
   const progreso = { total: pedidos.length, recibidos: pedidos.filter((d) => d.estado === 'recibido').length, faltan: pedidos.filter((d) => d.estado === 'solicitado').length };
   const pendientes = lista.filter((d) => d.estado === 'solicitado' || d.estado === 'pendiente');
-  const resto = lista.filter((d) => !(d.estado === 'solicitado' || d.estado === 'pendiente'));
+  const resto = lista.filter((d) => !(d.estado === 'solicitado' || d.estado === 'pendiente') && !(direccion && d.estado === 'descartado'));
   const grupos = Object.entries(resto.reduce((m: Record<string, Row[]>, d) => { (m[d.tipo] ||= []).push(d); return m; }, {}));
   return (
     <section className={'panel' + (arrastre ? ' drop-on' : '')} onDragOver={(e) => { if (e.dataTransfer.types.includes('Files')) { e.preventDefault(); setArrastre(true); } }} onDragLeave={() => setArrastre(false)} onDrop={(e) => { e.preventDefault(); setArrastre(false); const f = Array.from(e.dataTransfer.files || []); if (f.length) setLote(f); }}>
@@ -307,7 +313,7 @@ export function HistorialPanel({ entidad, id }: { entidad: Ent; id: string }) {
 function adivinarTipo(nombre: string) {
   const n = nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   if (/renta|declaracion|dian|110\b/.test(n)) return 'declaracion_renta';
-  if (/estado|financ|balance|eeff|pyg|p&g|resultado|flujo|patrimonio|notas a los/.test(n)) return 'estados_financieros';
+  if (/estado|financ|balance|eeff|pyg|p&g|resultado|flujo|patrimonio|notas a los|notas ef|dictamen|blce|^(esf|eri|ecp|efe)/.test(n)) return 'estados_financieros';
   if (/factur/.test(n)) return 'facturacion';
   if (/extracto|bancari/.test(n)) return 'extractos';
   if (/camara|existencia|representacion|rues|rut\b/.test(n)) return 'camara_comercio';

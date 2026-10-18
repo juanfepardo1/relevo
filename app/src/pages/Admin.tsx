@@ -41,7 +41,7 @@ function Notas() {
   const quien = (e: string) => equipo.find((m) => m.email === e)?.apodo ?? e;
   const rows = ((q.data || []) as Row[]).filter((n) => estado === 'todas' || (estado === 'abiertas' ? ['nueva', 'en_curso'].includes(n.estado) : n.estado === estado));
   const cambiar = async (n: Row, est: string) => {
-    try { await must(supabase.from('notas_app').update({ estado: est, resuelta_en: est === 'resuelta' ? new Date().toISOString() : null }).eq('id', n.id)); q.reload(); }
+    try { await must(supabase.from('notas_app').update({ estado: est, resuelta_en: est === 'resuelta' ? new Date().toISOString() : null }).eq('id', n.id)); q.reload(); window.dispatchEvent(new Event('notas:cambio')); }
     catch (e: any) { toast(e.message, true); }
   };
   const copiar = async () => {
