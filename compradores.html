@@ -34,6 +34,59 @@ p{margin:0}ul,ol{margin:0;padding:0;list-style:none}
 .ic{width:20px;height:20px;flex:none;fill:currentColor}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 
+/* ===== secciones claras ===== */
+body{background:#f5f7fa}
+main{background:var(--bg)}
+.lt{--bg:#f5f7fa;--bg-2:#ffffff;--raise:#ffffff;--raise-2:#eef2f7;--line:#e2e7ee;--line-2:#cfd7e2;--ink:#14243d;--ink-2:#3d4b61;--ink-3:#5b6880;--blue-hi:#2c5186;--blue-tint:#eaf1fa;--ok:#2f8a5b;--sh:0 1px 2px rgba(20,36,61,.06),0 18px 40px -22px rgba(20,36,61,.3);background:var(--bg);color:var(--ink);color-scheme:light}
+.lt .btn-s{color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-2)}
+.lt .btn-s:hover{background:#fff}
+.band{background:var(--bg);position:relative}
+.band::before{content:"";position:absolute;inset:0;background:radial-gradient(800px 400px at 85% 0%,rgba(44,81,134,.45),transparent 70%);pointer-events:none}
+.band .wrap{position:relative}
+.facts3{margin-top:56px;display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line-2)}
+.f3{padding:32px 32px 8px 0}
+.f3+.f3{padding-left:32px;border-left:1px solid var(--line-2)}
+.f3-k{font-size:13.5px;font-weight:600;color:#c95a22}
+.f3 h3{margin-top:12px;font-size:21px;line-height:1.25;letter-spacing:-.02em}
+.f3 p{margin-top:10px;color:var(--ink-2);font-size:15.5px}
+.mini{margin-top:16px;width:100%;border-collapse:collapse;font-size:14px}
+.mini th{text-align:left;font-weight:500;color:var(--ink-2);padding:9px 0;border-top:1px solid var(--line)}
+.mini td{text-align:right;padding:9px 0 9px 12px;border-top:1px solid var(--line)}
+.mini .ok{color:var(--ok)}
+.f3 .cap{font-size:12.5px;color:var(--ink-3);margin-top:6px}
+.bx{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:start;padding:56px;border-radius:24px;background:#fff;box-shadow:var(--sh)}
+.bx-f{border:0;margin:28px 0 0;padding:0}
+.bx-f legend{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px;padding:0}
+.bx-chips{display:flex;flex-wrap:wrap;gap:8px}
+.bx-chips button{appearance:none;border:0;cursor:pointer;height:38px;padding:0 14px;border-radius:999px;font:500 14.5px var(--sans);color:var(--ink-2);background:var(--bg);box-shadow:inset 0 0 0 1px var(--line);transition:background .2s,color .2s,box-shadow .2s,transform .2s var(--ease)}
+.bx-chips button:hover{box-shadow:inset 0 0 0 1px var(--ink-3)}
+.bx-chips button:active{transform:scale(.97)}
+.bx-chips button[aria-pressed="true"]{background:#14243d;color:#fff;box-shadow:none}
+.pv{position:sticky;top:96px;border-radius:18px;background:#0b1730;color:#f3f6fb;padding:26px;box-shadow:0 30px 60px -28px rgba(11,23,48,.7)}
+.pv-h{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#a7b9d4}
+.pv-tag{height:24px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;box-shadow:inset 0 0 0 1px rgba(220,232,250,.24)}
+.pv h3{margin-top:16px;font-size:22px;letter-spacing:-.025em;min-height:28px}
+.pv-m{margin-top:4px;font-size:14px;color:#a7b9d4}
+.pv-g{margin:20px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(220,232,250,.14);border-radius:12px;overflow:hidden}
+.pv-g div{background:#0f2040;padding:14px 16px}
+.pv-g dt{font-size:12.5px;color:#a7b9d4}
+.pv-g dd{margin:4px 0 0;font-size:18px;font-weight:500;transition:opacity .2s}
+.pv-fit{margin:18px 0 22px;display:grid;gap:8px;font-size:14px}
+.pv-fit li{display:grid;grid-template-columns:70px 1fr;gap:10px;padding-left:22px;position:relative}
+.pv-fit li::before{content:"";position:absolute;left:0;top:5px;width:12px;height:7px;border-left:2px solid #7fc8a3;border-bottom:2px solid #7fc8a3;transform:rotate(-45deg)}
+.pv-fit b{font-weight:500;color:#a7b9d4}
+.pv .btn{width:100%}
+.lt .who,.lt .faq{color:var(--ink)}
+.ft{padding-block:40px;display:flex;flex-wrap:wrap;gap:14px 28px;align-items:center;border-top:1px solid var(--line);font-size:14px;color:var(--ink-3)}
+.ft .brand{margin-right:auto;color:var(--ink)}
+.lt .mark i:nth-child(1){background:#14243d}
+@media (max-width:900px){.facts3{grid-template-columns:1fr}.f3,.f3+.f3{padding:26px 0;border-left:0;border-top:1px solid var(--line-2)}.f3:first-child{border-top:0}.bx{grid-template-columns:1fr;padding:28px 20px;gap:32px}.pv{position:static}}
+
+
+.lt .close{--ink:#f3f6fb;--ink-2:#c9d6ea;--line-2:transparent;color:#f3f6fb;background:radial-gradient(600px 300px at 90% 0%,rgba(91,134,200,.45),transparent 70%),#0b1730!important}
+.pv-g div:first-child{grid-column:1/-1}
+.pv-g{grid-template-columns:1fr 1fr}
+.pv-g div:first-child dd{font-size:22px}
 /* comité */
 .cm{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:center}
 .cm-tabs{margin-top:32px;display:grid;gap:10px}
@@ -338,7 +391,7 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><!-- Phosphor Icons (MIT), regular weight --><symbol id="i-airplane-tilt" viewBox="0 0 256 256"><path d="M185.33,114.21l29.14-27.42.17-.17a32,32,0,0,0-45.26-45.26c0,.06-.11.11-.17.17L141.79,70.67l-83-30.2a8,8,0,0,0-8.39,1.86l-24,24a8,8,0,0,0,1.22,12.31l63.89,42.59L76.69,136H56a8,8,0,0,0-5.65,2.34l-24,24A8,8,0,0,0,29,175.42l36.82,14.73,14.7,36.75.06.16a8,8,0,0,0,13.18,2.47l23.87-23.88A8,8,0,0,0,120,200V179.31l14.76-14.76,42.59,63.89a8,8,0,0,0,12.31,1.22l24-24a8,8,0,0,0,1.86-8.39Zm-.07,97.23-42.59-63.88A8,8,0,0,0,136.8,144c-.27,0-.53,0-.79,0a8,8,0,0,0-5.66,2.35l-24,24A8,8,0,0,0,104,176v20.69L90.93,209.76,79.43,181A8,8,0,0,0,75,176.57l-28.74-11.5L59.32,152H80a8,8,0,0,0,5.66-2.34l24-24a8,8,0,0,0-1.22-12.32L44.56,70.74l13.5-13.49,83.22,30.26a8,8,0,0,0,8.56-2L180.78,52.6A16,16,0,0,1,203.4,75.23l-32.87,30.93a8,8,0,0,0-2,8.56l30.26,83.22Z"/></symbol><symbol id="i-arrow-right" viewBox="0 0 256 256"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></symbol><symbol id="i-bank" viewBox="0 0 256 256"><path d="M24,104H48v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16H208V104h24a8,8,0,0,0,4.19-14.81l-104-64a8,8,0,0,0-8.38,0l-104,64A8,8,0,0,0,24,104Zm40,0H96v64H64Zm80,0v64H112V104Zm48,64H160V104h32ZM128,41.39,203.74,88H52.26ZM248,208a8,8,0,0,1-8,8H16a8,8,0,0,1,0-16H240A8,8,0,0,1,248,208Z"/></symbol><symbol id="i-briefcase" viewBox="0 0 256 256"><path d="M216,56H176V48a24,24,0,0,0-24-24H104A24,24,0,0,0,80,48v8H40A16,16,0,0,0,24,72V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V72A16,16,0,0,0,216,56ZM96,48a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96ZM216,72v41.61A184,184,0,0,1,128,136a184.07,184.07,0,0,1-88-22.38V72Zm0,128H40V131.64A200.19,200.19,0,0,0,128,152a200.25,200.25,0,0,0,88-20.37V200ZM104,112a8,8,0,0,1,8-8h32a8,8,0,0,1,0,16H112A8,8,0,0,1,104,112Z"/></symbol><symbol id="i-buildings" viewBox="0 0 256 256"><path d="M240,208H224V96a16,16,0,0,0-16-16H144V32a16,16,0,0,0-24.88-13.32L39.12,72A16,16,0,0,0,32,85.34V208H16a8,8,0,0,0,0,16H240a8,8,0,0,0,0-16ZM208,96V208H144V96ZM48,85.34,128,32V208H48ZM112,112v16a8,8,0,0,1-16,0V112a8,8,0,1,1,16,0Zm-32,0v16a8,8,0,0,1-16,0V112a8,8,0,1,1,16,0Zm0,56v16a8,8,0,0,1-16,0V168a8,8,0,0,1,16,0Zm32,0v16a8,8,0,0,1-16,0V168a8,8,0,0,1,16,0Z"/></symbol><symbol id="i-caret-left" viewBox="0 0 256 256"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"/></symbol><symbol id="i-check" viewBox="0 0 256 256"><path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z"/></symbol><symbol id="i-eye-slash" viewBox="0 0 256 256"><path d="M53.92,34.62A8,8,0,1,0,42.08,45.38L61.32,66.55C25,88.84,9.38,123.2,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208a127.11,127.11,0,0,0,52.07-10.83l22,24.21a8,8,0,1,0,11.84-10.76Zm47.33,75.84,41.67,45.85a32,32,0,0,1-41.67-45.85ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.16,133.16,0,0,1,25,128c4.69-8.79,19.66-33.39,47.35-49.38l18,19.75a48,48,0,0,0,63.66,70l14.73,16.2A112,112,0,0,1,128,192Zm6-95.43a8,8,0,0,1,3-15.72,48.16,48.16,0,0,1,38.77,42.64,8,8,0,0,1-7.22,8.71,6.39,6.39,0,0,1-.75,0,8,8,0,0,1-8-7.26A32.09,32.09,0,0,0,134,96.57Zm113.28,34.69c-.42.94-10.55,23.37-33.36,43.8a8,8,0,1,1-10.67-11.92A132.77,132.77,0,0,0,231.05,128a133.15,133.15,0,0,0-23.12-30.77C185.67,75.19,158.78,64,128,64a118.37,118.37,0,0,0-19.36,1.57A8,8,0,1,1,106,49.79,134,134,0,0,1,128,48c34.88,0,66.57,13.26,91.66,38.35,18.83,18.83,27.3,37.62,27.65,38.41A8,8,0,0,1,247.31,131.26Z"/></symbol><symbol id="i-file-magnifying-glass" viewBox="0 0 256 256"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-45.54-48.85a36.05,36.05,0,1,0-11.31,11.31l11.19,11.2a8,8,0,0,0,11.32-11.32ZM104,148a20,20,0,1,1,20,20A20,20,0,0,1,104,148Z"/></symbol><symbol id="i-handshake" viewBox="0 0 256 256"><path d="M254.3,107.91,228.78,56.85a16,16,0,0,0-21.47-7.15L182.44,62.13,130.05,48.27a8.14,8.14,0,0,0-4.1,0L73.56,62.13,48.69,49.7a16,16,0,0,0-21.47,7.15L1.7,107.9a16,16,0,0,0,7.15,21.47l27,13.51,55.49,39.63a8.06,8.06,0,0,0,2.71,1.25l64,16a8,8,0,0,0,7.6-2.1l55.07-55.08,26.42-13.21a16,16,0,0,0,7.15-21.46Zm-54.89,33.37L165,113.72a8,8,0,0,0-10.68.61C136.51,132.27,116.66,130,104,122L147.24,80h31.81l27.21,54.41ZM41.53,64,62,74.22,36.43,125.27,16,115.06Zm116,119.13L99.42,168.61l-49.2-35.14,28-56L128,64.28l9.8,2.59-45,43.68-.08.09a16,16,0,0,0,2.72,24.81c20.56,13.13,45.37,11,64.91-5L188,152.66Zm62-57.87-25.52-51L214.47,64,240,115.06Zm-87.75,92.67a8,8,0,0,1-7.75,6.06,8.13,8.13,0,0,1-1.95-.24L80.41,213.33a7.89,7.89,0,0,1-2.71-1.25L51.35,193.26a8,8,0,0,1,9.3-13l25.11,17.94L126,208.24A8,8,0,0,1,131.82,217.94Z"/></symbol><symbol id="i-lock-key" viewBox="0 0 256 256"><path d="M128,112a28,28,0,0,0-8,54.83V184a8,8,0,0,0,16,0V166.83A28,28,0,0,0,128,112Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,128,152Zm80-72H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Z"/></symbol><symbol id="i-plus" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></symbol><symbol id="i-seal-check" viewBox="0 0 256 256"><path d="M225.86,102.82c-3.77-3.94-7.67-8-9.14-11.57-1.36-3.27-1.44-8.69-1.52-13.94-.15-9.76-.31-20.82-8-28.51s-18.75-7.85-28.51-8c-5.25-.08-10.67-.16-13.94-1.52-3.56-1.47-7.63-5.37-11.57-9.14C146.28,23.51,138.44,16,128,16s-18.27,7.51-25.18,14.14c-3.94,3.77-8,7.67-11.57,9.14C88,40.64,82.56,40.72,77.31,40.8c-9.76.15-20.82.31-28.51,8S41,67.55,40.8,77.31c-.08,5.25-.16,10.67-1.52,13.94-1.47,3.56-5.37,7.63-9.14,11.57C23.51,109.72,16,117.56,16,128s7.51,18.27,14.14,25.18c3.77,3.94,7.67,8,9.14,11.57,1.36,3.27,1.44,8.69,1.52,13.94.15,9.76.31,20.82,8,28.51s18.75,7.85,28.51,8c5.25.08,10.67.16,13.94,1.52,3.56,1.47,7.63,5.37,11.57,9.14C109.72,232.49,117.56,240,128,240s18.27-7.51,25.18-14.14c3.94-3.77,8-7.67,11.57-9.14,3.27-1.36,8.69-1.44,13.94-1.52,9.76-.15,20.82-.31,28.51-8s7.85-18.75,8-28.51c.08-5.25.16-10.67,1.52-13.94,1.47-3.56,5.37-7.63,9.14-11.57C232.49,146.28,240,138.44,240,128S232.49,109.73,225.86,102.82Zm-11.55,39.29c-4.79,5-9.75,10.17-12.38,16.52-2.52,6.1-2.63,13.07-2.73,19.82-.1,7-.21,14.33-3.32,17.43s-10.39,3.22-17.43,3.32c-6.75.1-13.72.21-19.82,2.73-6.35,2.63-11.52,7.59-16.52,12.38S132,224,128,224s-9.15-4.92-14.11-9.69-10.17-9.75-16.52-12.38c-6.1-2.52-13.07-2.63-19.82-2.73-7-.1-14.33-.21-17.43-3.32s-3.22-10.39-3.32-17.43c-.1-6.75-.21-13.72-2.73-19.82-2.63-6.35-7.59-11.52-12.38-16.52S32,132,32,128s4.92-9.15,9.69-14.11,9.75-10.17,12.38-16.52c2.52-6.1,2.63-13.07,2.73-19.82.1-7,.21-14.33,3.32-17.43S70.51,56.9,77.55,56.8c6.75-.1,13.72-.21,19.82-2.73,6.35-2.63,11.52-7.59,16.52-12.38S124,32,128,32s9.15,4.92,14.11,9.69,10.17,9.75,16.52,12.38c6.1,2.52,13.07,2.63,19.82,2.73,7,.1,14.33.21,17.43,3.32s3.22,10.39,3.32,17.43c.1,6.75.21,13.72,2.73,19.82,2.63,6.35,7.59,11.52,12.38,16.52S224,124,224,128,219.08,137.15,214.31,142.11ZM173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34Z"/></symbol><symbol id="i-shield-check" viewBox="0 0 256 256"><path d="M208,40H48A16,16,0,0,0,32,56v56c0,52.72,25.52,84.67,46.93,102.19,23.06,18.86,46,25.26,47,25.53a8,8,0,0,0,4.2,0c1-.27,23.91-6.67,47-25.53C198.48,196.67,224,164.72,224,112V56A16,16,0,0,0,208,40Zm0,72c0,37.07-13.66,67.16-40.6,89.42A129.3,129.3,0,0,1,128,223.62a128.25,128.25,0,0,1-38.92-21.81C61.82,179.51,48,149.3,48,112l0-56,160,0ZM82.34,141.66a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32l-56,56a8,8,0,0,1-11.32,0Z"/></symbol><symbol id="i-target" viewBox="0 0 256 256"><path d="M221.87,83.16A104.1,104.1,0,1,1,195.67,49l22.67-22.68a8,8,0,0,1,11.32,11.32l-96,96a8,8,0,0,1-11.32-11.32l27.72-27.72a40,40,0,1,0,17.87,31.09,8,8,0,1,1,16-.9,56,56,0,1,1-22.38-41.65L184.3,60.39a87.88,87.88,0,1,0,23.13,29.67,8,8,0,0,1,14.44-6.9Z"/></symbol><symbol id="i-x" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></symbol></svg>
 <header class="top" id="top"><nav class="wrap">
   <a class="brand" href="/compradores" aria-label="Relevo, inicio compradores"><span class="mark" aria-hidden="true"><i></i><i></i></span>Relevo</a>
-  <div class="links"><a href="#como">Cómo funciona</a><a href="#financiacion">Financiación</a><a href="#preguntas">Preguntas</a></div>
+  <div class="links"><a href="#tesis">Tu tesis</a><a href="#comite">Información</a><a href="#financiacion">Financiación</a><a href="#preguntas">Preguntas</a></div>
   <div class="nav-r"><a class="sell" href="/">¿Vendes tu empresa?</a><button class="btn btn-p" type="button" data-open>Registrar búsqueda</button></div>
 </nav></header>
 
@@ -351,7 +404,7 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
         <p class="sub rv" style="--d:1">Registra tu tesis de compra una vez. Te mostramos solo empresas colombianas que encajan, bajo confidencialidad.</p>
         <div class="ctas rv" style="--d:2">
           <button class="btn btn-p btn-lg" type="button" data-open>Registrar búsqueda<svg class="ic"><use href="#i-arrow-right"/></svg></button>
-          <a class="btn btn-s btn-lg" href="#como">Ver cómo funciona</a>
+          <a class="btn btn-s btn-lg" href="#tesis">Arma tu tesis</a>
         </div>
       </div>
 
@@ -377,25 +430,82 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
     </div>
   </section>
 
-  <section class="s" id="como">
+  <section class="s lt" id="como">
     <div class="wrap">
-      <h2 class="rv">De la tesis al cierre, sin listados masivos.</h2>
-      <p class="lede rv">Cada etapa abre más información. Tú decides cuándo avanzar.</p>
-      <ol class="tl" id="tl">
-        <li><span class="node"></span><h3><svg class="ic"><use href="#i-target"/></svg>Registras tu tesis</h3><p>Sector, región, ticket y cómo financias. Una sola vez, vigente seis meses.</p></li>
-        <li><span class="node"></span><h3><svg class="ic"><use href="#i-eye-slash"/></svg>Recibes fichas anónimas</h3><p>Solo empresas que cumplen tu tesis, sin nombre hasta que quieras avanzar.</p></li>
-        <li><span class="node"></span><h3><svg class="ic"><use href="#i-file-magnifying-glass"/></svg>Abres el data room</h3><p>Firmas confidencialidad, verificamos fondos y accedes a los estados financieros.</p></li>
-        <li><span class="node"></span><h3><svg class="ic"><use href="#i-handshake"/></svg>Negocias y cierras</h3><p>Te acompañamos en la oferta, la revisión y el pago a través de fiducia.</p></li>
-      </ol>
+      <h2 class="rv">Un flujo de empresas que no ves en otro lado.</h2>
+      <div class="facts3">
+        <div class="f3 rv"><p class="f3-k">Fuera de mercado</p><h3>Empresas de fundadores que no están publicadas.</h3><p>Llegamos directamente a dueños que piensan en su relevo. No compiten veinte compradores por la misma ficha.</p></div>
+        <div class="f3 rv"><p class="f3-k">Cifras conciliadas</p><h3>Lo reportado, contrastado con la DIAN y los bancos.</h3>
+          <table class="mini" aria-label="Ejemplo de conciliación">
+            <tr><th>Ventas 2025</th><td class="num">$16.812M</td><td class="num ok">0,2%</td></tr>
+            <tr><th>Saldo en bancos</th><td class="num">$1.120M</td><td class="num ok">0,0%</td></tr>
+          </table>
+          <p class="cap">Ejemplo ilustrativo</p>
+        </div>
+        <div class="f3 rv"><p class="f3-k">Solo lo que encaja</p><h3>Tu tesis filtra. No recibes todo lo que se vende.</h3><p>Sector, región, ticket y estructura. Si no cumple tu tesis, no te llega.</p></div>
+      </div>
     </div>
   </section>
 
+  <section class="s lt" id="tesis" style="padding-top:0">
+    <div class="wrap">
+      <div class="bx">
+        <div class="bx-l rv">
+          <h2>Arma tu tesis y mira lo que recibirías.</h2>
+          <p class="lede">Elige qué buscas. A la derecha ves el tipo de ficha que te enviaríamos.</p>
+          <fieldset class="bx-f"><legend>Sector</legend><div class="bx-chips" data-g="sec">
+            <button type="button" aria-pressed="true" data-v="alimentos_bebidas" data-n="Procesadora de alimentos">Alimentos y bebidas</button>
+            <button type="button" aria-pressed="false" data-v="manufactura" data-n="Manufacturera de empaques">Manufactura</button>
+            <button type="button" aria-pressed="false" data-v="comercio_mayorista" data-n="Distribuidora mayorista">Distribución</button>
+            <button type="button" aria-pressed="false" data-v="salud" data-n="Red de laboratorios clínicos">Salud</button>
+            <button type="button" aria-pressed="false" data-v="transporte_logistica" data-n="Operador logístico">Logística</button>
+            <button type="button" aria-pressed="false" data-v="servicios_empresariales" data-n="Empresa de servicios industriales">Servicios a empresas</button>
+          </div></fieldset>
+          <fieldset class="bx-f"><legend>Región</legend><div class="bx-chips" data-g="reg">
+            <button type="button" aria-pressed="false" data-v="11" data-n="Bogotá">Bogotá</button>
+            <button type="button" aria-pressed="true" data-v="05" data-n="Antioquia">Antioquia</button>
+            <button type="button" aria-pressed="false" data-v="76" data-n="Valle del Cauca">Valle</button>
+            <button type="button" aria-pressed="false" data-v="08" data-n="Atlántico">Atlántico</button>
+            <button type="button" aria-pressed="false" data-v="68" data-n="Santander">Santander</button>
+            <button type="button" aria-pressed="false" data-v="todo" data-n="Colombia">Todo el país</button>
+          </div></fieldset>
+          <fieldset class="bx-f"><legend>Ticket de compra</legend><div class="bx-chips" data-g="tic">
+            <button type="button" aria-pressed="false" data-v="k2" data-lo="500" data-hi="2000">$500M a $2.000M</button>
+            <button type="button" aria-pressed="true" data-v="k3" data-lo="2000" data-hi="8000">$2.000M a $8.000M</button>
+            <button type="button" aria-pressed="false" data-v="k4" data-lo="8000" data-hi="20000">$8.000M a $20.000M</button>
+            <button type="button" aria-pressed="false" data-v="k5" data-lo="20000" data-hi="40000">Más de $20.000M</button>
+          </div></fieldset>
+        </div>
+        <div class="bx-r rv">
+          <article class="pv" aria-live="polite">
+            <div class="pv-h"><span>Ficha anónima</span><span class="pv-tag">Ejemplo ilustrativo</span></div>
+            <h3 id="pv-t">Procesadora de alimentos, Antioquia</h3>
+            <p class="pv-m">Venta del 100% por sucesión</p>
+            <dl class="pv-g">
+              <div><dt>Valor empresa</dt><dd class="num" id="pv-ev">$4.000M a $5.000M</dd></div>
+              <div><dt>EBITDA ajustado</dt><dd class="num" id="pv-eb">$900M</dd></div>
+              <div><dt>Ventas</dt><dd class="num" id="pv-v">$6.900M</dd></div>
+              <div><dt>Margen EBITDA</dt><dd class="num">13,5%</dd></div>
+              <div><dt>Deuda neta/EBITDA</dt><dd class="num">0,8x</dd></div>
+              <div><dt>Participación</dt><dd class="num">100%</dd></div>
+            </dl>
+            <ul class="pv-fit">
+              <li><b>Sector</b><span id="pv-s">Alimentos y bebidas</span></li>
+              <li><b>Región</b><span id="pv-r">Antioquia</span></li>
+              <li><b>Ticket</b><span id="pv-k">$2.000M a $8.000M</span></li>
+            </ul>
+            <button class="btn btn-p btn-lg" type="button" data-open id="bx-go">Registrar esta tesis<svg class="ic"><use href="#i-arrow-right"/></svg></button>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <section class="s" id="comite" style="padding-top:0">
+  <section class="s band" id="comite">
     <div class="wrap cm">
       <div class="rv">
         <h2>Lo que llega a tu comité de inversión.</h2>
-        <p class="lede">Cada etapa abre más información. Nada de listados masivos ni cifras sin respaldo.</p>
+        <p class="lede">Cada etapa abre más información. Tú decides cuándo avanzar.</p>
         <div class="cm-tabs" role="tablist" aria-label="Etapas de información">
           <button type="button" role="tab" aria-selected="true" data-t="0"><b>Ficha anónima</b><span>Antes de firmar</span></button>
           <button type="button" role="tab" aria-selected="false" data-t="1"><b>Memorando</b><span>Tras confidencialidad</span></button>
@@ -438,40 +548,7 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
     </div>
   </section>
 
-  <section class="s" style="padding-top:0">
-    <div class="wrap">
-      <h2 class="rv">Lo que cambia cuando compras con Relevo.</h2>
-      <div class="bento">
-        <article class="cell c-ver rv">
-          <h3>Cifras revisadas antes de que las veas</h3>
-          <p>Contrastamos lo que reporta la empresa con su facturación electrónica, sus declaraciones ante la DIAN y sus extractos bancarios.</p>
-          <figure class="recon" aria-label="Ejemplo de conciliación de cifras">
-            <table>
-              <thead><tr><th scope="col">Concepto</th><th scope="col">Reportado</th><th scope="col">DIAN o bancos</th><th scope="col">Diferencia</th></tr></thead>
-              <tbody>
-                <tr><th scope="row">Ventas 2025</th><td class="num">$8.412M</td><td class="num">$8.398M</td><td class="num ok"><svg class="ic"><use href="#i-check"/></svg>0,2%</td></tr>
-                <tr><th scope="row">Utilidad neta</th><td class="num">$640M</td><td class="num">$628M</td><td class="num ok"><svg class="ic"><use href="#i-check"/></svg>1,9%</td></tr>
-                <tr><th scope="row">Saldo en bancos</th><td class="num">$1.120M</td><td class="num">$1.120M</td><td class="num ok"><svg class="ic"><use href="#i-check"/></svg>0,0%</td></tr>
-              </tbody>
-            </table>
-            <figcaption>Ejemplo ilustrativo</figcaption>
-          </figure>
-        </article>
-        <article class="cell rv">
-          <h3>Solo lo que encaja</h3>
-          <p>Tu tesis es un filtro, no una suscripción a todo lo que se vende.</p>
-          <div class="chips" aria-hidden="true"><span class="chip on">Alimentos y bebidas</span><span class="chip on">Antioquia</span><span class="chip">Bogotá D.C.</span><span class="chip on">$2.000M a $8.000M</span><span class="chip">Nota del vendedor</span></div>
-        </article>
-        <article class="cell c-priv rv">
-          <h3>Tu búsqueda es privada</h3>
-          <p>No publicamos tu tesis ni la compartimos con vendedores sin tu autorización.</p>
-          <p class="big"><svg class="ic"><use href="#i-shield-check"/></svg>Información confidencial solo con acuerdo firmado</p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <section class="s" id="financiacion" style="padding-top:0">
+  <section class="s lt" id="financiacion">
     <div class="wrap fin">
       <div class="rv">
         <h2>Te ayudamos a estructurar cómo pagar.</h2>
@@ -495,7 +572,7 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
     </div>
   </section>
 
-  <section class="s" style="padding-top:0">
+  <section class="s lt" style="padding-top:0">
     <div class="wrap who">
       <div class="who-l rv">
         <h2>Para quien compra con criterio.</h2>
@@ -510,7 +587,7 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
     </div>
   </section>
 
-  <section class="s" id="preguntas" style="padding-top:0">
+  <section class="s lt" id="preguntas">
     <div class="wrap faq">
       <h2 class="rv">Preguntas frecuentes</h2>
       <div class="qa rv">
@@ -523,7 +600,7 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
     </div>
   </section>
 
-  <section class="s" style="padding-top:0">
+  <section class="s lt" style="padding-top:0">
     <div class="wrap">
       <div class="close rv">
         <div><h2>Cuéntanos qué empresa buscas.</h2><p>Toma tres minutos. Te escribimos cuando aparezca una que encaje.</p></div>
@@ -533,10 +610,10 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
   </section>
 </main>
 
-<footer class="wrap">
+<footer class="lt"><div class="wrap ft">
   <a class="brand" href="/compradores"><span class="mark" aria-hidden="true"><i></i><i></i></span>Relevo</a>
   <a href="/">Vender una empresa</a><a href="/terminos">Términos</a><a href="/privacidad">Privacidad</a><a href="https://www.linkedin.com/company/relevobrokers/" target="_blank" rel="noopener">LinkedIn</a><span>© 2026 Relevo Brokers S.A.S. · NIT 902.117.149-4</span>
-</footer>
+</div></footer>
 
 <dialog class="ob" id="ob" aria-labelledby="ob-title">
   <div class="ob-shell"><div class="ob-panel">
@@ -660,7 +737,7 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
   /* timeline nodes light up in sequence once visible */
   new IntersectionObserver(([e],o)=>{if(!e.isIntersecting)return;o.disconnect();
     const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-    $$('#tl li').forEach((li,i)=>setTimeout(()=>li.classList.add('on'),reduce?0:250+i*380));},{threshold:.4}).observe($('#tl'));
+    $$('#tl li').forEach((li,i)=>setTimeout(()=>li.classList.add('on'),reduce?0:250+i*380));},{threshold:.4}).observe($('#tl')||document.body);
 
   /* onboarding options (mirror of public.categorias and DANE codes) */
   const CATS=[['alimentos_bebidas','Alimentos y bebidas'],['agro','Agro y agroindustria'],['quimicos_farma','Químicos, plásticos y farmacéutica'],['manufactura','Manufactura industrial'],['construccion','Construcción e inmobiliario'],['comercio_mayorista','Distribución y comercio mayorista'],['comercio_minorista','Comercio minorista y retail'],['transporte_logistica','Transporte y logística'],['turismo_restaurantes','Hoteles, restaurantes y turismo'],['tecnologia','Tecnología y software'],['medios_telecom','Medios y telecomunicaciones'],['salud','Salud'],['educacion','Educación'],['servicios_empresariales','Servicios a empresas'],['energia_mineria','Energía, minería y medio ambiente'],['otros_servicios','Otros servicios']];
@@ -740,6 +817,27 @@ fieldset.bad .opts label{border-color:rgba(255,143,128,.45)}
       $('#obf').hidden=true;$('.steps').hidden=true;const d=$('#ob-done');d.hidden=false;d.focus();
     }catch(x){console.error(x);err.textContent='No pudimos guardar tu búsqueda. Revisa tu conexión e intenta de nuevo.';err.hidden=false;}
     finally{btn.removeAttribute('aria-busy');if(!$('#obf').hidden)btn.firstChild.textContent='Registrar búsqueda';}
+  });
+
+  /* constructor de tesis: vista previa en vivo y prellenado del registro */
+  const fmt=n=>'$'+Math.round(n).toLocaleString('es-CO').replace(/,/g,'.')+'M';
+  const round=n=>n>=1000?Math.round(n/100)*100:Math.round(n/10)*10;
+  const pick=g=>$(`.bx-chips[data-g="${g}"] button[aria-pressed="true"]`);
+  function preview(){
+    const sec=pick('sec'),reg=pick('reg'),tic=pick('tic');
+    const lo=+tic.dataset.lo,hi=+tic.dataset.hi,mid=(lo+hi)/2;
+    const evLo=round(mid*.9),evHi=round(mid*1.12),eb=round(mid/4.9),v=round(eb/.135);
+    const set=(id,t)=>{const el=$('#'+id);el.style.opacity=0;setTimeout(()=>{el.textContent=t;el.style.opacity=1},140)};
+    set('pv-t',sec.dataset.n+', '+reg.dataset.n);set('pv-ev',fmt(evLo)+' a '+fmt(evHi));set('pv-eb',fmt(eb));set('pv-v',fmt(v));
+    $('#pv-s').textContent=sec.textContent;$('#pv-r').textContent=reg.textContent;$('#pv-k').textContent=tic.textContent;
+  }
+  $$('.bx-chips button').forEach(b=>b.addEventListener('click',()=>{
+    b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));preview();}));
+  $('#bx-go').addEventListener('click',()=>{
+    const sec=pick('sec').dataset.v,reg=pick('reg').dataset.v,tic=pick('tic').dataset.v;
+    const ci=CATS.findIndex(c=>c[0]===sec); if(ci>-1){const c=$('#cat'+ci);if(c)c.checked=true;}
+    const r=reg==='todo'?$('#reg-all'):$('#reg'+reg); if(r){if(reg==='todo')$$('input[name=reg]').forEach(i=>i.checked=false);r.checked=true;}
+    const t=$('#'+tic.replace('k','k')); if(t)t.checked=true;
   });
 })();
 </script>
