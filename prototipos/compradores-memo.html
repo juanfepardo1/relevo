@@ -1,0 +1,175 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Relevo · Memorando para compradores</title>
+<link rel="preload" href="/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:"Geist";src:url(/fonts/Geist-Variable.woff2) format("woff2");font-weight:100 900;font-display:swap}
+:root{--paper:#f7f6f2;--sheet:#fffefb;--ink:#14243d;--ink2:#46536a;--ink3:#7a8597;--rule:#dcd9d0;--blue:#2c5186;--or:#f47b3d;--ord:#c95a22;--ease:cubic-bezier(.23,1,.32,1)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Geist",system-ui,sans-serif;background:var(--paper);color:var(--ink);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+::selection{background:var(--or);color:#fff}
+a{color:inherit}
+.tab{font-variant-numeric:tabular-nums}
+.top{max-width:1240px;margin:0 auto;padding:0 28px;height:76px;display:flex;align-items:center;gap:24px}
+.top .side{margin-left:auto;display:flex;gap:24px;align-items:center;font-size:15px}
+.top .side a{text-decoration:none;color:var(--ink2)}
+.btn{display:inline-flex;align-items:center;gap:10px;height:46px;padding:0 20px;border-radius:4px;background:var(--ink);color:#fff!important;font-weight:550;font-size:15.5px;text-decoration:none;transition:transform .16s var(--ease),background .2s}
+.btn:hover{background:#1f3456}.btn:active{transform:scale(.97)}
+.btn svg{width:16px;height:16px}
+.btn.or{background:var(--or);color:#1a0d05!important}.btn.or:hover{background:#ff8a4d}
+.sheet{max-width:1080px;margin:24px auto 96px;background:var(--sheet);box-shadow:0 1px 0 var(--rule),0 50px 100px -60px rgba(20,36,61,.35);padding:72px 96px 88px;position:relative}
+.mh{display:grid;grid-template-columns:120px 1fr;row-gap:8px;font-size:15px;padding-bottom:28px;border-bottom:2px solid var(--ink)}
+.mh dt{color:var(--ink3)}
+.mh dd b{font-weight:600}
+.stamp{position:absolute;top:64px;right:96px;font-size:12.5px;font-weight:600;color:var(--ord);border:1.5px solid var(--ord);padding:6px 10px;transform:rotate(3deg);letter-spacing:.04em}
+h1{margin-top:56px;font-size:clamp(40px,5vw,72px);line-height:1.0;letter-spacing:-.045em;font-weight:600;max-width:14ch}
+.lede{margin-top:28px;font-size:21px;color:var(--ink2);max-width:46ch;line-height:1.5}
+.ctas{margin-top:36px;display:flex;gap:22px;align-items:center}
+.ctas a.lk{font-size:15.5px;font-weight:550;text-underline-offset:5px;text-decoration-color:var(--rule)}
+.part{display:grid;grid-template-columns:220px 1fr;gap:48px;padding-top:56px;margin-top:72px;border-top:1px solid var(--rule)}
+.part h2{font-size:15px;font-weight:600;color:var(--ord);letter-spacing:.01em;position:sticky;top:24px;align-self:start}
+.part h3{font-size:clamp(26px,2.6vw,36px);letter-spacing:-.035em;line-height:1.12;max-width:20ch}
+.part p{margin-top:16px;color:var(--ink2);max-width:58ch}
+.part p b{color:var(--ink);font-weight:600}
+.exhibit{margin-top:36px;border:1px solid var(--ink);background:#fff}
+.exhibit .eh{display:flex;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--ink);font-size:13px}
+.exhibit .eh b{font-weight:600}
+.exhibit .eh span{color:var(--ink3)}
+.ex-grid{display:grid;grid-template-columns:1.1fr 1fr}
+.ex-l{padding:22px 18px;border-right:1px solid var(--rule)}
+.ex-l h4{font-size:20px;letter-spacing:-.02em}
+.ex-l .m{font-size:14px;color:var(--ink2);margin-top:2px}
+.ex-l .ev{margin-top:22px;font-size:13px;color:var(--ink3)}
+.ex-l .ev b{display:block;font-size:30px;color:var(--ink);letter-spacing:-.035em;font-weight:600;margin-top:2px}
+.toggle{margin-top:18px;display:inline-flex;border:1px solid var(--rule)}
+.toggle button{appearance:none;border:0;background:none;height:30px;padding:0 12px;font:500 13px "Geist";color:var(--ink2);cursor:pointer}
+.toggle button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.ex-r table{width:100%;border-collapse:collapse;font-size:14.5px}
+.ex-r th,.ex-r td{padding:11px 18px;border-bottom:1px solid var(--rule);text-align:left}
+.ex-r td{text-align:right;font-weight:600}
+.ex-r th{font-weight:450;color:var(--ink2)}
+.ex-r tr:last-child th,.ex-r tr:last-child td{border-bottom:0}
+.ex-r .chg{transition:opacity .18s}
+.ex-foot{padding:10px 18px;border-top:1px solid var(--rule);font-size:12.5px;color:var(--ink3)}
+.recon{margin-top:32px;width:100%;border-collapse:collapse;font-size:15px}
+.recon th,.recon td{padding:12px 0;border-bottom:1px solid var(--rule);text-align:right}
+.recon th:first-child,.recon td:first-child{text-align:left}
+.recon thead th{font-size:13px;color:var(--ink3);font-weight:500;border-bottom:1px solid var(--ink)}
+.recon .ok{color:#2f7a52;font-weight:600}
+.stages{margin-top:32px;counter-reset:s}
+.stages li{list-style:none;display:grid;grid-template-columns:44px 1fr auto;gap:16px;padding:18px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.stages li::before{counter-increment:s;content:counter(s,upper-roman) ".";font-weight:600;color:var(--ord);font-size:15px}
+.stages b{font-weight:600}
+.stages span{color:var(--ink2);font-size:16px;display:block}
+.stages em{font-style:normal;font-size:13px;color:var(--ink3)}
+.split{margin-top:32px}
+.split .bar{display:flex;height:44px;gap:3px}
+.split .bar i{display:block}
+.split ul{margin-top:14px;list-style:none;display:grid;gap:8px;font-size:15px}
+.split li{display:grid;grid-template-columns:12px 1fr auto;gap:12px;align-items:center}
+.split li i{width:10px;height:10px}
+.sign{margin-top:80px;padding-top:36px;border-top:2px solid var(--ink);display:flex;justify-content:space-between;align-items:end;gap:40px;flex-wrap:wrap}
+.sign p{font-size:15px;color:var(--ink2)}
+.sign p b{display:block;color:var(--ink);font-size:22px;letter-spacing:-.02em;margin-bottom:4px}
+footer{max-width:1080px;margin:0 auto;padding:0 0 40px;font-size:14px;color:var(--ink3);display:flex;gap:24px}
+@media (max-width:900px){.sheet{padding:40px 22px 56px;margin:8px 10px 56px}.stamp{position:static;display:inline-block;margin-top:22px}.part{grid-template-columns:1fr;gap:16px}.part h2{position:static}.ex-grid{grid-template-columns:1fr}.ex-l{border-right:0;border-bottom:1px solid var(--rule)}footer{padding:0 22px 40px}}
+@media (prefers-reduced-motion:no-preference){.rv{opacity:0;transform:translateY(12px);transition:opacity .7s var(--ease),transform .7s var(--ease)}.rv.in{opacity:1;transform:none}}
+</style></head><body>
+<header class="top"><a href="/" aria-label="Relevo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -20.1 116.1 21.1" width="104" role="img" aria-label="Relevo"><rect x="0" y="-15" width="17" height="7" rx="1.5" fill="#14243D"></rect><rect x="9" y="-6" width="17" height="7" rx="1.5" fill="#F47B3D"></rect><path transform="translate(34.5 0)" fill="#14243D" d="M7.112 -18.928H10.808Q13.16 -18.928 14.602 -18.298000000000002Q16.044 -17.668 16.695 -16.59Q17.346 -15.512 17.346 -14.182Q17.346 -12.908 16.779 -11.907Q16.212 -10.906 15.078000000000001 -10.262Q14.056000000000001 -9.674 12.6 -9.450000000000001Q13.608 -9.38 14.238 -9.1Q14.966000000000001 -8.778 15.386000000000001 -8.148Q15.806000000000001 -7.518 16.114 -6.482L17.192 -3.108Q17.486 -2.198 17.766 -1.7850000000000001Q18.046 -1.372 18.445 -1.267Q18.844 -1.162 19.46 -1.162V0.028Q17.71 0.154 16.611 0.105Q15.512 0.056 14.875 -0.224Q14.238 -0.504 13.895 -1.0710000000000002Q13.552 -1.6380000000000001 13.3 -2.562L12.334 -5.978Q12.040000000000001 -7.0280000000000005 11.732 -7.595000000000001Q11.424 -8.162 10.948 -8.393Q10.472 -8.624 9.632 -8.624H7.112V-1.526L9.254 -0.77V0.0H1.106V-0.77L3.2760000000000002 -1.526V-17.402L1.106 -18.172V-18.928ZM9.94 -10.36Q11.536 -10.36 12.530000000000001 -11.213999999999999Q13.524000000000001 -12.068 13.524000000000001 -13.734Q13.524000000000001 -14.812000000000001 13.09 -15.568000000000001Q12.656 -16.324 11.676 -16.723Q10.696 -17.122 9.044 -17.122H7.112V-10.36ZM26.222 -12.782Q27.887999999999998 -12.782 29.035999999999998 -12.096Q30.183999999999997 -11.41 30.828 -10.087Q31.472 -8.764 31.612000000000002 -6.86H23.268Q23.296 -5.39 23.828 -4.354Q24.374 -3.262 25.403 -2.709Q26.432 -2.156 27.846 -2.156Q28.476 -2.156 29.043 -2.268Q29.61 -2.38 30.156 -2.618Q30.701999999999998 -2.856 31.247999999999998 -3.22L31.612000000000002 -2.45Q30.786 -1.582 29.932000000000002 -0.9590000000000001Q29.078 -0.336 28.153999999999996 0.0Q27.229999999999997 0.336 26.208 0.336Q24.346 0.336 22.945999999999998 -0.476Q21.546 -1.288 20.769 -2.73Q19.992 -4.172 19.992 -6.034Q19.992 -7.924 20.727 -9.457Q21.462 -10.99 22.854999999999997 -11.886Q24.247999999999998 -12.782 26.222 -12.782ZM23.323999999999998 -8.162 28.195999999999998 -8.358Q28.112000000000002 -9.156 27.93 -9.73Q27.664 -10.528 27.174 -10.927Q26.683999999999997 -11.326 25.956 -11.326Q25.158 -11.326 24.549 -10.892Q23.939999999999998 -10.458 23.604 -9.52Q23.408 -8.946 23.323999999999998 -8.162ZM37.772 -1.3860000000000001 39.676 -0.7000000000000001V0.0H32.438V-0.7000000000000001L34.328 -1.3860000000000001V-16.604Q34.132 -16.842 33.81 -17.073Q33.488 -17.304000000000002 33.054 -17.549Q32.62 -17.794 32.074 -18.032V-18.69L37.492 -20.076H37.996L37.772 -17.22ZM46.760000000000005 -12.782Q48.426 -12.782 49.574 -12.096Q50.722 -11.41 51.366 -10.087Q52.010000000000005 -8.764 52.150000000000006 -6.86H43.806000000000004Q43.834 -5.39 44.366 -4.354Q44.912000000000006 -3.262 45.941 -2.709Q46.970000000000006 -2.156 48.384 -2.156Q49.014 -2.156 49.581 -2.268Q50.148 -2.38 50.694 -2.618Q51.24 -2.856 51.786 -3.22L52.150000000000006 -2.45Q51.324000000000005 -1.582 50.47 -0.9590000000000001Q49.616 -0.336 48.692 0.0Q47.768 0.336 46.746 0.336Q44.884 0.336 43.484 -0.476Q42.084 -1.288 41.307 -2.73Q40.53 -4.172 40.53 -6.034Q40.53 -7.924 41.265 -9.457Q42.0 -10.99 43.393 -11.886Q44.786 -12.782 46.760000000000005 -12.782ZM43.862 -8.162 48.734 -8.358Q48.650000000000006 -9.156 48.468 -9.73Q48.202000000000005 -10.528 47.712 -10.927Q47.222 -11.326 46.494 -11.326Q45.696000000000005 -11.326 45.087 -10.892Q44.478 -10.458 44.142 -9.52Q43.946000000000005 -8.946 43.862 -8.162ZM66.136 -11.144 61.488 0.168H59.275999999999996L54.11 -11.004L52.374 -11.69V-12.446H59.542V-11.676L57.848 -11.13L61.376 -3.192L64.386 -11.144L62.734 -11.676V-12.446H67.578V-11.676ZM74.984 -1.204Q75.866 -1.204 76.531 -1.6589999999999998Q77.196 -2.114 77.56700000000001 -3.1149999999999998Q77.938 -4.116 77.938 -5.74Q77.938 -7.5600000000000005 77.581 -8.778Q77.224 -9.996 76.55199999999999 -10.619Q75.88 -11.242 74.9 -11.242Q74.004 -11.242 73.339 -10.787Q72.674 -10.332 72.303 -9.338000000000001Q71.932 -8.344 71.932 -6.706Q71.932 -4.9 72.289 -3.6750000000000003Q72.646 -2.45 73.325 -1.827Q74.004 -1.204 74.984 -1.204ZM74.844 0.336Q72.828 0.336 71.36500000000001 -0.469Q69.902 -1.274 69.104 -2.723Q68.306 -4.172 68.306 -6.0760000000000005Q68.306 -8.05 69.16 -9.562000000000001Q70.014 -11.074 71.526 -11.928Q73.038 -12.782 75.03999999999999 -12.782Q77.056 -12.782 78.519 -11.984Q79.982 -11.186 80.773 -9.744Q81.564 -8.302 81.564 -6.37Q81.564 -4.396 80.71 -2.884Q79.856 -1.372 78.344 -0.518Q76.832 0.336 74.844 0.336Z"></path></svg></a><div class="side"><a href="/">¿Vendes tu empresa?</a><a class="btn" href="/compradores#registro">Registrar mi tesis</a></div></header>
+<article class="sheet">
+  <span class="stamp">CONFIDENCIAL</span>
+  <dl class="mh">
+    <dt>Para</dt><dd><b>Comités de inversión, family offices y compradores estratégicos</b></dd>
+    <dt>De</dt><dd>Relevo Brokers S.A.S.</dd>
+    <dt>Asunto</dt><dd>Empresas colombianas rentables que no están en el mercado</dd>
+  </dl>
+  <h1>Las mejores empresas no se publican.</h1>
+  <p class="lede">Llegamos a dueños de pymes colombianas que piensan en su relevo, verificamos sus cifras y te mostramos solo las que encajan con tu tesis.</p>
+  <div class="ctas"><a class="btn or" href="/compradores#registro">Registrar mi tesis<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a><a class="lk" href="#tesis">Leer el memorando</a></div>
+
+  <section class="part rv" id="tesis">
+    <h2>La oportunidad</h2>
+    <div>
+      <h3>Una generación de fundadores está buscando a quién pasarle la posta.</h3>
+      <p>Miles de empresas rentables fueron construidas por un solo dueño durante décadas. Muchas no tienen sucesor, y <b>sus dueños no van a poner un aviso en internet</b>. Llegamos a ellos uno por uno.</p>
+      <div class="exhibit">
+        <div class="eh"><b>Anexo A · Ficha anónima</b><span>Ejemplo ilustrativo</span></div>
+        <div class="ex-grid">
+          <div class="ex-l">
+            <h4>Proyecto Cóndor</h4><p class="m">Procesadora de alimentos · Antioquia · Fundada en 2003</p>
+            <p class="ev">Valor empresa indicativo<b class="tab">$10.500M a $12.800M</b></p>
+            <div class="toggle" role="group" aria-label="Tipo de EBITDA"><button type="button" aria-pressed="false" data-k="rep">EBITDA reportado</button><button type="button" aria-pressed="true" data-k="adj">Ajustado</button></div>
+          </div>
+          <div class="ex-r"><table>
+            <tr><th>Ventas 2025</th><td class="tab">$16.800M</td></tr>
+            <tr><th>EBITDA</th><td class="tab chg" id="e1">$2.410M</td></tr>
+            <tr><th>Margen EBITDA</th><td class="tab chg" id="e2">14,3%</td></tr>
+            <tr><th>Múltiplo implícito</th><td class="tab chg" id="e3">4,4x a 5,3x</td></tr>
+            <tr><th>Deuda neta / EBITDA</th><td class="tab">0,8x</td></tr>
+            <tr><th>Participación en venta</th><td class="tab">100%</td></tr>
+          </table></div>
+        </div>
+        <p class="ex-foot chg" id="e4">Ajuste: salario del dueño por encima de mercado, +$310M.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="part rv">
+    <h2>Las cifras</h2>
+    <div>
+      <h3>Antes de que veas un número, lo contrastamos.</h3>
+      <p>Lo que reporta la empresa lo cruzamos con su facturación electrónica, sus declaraciones ante la DIAN y sus extractos bancarios. Si no cuadra, no te llega.</p>
+      <table class="recon">
+        <thead><tr><th>Anexo B · Conciliación</th><th>Reportado</th><th>DIAN o bancos</th><th>Diferencia</th></tr></thead>
+        <tbody>
+          <tr><td>Ventas 2025</td><td class="tab">$16.812M</td><td class="tab">$16.785M</td><td class="tab ok">0,2%</td></tr>
+          <tr><td>Utilidad neta</td><td class="tab">$1.240M</td><td class="tab">$1.217M</td><td class="tab ok">1,9%</td></tr>
+          <tr><td>Saldo en bancos</td><td class="tab">$1.120M</td><td class="tab">$1.120M</td><td class="tab ok">0,0%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="part rv">
+    <h2>El proceso</h2>
+    <div>
+      <h3>Cada etapa abre más información. Tú decides cuándo avanzar.</h3>
+      <ol class="stages">
+        <li><div><b>Registras tu tesis</b><span>Sector, región, ticket y cómo financias.</span></div><em>Una vez, vigente 6 meses</em></li>
+        <li><div><b>Recibes fichas anónimas</b><span>Solo empresas que cumplen tu tesis.</span></div><em>Sin nombre</em></li>
+        <li><div><b>Memorando y data room</b><span>EBITDA normalizado, contratos, DIAN y bancos.</span></div><em>Tras confidencialidad</em></li>
+        <li><div><b>Oferta y cierre</b><span>Te acompañamos hasta el pago a través de fiducia.</span></div><em>Con fondos verificados</em></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="part rv">
+    <h2>La financiación</h2>
+    <div>
+      <h3>Pocas compras se pagan de contado. Estructuramos el resto.</h3>
+      <p>Diseñamos contigo una estructura que la empresa comprada pueda sostener. Relevo no presta dinero.</p>
+      <div class="split">
+        <div class="bar" aria-hidden="true"><i style="flex:50;background:#14243d"></i><i style="flex:30;background:#2c5186"></i><i style="flex:20;background:#f47b3d"></i></div>
+        <ul><li><i style="background:#14243d"></i>Recursos propios<span class="tab">50%</span></li><li><i style="background:#2c5186"></i>Crédito bancario<span class="tab">30%</span></li><li><i style="background:#f47b3d"></i>Pago diferido al vendedor<span class="tab">20%</span></li></ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="sign rv">
+    <p><b>Cuéntanos qué empresa buscas.</b>Toma tres minutos y no cuesta nada.</p>
+    <a class="btn or" href="/compradores#registro">Registrar mi tesis<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a>
+  </div>
+</article>
+<footer><span>© 2026 Relevo Brokers S.A.S.</span><a href="/terminos">Términos</a><a href="/privacidad">Privacidad</a></footer>
+<script>
+(function(){
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+  document.querySelectorAll('.rv').forEach(function(el){io.observe(el)});
+  var D={rep:['$2.100M','12,5%','5,0x a 6,1x','EBITDA tal como aparece en los estados financieros.'],adj:['$2.410M','14,3%','4,4x a 5,3x','Ajuste: salario del dueño por encima de mercado, +$310M.']};
+  document.querySelectorAll('.toggle button').forEach(function(b){b.addEventListener('click',function(){
+    document.querySelectorAll('.toggle button').forEach(function(x){x.setAttribute('aria-pressed',String(x===b))});
+    var v=D[b.dataset.k],ids=['e1','e2','e3','e4'];ids.forEach(function(i){document.getElementById(i).style.opacity=0});
+    setTimeout(function(){ids.forEach(function(i,n){document.getElementById(i).textContent=v[n];document.getElementById(i).style.opacity=1})},150);
+  })});
+})();
+</script>
+</body></html>
