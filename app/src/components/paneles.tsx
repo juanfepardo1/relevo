@@ -6,13 +6,14 @@ import { useQuery, useCatalogo } from '../lib/data';
 import { TIPO_DOC, ESTADO_DOC, TIPO_ACTIVIDAD, label } from '../lib/catalogos';
 import { fecha, fechaHora, hoy, diasDesde } from '../lib/format';
 import { Modal, Skeleton, useToast } from './ui';
+import { PausarModal } from './Etapa';
 import { tonoEtapa, tonoPersona } from '../lib/colores';
 
 type Ent = 'vendedor' | 'comprador';
 const fk = (e: Ent) => (e === 'vendedor' ? 'vendedor_id' : 'comprador_id');
 
 /* ---------- Etapas ---------- */
-export function Stepper({ pipeline, actual, onChange }: { pipeline: Ent; actual: string; onChange: (c: string) => Promise<unknown> }) {
+export function Stepper({ pipeline, actual, onChange, entidadId }: { pipeline: Ent; actual: string; onChange: (c: string) => Promise<unknown>; entidadId?: string }) {
   const { etapasDe } = useCatalogo();
   const etapas = etapasDe(pipeline);
   const toast = useToast();
@@ -21,8 +22,10 @@ export function Stepper({ pipeline, actual, onChange }: { pipeline: Ent; actual:
   const [busy, setBusy] = useState(false);
   const e = etapas.find((x) => x.codigo === valor);
   const fases = [...new Set(etapas.map((x) => x.fase))];
+  const [pausar, setPausar] = useState(false);
   const go = async (c: string) => {
     if (c === valor || busy) return;
+    if (pipeline === 'vendedor' && c === 'pausado' && entidadId) { setPausar(true); return; }
     const antes = valor;
     setValor(c); setBusy(true);
     try { await onChange(c); toast('Etapa actualizada'); }
@@ -39,6 +42,7 @@ export function Stepper({ pipeline, actual, onChange }: { pipeline: Ent; actual:
           </optgroup>
         ))}
       </select>
+      {entidadId && <PausarModal id={entidadId} abierto={pausar} onCerrar={() => setPausar(false)} onListo={() => { setPausar(false); setValor('pausado'); onChange('pausado'); }} />}
     </label>
   );
 }

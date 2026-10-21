@@ -43,7 +43,7 @@ export default function VendedorFicha() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          <Stepper pipeline="vendedor" actual={v.etapa} onChange={save('etapa')} />
+          <Stepper pipeline="vendedor" actual={v.etapa} onChange={save('etapa')} entidadId={id} />
           <Dias d={v.dias_en_etapa} sla={v.sla_dias} />
           <Insistencia id={id} />
           {wa && <a className="btn" href={wa} target="_blank" rel="noopener"><WhatsappLogo className="ic" />WhatsApp</a>}

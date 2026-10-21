@@ -7,6 +7,7 @@ export function tonoEtapa(fase: string | null | undefined, codigo?: string | nul
   if (codigo === 'cerrado') return 'tone-ganado';
   if (codigo === 'perdido') return 'tone-perdido';
   if (codigo === 'no_contactado') return 'tone-nuevo';
+  if (codigo === 'pausado') return 'tone-pausado';
   return 'tone-' + (FASE[fase ?? ''] ?? 'nuevo');
 }
 export const tonoBucket = (b: string | null | undefined) => (b ? 'tone-bucket-' + b.toLowerCase() : '');

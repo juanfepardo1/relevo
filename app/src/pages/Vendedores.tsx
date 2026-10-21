@@ -7,6 +7,7 @@ import { SECTORES, VENTAS, HORIZONTE, CANAL, label } from '../lib/catalogos';
 import { fecha, hoy } from '../lib/format';
 import { Skeleton, ErrorBox, Modal, Dias, useToast } from '../components/ui';
 import { Persona } from '../components/paneles';
+import { PausarModal } from '../components/Etapa';
 import { Filtros, pasa, usePersistente, type DefFiltro } from '../components/Multi';
 import { tonoEtapa, tonoBucket } from '../lib/colores';
 
@@ -45,7 +46,7 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
   const rows = useMemo(() => {
     const s = buscar.trim().toLowerCase();
     let r = (q.data || []).filter((v: Row) =>
-      (!activos || v.etapa !== 'en_reserva') && pasa(g('etapa'), v.etapa) &&
+      (!activos || !['en_reserva', 'pausado'].includes(v.etapa)) && pasa(g('etapa'), v.etapa) &&
       (mios ? v.responsable === yo?.email : pasa(g('resp'), v.responsable)) &&
       pasa(g('sector'), v.sector) && pasa(g('bucket'), v.bucket) && pasa(g('horizonte'), v.horizonte) && pasa(g('form'), estadoForm(v)) &&
       (!s || [v.nombre, v.empresa, v.ciudad, v.correo, v.celular].some((x) => String(x || '').toLowerCase().includes(s))));
@@ -61,7 +62,9 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
     </th>
   );
 
+  const [pausar, setPausar] = useState<string | null>(null);
   const mover = async (id: string, etapaNueva: string) => {
+    if (etapaNueva === 'pausado') { setPausar(id); return; }
     try { await must(supabase.from('vendedores').update({ etapa: etapaNueva }).eq('id', id)); q.reload(); }
     catch (e: any) { toast(e.message, true); }
   };
@@ -111,9 +114,10 @@ export default function Vendedores({ mios = false }: { mios?: boolean }) {
           </table>
         </div>
       ) : (
-        <Pipeline rows={rows} etapas={activos ? etapas.filter((e) => e.codigo !== 'en_reserva') : etapas} onOpen={abrir} onMove={mover} />
+        <Pipeline rows={rows} etapas={activos ? etapas.filter((e) => !['en_reserva', 'pausado'].includes(e.codigo)) : etapas} onOpen={abrir} onMove={mover} />
       )}
 
+      <PausarModal id={pausar} abierto={!!pausar} onCerrar={() => setPausar(null)} onListo={() => { setPausar(null); q.reload(); }} />
       <Modal open={nuevo} onClose={() => setNuevo(false)} title="Nuevo vendedor">
         <NuevoVendedor onDone={(id) => { setNuevo(false); nav(`/vendedores/${id}`); }} />
       </Modal>

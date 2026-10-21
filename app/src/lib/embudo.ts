@@ -15,7 +15,7 @@ export function contexto(etapas: Etapa[], vend: Row[], hist: Hist[]) {
   /** Etapa más avanzada alcanzada por cada vendedor (sin contar "perdido"). */
   const maxOrden = new Map<string, number>();
   for (const v of vend) {
-    const cods = [...(porVend.get(v.id) || []).map((h) => h.etapa), v.etapa].filter((c) => c !== 'perdido' && c !== 'en_reserva');
+    const cods = [...(porVend.get(v.id) || []).map((h) => h.etapa), v.etapa].filter((c) => c !== 'perdido' && c !== 'en_reserva' && c !== 'pausado');
     maxOrden.set(v.id, Math.max(1, ...cods.map((c) => orden.get(c) ?? 1)));
   }
   return { orden, porVend, maxOrden };
@@ -59,7 +59,7 @@ export function tiempos(etapas: Etapa[], vend: Row[], ctx: Ctx) {
 export function quietos(vend: Row[], ctx: Ctx, acts: Row[], diasSinAct: number) {
   const ultimaAct = new Map<string, number>();
   for (const a of acts) { const t = new Date(a.fecha).getTime(); if (t > (ultimaAct.get(a.vendedor_id) ?? 0)) ultimaAct.set(a.vendedor_id, t); }
-  return vend.filter((v) => !['cerrado', 'perdido', 'en_reserva'].includes(v.etapa)).map((v) => {
+  return vend.filter((v) => !['cerrado', 'perdido', 'en_reserva', 'pausado'].includes(v.etapa)).map((v) => {
     const actual = (ctx.porVend.get(v.id) || []).find((h) => !h.hasta);
     const ref = Math.max(ultimaAct.get(v.id) ?? 0, actual ? new Date(actual.desde).getTime() : 0, v.fecha_ingreso ? new Date(v.fecha_ingreso + 'T12:00:00-05:00').getTime() : 0);
     const sinAct = Math.floor(dias(ref));

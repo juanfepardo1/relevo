@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, X, CalendarBlank, WhatsappLogo, Phone, FilePdf, PaperPlaneTilt, Calculator, Archive, UserMinus } from '@phosphor-icons/react';
+import { Check, X, CalendarBlank, WhatsappLogo, Phone, FilePdf, PaperPlaneTilt, Calculator, Archive, UserMinus, Play, Pause } from '@phosphor-icons/react';
 import { supabase, must, type Row } from '../lib/supabase';
 import { useQuery } from '../lib/data';
-import { fechaHora, hoy as hoyDia } from '../lib/format';
+import { fechaHora, fecha, hoy as hoyDia } from '../lib/format';
 import { habilesDesde, diasDesde } from '../lib/habiles';
 import { CLAVE_RECORDATORIO, estadoRecordatorios, escalonValoracion, PLAZO_VALORACION, type Aviso } from '../lib/alertas';
-import { useToast } from './ui';
+import { useToast, Modal } from './ui';
+import { useCatalogo } from '../lib/data';
 
 /** Botones para mover un vendedor por las etapas de captación y valoración, usados en Inicio y en la ficha. */
 
@@ -90,6 +91,66 @@ function Vincular({ reunionId, onCambio }: { reunionId: string; onCambio: () => 
   );
 }
 
+/* ---------- Pausado: interesado pero pidió esperar ---------- */
+const enMeses = (n: number) => { const d = new Date(); d.setMonth(d.getMonth() + n); return d.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' }); };
+
+/** Formulario para pausar o reprogramar: fecha obligatoria y motivo opcional. */
+function FormPausa({ id, reprogramar, onListo, onCancelar }: { id: string; reprogramar?: boolean; onListo: () => void; onCancelar: () => void }) {
+  const toast = useToast();
+  const [f, setF] = useState('');
+  const [nota, setNota] = useState('');
+  const [busy, setBusy] = useState(false);
+  const atajo = (t: string, v: string) => <button type="button" className={'chip' + (f === v ? ' on' : '')} onClick={() => setF(v)}>{t}</button>;
+  const anioSig = `${Number(hoyDia().slice(0, 4)) + 1}-01-15`;
+  const guardar = async () => {
+    setBusy(true);
+    try {
+      await mover(id, reprogramar ? null : 'pausado', `${reprogramar ? 'Se movió la fecha para retomar' : 'Pausado: pidió esperar'} hasta el ${fecha(f, true)}.${nota.trim() ? ' ' + nota.trim() : ''}`, { pausado_hasta: f });
+      toast(reprogramar ? 'Fecha cambiada' : 'Quedó pausado'); onListo();
+    } catch (e: any) { toast(e.message, true); setBusy(false); }
+  };
+  return (
+    <div className="form-pausa">
+      <p className="meta">El día que elijas te sale en Inicio para retomarlo, y vuelve a la etapa donde estaba.</p>
+      <div className="ft-campo"><span>Retomar el</span>
+        <span className="chips">{atajo('En 1 mes', enMeses(1))}{atajo('En 3 meses', enMeses(3))}{atajo('Después de cierre de año', anioSig)}
+          <input className="in tn-fecha" type="date" value={f} min={hoyDia()} onChange={(e) => setF(e.target.value)} aria-label="Fecha para retomar" /></span>
+      </div>
+      <label>Por qué espera <span className="opcional">opcional</span>
+        <input className="in" value={nota} onChange={(e) => setNota(e.target.value)} placeholder="Ej. quiere cerrar el año contable antes de valorar" />
+      </label>
+      <footer><button type="button" className="btn ghost" onClick={onCancelar}>Cancelar</button><button type="button" className="btn primary" disabled={!f || busy} onClick={guardar}><Pause className="ic" />{reprogramar ? 'Cambiar fecha' : 'Pausar'}</button></footer>
+    </div>
+  );
+}
+
+/** Ventana para pausar un vendedor; la usan el selector de etapa y el pipeline. */
+export function PausarModal({ id, abierto, onCerrar, onListo }: { id: string | null; abierto: boolean; onCerrar: () => void; onListo: () => void }) {
+  return (
+    <Modal open={abierto} onClose={onCerrar} title="Pausar hasta una fecha">
+      {id && <FormPausa id={id} onListo={onListo} onCancelar={onCerrar} />}
+    </Modal>
+  );
+}
+
+function Retomar({ id, desde, onCambio }: { id: string; desde: string | null; onCambio: () => void }) {
+  const toast = useToast();
+  const { nombreEtapa } = useCatalogo();
+  const [mover2, setMover2] = useState(false);
+  const etapa = desde && desde !== 'pausado' ? desde : 'contactado';
+  return (
+    <>
+      <span className="acciones">
+        <button className="btn primary" onClick={async () => { try { await mover(id, etapa, `Se retomó; vuelve a ${nombreEtapa('vendedor', etapa)}.`); toast(`Volvió a ${nombreEtapa('vendedor', etapa)}`); onCambio(); } catch (e: any) { toast(e.message, true); } }}><Play className="ic" />Retomar en {nombreEtapa('vendedor', etapa)}</button>
+        <button className="btn" onClick={() => setMover2(true)}><CalendarBlank className="ic" />Posponer</button>
+      </span>
+      <Modal open={mover2} onClose={() => setMover2(false)} title="Posponer">
+        {mover2 && <FormPausa id={id} reprogramar onListo={() => { setMover2(false); onCambio(); }} onCancelar={() => setMover2(false)} />}
+      </Modal>
+    </>
+  );
+}
+
 /** Botones de un aviso en Inicio. Las alertas sin acción no muestran nada (se resuelven en la ficha). */
 export function AvisoBotones({ a, onCambio }: { a: Aviso; onCambio: () => void }) {
   const toast = useToast();
@@ -105,6 +166,8 @@ export function AvisoBotones({ a, onCambio }: { a: Aviso; onCambio: () => void }
       return <span className="acciones"><button className="btn" onClick={async () => { try { await mover(id, 'en_reserva', 'Pasó a En reserva: no envió documentos tras 3 recordatorios.'); toast('Pasó a En reserva'); onCambio(); } catch (e: any) { toast(e.message, true); } }}><Archive className="ic" />Pasar a En reserva</button></span>;
     case 'reunion_sin_vincular':
       return <Vincular reunionId={a.reunionId!} onCambio={onCambio} />;
+    case 'retomar':
+      return <Retomar id={id} desde={a.desde ?? null} onCambio={onCambio} />;
     default:
       return null;
   }
@@ -121,7 +184,7 @@ export function SiguientePaso({ v, onCambio }: { v: Row; onCambio: () => void })
   const toast = useToast();
   const hist = useQuery<Row | null>(() => supabase.from('etapa_historial').select('desde').eq('entidad', 'vendedor').eq('entidad_id', v.id).is('hasta', null).maybeSingle(), [v.id, v.etapa]);
   const recs = useQuery(() => supabase.from('actividades').select('fecha').eq('vendedor_id', v.id).eq('clave', CLAVE_RECORDATORIO), [v.id, v.etapa]);
-  const reu = useQuery<Row>(() => supabase.from('vendedores').select('reunion_en').eq('id', v.id).single(), [v.id, v.etapa]);
+  const reu = useQuery<Row>(() => supabase.from('vendedores').select('reunion_en,pausado_hasta,pausado_desde').eq('id', v.id).single(), [v.id, v.etapa]);
   const [noSigue, setNoSigue] = useState(false);
   const reunionEn = (reu.data?.reunion_en ?? null) as string | null;
   const desde = hist.data?.desde as string | undefined;
@@ -179,6 +242,13 @@ export function SiguientePaso({ v, onCambio }: { v: Row; onCambio: () => void })
       if (!desde) break;
       const dias = diasDesde(desde);
       texto = `Completa hace ${dias} ${dias === 1 ? 'día' : 'días'}. Preséntala antes de 7 días.`;
+      break;
+    }
+    case 'pausado': {
+      if (reu.loading) break;
+      const h = reu.data?.pausado_hasta as string | null;
+      texto = h ? `Pausado hasta el ${fecha(h, true)}. Ese día te sale en Inicio para retomarlo.` : 'Pausado sin fecha. Ponle una para que no se pierda.';
+      cuerpo = <Retomar id={v.id} desde={reu.data?.pausado_desde ?? null} onCambio={recargar} />;
       break;
     }
   }

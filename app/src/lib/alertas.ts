@@ -6,14 +6,14 @@ import { habilesDesde, diasDesde } from './habiles';
  * Alerta: se calcula del estado y desaparece sola al avanzar. Acción: pide contestar con botones.
  * Etapas de Docs recibidos hacia abajo de "Valoración completa" no tienen avisos todavía.
  */
-export type TipoAviso = 'no_contactado' | 'contactado' | 'reunion_fecha' | 'reunion_paso' | 'reunion_hecha' | 'recordar_docs' | 'reserva' | 'valoracion' | 'val_completa' | 'reunion_sin_vincular' | 'insistio';
+export type TipoAviso = 'no_contactado' | 'contactado' | 'reunion_fecha' | 'reunion_paso' | 'reunion_hecha' | 'recordar_docs' | 'reserva' | 'valoracion' | 'val_completa' | 'reunion_sin_vincular' | 'insistio' | 'retomar';
 export type Aviso = {
   key: string; tipo: TipoAviso; accion: boolean; vendedorId?: string; reunionId?: string;
   titulo: string; detalle: string; tono: '' | 'warn' | 'err'; para: string | null; // null = todo el equipo
-  peso: number; n?: number; etapa?: string; cifra?: string;
+  peso: number; n?: number; etapa?: string; cifra?: string; desde?: string;
 };
 
-export const ETAPAS_CON_AVISO = ['no_contactado', 'contactado', 'reunion_agendada', 'reunion_hecha', 'nda_docs', 'val_profunda', 'val_completa'];
+export const ETAPAS_CON_AVISO = ['no_contactado', 'contactado', 'reunion_agendada', 'reunion_hecha', 'nda_docs', 'val_profunda', 'val_completa', 'pausado'];
 export const CLAVE_RECORDATORIO = 'recordatorio_docs';
 export const PLAZO_VALORACION = 14;
 
@@ -36,7 +36,7 @@ export function escalonValoracion(dias: number): { tono: '' | 'warn' | 'err'; te
 }
 
 export async function cargarAvisos(): Promise<{ avisos: Aviso[]; noContactados: number }> {
-  const vend = (await must(supabase.from('vendedores').select('id,nombre,empresa,etapa,responsable,bucket,reunion_en').in('etapa', ETAPAS_CON_AVISO))) as Row[];
+  const vend = (await must(supabase.from('vendedores').select('id,nombre,empresa,etapa,responsable,bucket,reunion_en,pausado_hasta,pausado_desde').in('etapa', ETAPAS_CON_AVISO))) as Row[];
   const ids = vend.map((v) => v.id);
   const [hist, recs, sueltas, insisten] = await Promise.all([
     ids.length ? must(supabase.from('etapa_historial').select('entidad_id,desde').eq('entidad', 'vendedor').is('hasta', null).in('entidad_id', ids)) : Promise.resolve([]),
@@ -83,6 +83,14 @@ export async function cargarAvisos(): Promise<{ avisos: Aviso[]; noContactados: 
         const dias = diasDesde(d);
         const s = escalonValoracion(dias);
         if (s) avisos.push({ ...base, key: 'vp' + v.id, tipo: 'valoracion', accion: false, detalle: s.texto, cifra: dias > PLAZO_VALORACION ? 'Vencida' : `Día ${dias} de ${PLAZO_VALORACION}`, tono: s.tono, peso: s.tono === 'err' ? 95 : s.tono === 'warn' ? 65 : 30 });
+        break;
+      }
+      case 'pausado': {
+        const h = v.pausado_hasta as string | null;
+        const hoyB = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+        if (!h || h <= hoyB) avisos.push({ ...base, key: 'pa' + v.id, tipo: 'retomar', accion: true, desde: v.pausado_desde ?? undefined,
+          detalle: h ? 'Pidió esperar hasta hoy. Retómalo o pospónlo' : 'Está pausado sin fecha para retomarlo', cifra: h ? (h === hoyB ? 'Hoy' : 'Atrasado') : 'Sin fecha', tono: h && h < hoyB ? 'err' : 'warn', peso: 72 });
+        else if (diasDesde(hoyB, h) <= 7) avisos.push({ ...base, key: 'pa' + v.id, tipo: 'retomar', accion: false, detalle: 'Retomarlo esta semana', cifra: h.slice(8) + '/' + h.slice(5, 7), tono: '', peso: 20 });
         break;
       }
       case 'val_completa': {

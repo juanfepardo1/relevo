@@ -59,7 +59,7 @@ export default function Stats() {
   const personas = useMemo(() => {
     const grupos: [string, Row[]][] = [...equipo.map((m) => [m.email, cohorte.filter((v) => v.responsable === m.email)] as [string, Row[]]), ['', cohorte.filter((v) => !v.responsable)]];
     return grupos.map(([email, g]) => {
-      const activos = base.filter((v) => (email ? v.responsable === email : !v.responsable) && !['cerrado', 'perdido', 'en_reserva'].includes(v.etapa));
+      const activos = base.filter((v) => (email ? v.responsable === email : !v.responsable) && !['cerrado', 'perdido', 'en_reserva', 'pausado'].includes(v.etapa));
       return { email, n: g.length, activos: activos.length, quietos: qui.filter((q) => (email ? q.v.responsable === email : !q.v.responsable)).length, conv: conversion(g, ctx) };
     });
   }, [equipo, cohorte, base, qui, ctx]);

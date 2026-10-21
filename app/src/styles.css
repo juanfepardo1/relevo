@@ -185,6 +185,7 @@ dialog.m footer{display:flex;justify-content:flex-end;gap:8px;padding-top:6px}
 .tone-cierre{--t-fg:#b4501b;--t-bg:#fdebe0;--t-dot:#f47b3d}
 .tone-ganado{--t-fg:#1b6f4a;--t-bg:#dff3e8;--t-dot:#2fa36b}
 .tone-perdido{--t-fg:#a3352a;--t-bg:#fbe6e3;--t-dot:#d9584a}
+.tone-pausado{--t-fg:#2f6f8f;--t-bg:#e1f1f8;--t-dot:#5aa9cf}
 .tone-final{--t-fg:#55657d;--t-bg:#eef2f7;--t-dot:#8a99ae}
 .tone-bucket-a{--t-fg:#b4501b;--t-bg:#fdebe0;--t-dot:#f47b3d}
 .tone-bucket-b{--t-fg:#1f5f9e;--t-bg:#e3effb;--t-dot:#3b82c4}
@@ -654,3 +655,6 @@ dialog.m:has(.form-tarea){width:min(520px,calc(100% - 32px))}
 .restablecer{font-size:13px;color:var(--ink-2)}
 .restablecer .ic{width:14px;height:14px}
 .b.insiste .ic{width:13px;height:13px}
+.form-pausa{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.form-pausa label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink-2)}
+.form-pausa footer{display:flex;justify-content:flex-end;gap:8px}
