@@ -7,7 +7,7 @@ import { hoy } from '../lib/format';
 import { useToast, Skeleton } from '../components/ui';
 import { RELEVO_SAS, nda, faltantesNda, nombreArchivoNda, type DatosNda, type Modo } from '../docs/nda';
 import { BLOQUES, base, modulos, listaDocumentos, archivoLista, type Item, type Bloque } from '../docs/lista';
-import { correoDesdeTexto, nombrePila, firmaRespaldo, FIRMA_TEXTO } from '../../api/_correo.js';
+import { nombrePila, FIRMA_TEXTO } from '../../api/_correo.js';
 
 /** Prepara en un solo lugar el NDA y la lista de documentos de un vendedor, los guarda en su ficha y deja el borrador en Gmail. */
 
@@ -26,6 +26,10 @@ function tipoDoc(titulo: string) {
   if (/contrato|acuerdo/.test(n)) return 'contrato';
   return 'otro';
 }
+
+/** Correo sencillo, como uno escrito a mano en Gmail: solo párrafos, sin plantilla ni imágenes. La firma la pone Gmail. */
+const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const htmlSimple = (t: string) => t.trim().split(/\n{2,}/).map((p) => `<div>${esc(p).replace(/\n/g, '<br>')}</div>`).join('<div><br></div>') + '<div><br></div><!--FIRMA-->';
 
 async function token() { const { data } = await supabase.auth.getSession(); return data.session?.access_token ?? ''; }
 
@@ -99,7 +103,7 @@ export default function Paquete() {
   const borrador = async (adjuntos: Resultado['adjuntos']) => {
     const r = await fetch('/api/gmail', {
       method: 'POST', headers: { Authorization: `Bearer ${await token()}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ modo: 'borrador', para: para.trim(), asunto, texto: `${cuerpo}\n\n${FIRMA_TEXTO}`, html: correoDesdeTexto(cuerpo, { preheader: `Confidencialidad y documentos para valorar ${empresa}.` }), firmaHtml: firmaRespaldo(), nombreDe: yo?.nombre ?? 'Equipo Relevo', adjuntos }),
+      body: JSON.stringify({ modo: 'borrador', para: para.trim(), asunto, texto: `${cuerpo}\n\n${FIRMA_TEXTO}`, html: htmlSimple(cuerpo), firmaHtml: FIRMA_TEXTO.replace(/\n/g, '<br>'), nombreDe: yo?.nombre ?? 'Equipo Relevo', adjuntos }),
     });
     const j = await r.json().catch(() => ({}));
     if (!j.ok) throw new Error(j.error || `Gmail respondió ${r.status}`);
@@ -265,7 +269,7 @@ export default function Paquete() {
               <label>Para<input className="in" type="email" value={para} onChange={(e) => setPara(e.target.value)} /></label>
               <label>Asunto<input className="in" value={asunto} onChange={(e) => setAsunto(e.target.value)} /></label>
               <label>Mensaje<textarea className="in" rows={11} value={cuerpo} onChange={(e) => setCuerpo(e.target.value)} /></label>
-              <p className="meta">Sale como borrador desde tu Gmail ({yo?.email}), con tu firma y los PDF adjuntos.</p>
+              <p className="meta">Sale como borrador en tu Gmail ({yo?.email}) como un correo normal, sin diseño, con tu firma de Gmail y los PDF adjuntos. Revísalo y envíalo desde Gmail.</p>
             </div>
           </section>
         </div>
